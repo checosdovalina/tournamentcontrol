@@ -12,7 +12,8 @@ import {
   insertTournamentSchema,
   insertTournamentUserSchema,
   insertCategorySchema,
-  insertSponsorBannerSchema
+  insertSponsorBannerSchema,
+  insertScheduledMatchSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -817,6 +818,184 @@ export async function registerRoutes(app: Express): Promise<Server> {
       broadcastUpdate({ type: "banner_deleted", data: { id } });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to delete banner", error: error.message });
+    }
+  });
+
+  // ============ Scheduled Matches Routes ============
+  
+  // Get all scheduled matches for a tournament
+  app.get("/api/scheduled-matches/:tournamentId", requireTournamentAccess(), async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const matches = await storage.getScheduledMatchesByTournament(tournamentId);
+      res.json(matches);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch scheduled matches", error: error.message });
+    }
+  });
+
+  // Get scheduled matches for a specific day
+  app.get("/api/scheduled-matches/day/:tournamentId", requireTournamentAccess(), async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const { day } = req.query;
+      
+      if (!day) {
+        return res.status(400).json({ message: "Day parameter is required" });
+      }
+      
+      const matches = await storage.getScheduledMatchesByDay(tournamentId, new Date(day as string));
+      res.json(matches);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch scheduled matches for day", error: error.message });
+    }
+  });
+
+  // Create a new scheduled match
+  app.post("/api/scheduled-matches", requireTournamentRole('admin'), async (req, res) => {
+    try {
+      const insertMatch = insertScheduledMatchSchema.parse(req.body);
+      const scheduledMatch = await storage.createScheduledMatch(insertMatch);
+      res.status(201).json(scheduledMatch);
+      broadcastUpdate({ type: "scheduled_match_created", data: scheduledMatch });
+    } catch (error: any) {
+      res.status(400).json({ message: "Invalid scheduled match data", error: error.message });
+    }
+  });
+
+  // Update a scheduled match
+  app.patch("/api/scheduled-matches/:id", requireTournamentRole('admin'), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const updatedMatch = await storage.updateScheduledMatch(id, updates);
+      if (!updatedMatch) {
+        return res.status(404).json({ message: "Scheduled match not found" });
+      }
+      
+      res.json(updatedMatch);
+      broadcastUpdate({ type: "scheduled_match_updated", data: updatedMatch });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to update scheduled match", error: error.message });
+    }
+  });
+
+  // Delete a scheduled match
+  app.delete("/api/scheduled-matches/:id", requireTournamentRole('admin'), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteScheduledMatch(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Scheduled match not found" });
+      }
+      
+      res.json({ message: "Scheduled match deleted" });
+      broadcastUpdate({ type: "scheduled_match_deleted", data: { id } });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete scheduled match", error: error.message });
+    }
+  });
+
+  // Check-in a player for a scheduled match
+  app.post("/api/scheduled-matches/:id/check-in", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { playerId } = req.body;
+      
+      if (!playerId) {
+        return res.status(400).json({ message: "Player ID is required" });
+      }
+      
+      const checkedInBy = req.session.userId!;
+      const player = await storage.checkInPlayer(id, playerId, checkedInBy);
+      
+      if (!player) {
+        return res.status(404).json({ message: "Scheduled match or player not found" });
+      }
+      
+      // Get updated match details to check if ready
+      const match = await storage.getScheduledMatch(id);
+      res.json({ player, match });
+      broadcastUpdate({ type: "player_checked_in", data: { scheduledMatchId: id, playerId, match } });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to check-in player", error: error.message });
+    }
+  });
+
+  // Check-out a player from a scheduled match
+  app.post("/api/scheduled-matches/:id/check-out", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { playerId } = req.body;
+      
+      if (!playerId) {
+        return res.status(400).json({ message: "Player ID is required" });
+      }
+      
+      const player = await storage.checkOutPlayer(id, playerId);
+      
+      if (!player) {
+        return res.status(404).json({ message: "Scheduled match or player not found" });
+      }
+      
+      const match = await storage.getScheduledMatch(id);
+      res.json({ player, match });
+      broadcastUpdate({ type: "player_checked_out", data: { scheduledMatchId: id, playerId, match } });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to check-out player", error: error.message });
+    }
+  });
+
+  // Auto-assign court to a ready match
+  app.post("/api/scheduled-matches/:id/auto-assign", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const match = await storage.autoAssignCourt(id);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Scheduled match not found or no available courts" });
+      }
+      
+      res.json(match);
+      broadcastUpdate({ type: "court_auto_assigned", data: match });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to auto-assign court", error: error.message });
+    }
+  });
+
+  // Manually assign court to a match
+  app.post("/api/scheduled-matches/:id/assign-court", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { courtId } = req.body;
+      
+      if (!courtId) {
+        return res.status(400).json({ message: "Court ID is required" });
+      }
+      
+      const match = await storage.manualAssignCourt(id, courtId);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Scheduled match or court not found" });
+      }
+      
+      res.json(match);
+      broadcastUpdate({ type: "court_manually_assigned", data: match });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to assign court", error: error.message });
+    }
+  });
+
+  // Get players for a scheduled match (for check-in UI)
+  app.get("/api/scheduled-matches/:id/players", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const players = await storage.getScheduledMatchPlayers(id);
+      res.json(players);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch match players", error: error.message });
     }
   });
 
