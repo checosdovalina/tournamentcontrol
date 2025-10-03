@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { X, Volleyball } from "lucide-react";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import courtflowLogo from "@assets/courtflow-logo.png";
 
 export default function Display() {
@@ -46,6 +48,22 @@ export default function Display() {
 
   useWebSocket();
 
+  // Carousels for each section
+  const [matchesEmbla, matchesApi] = useEmblaCarousel(
+    { loop: true, align: "start" },
+    [Autoplay({ delay: 6000, stopOnInteraction: false })]
+  );
+
+  const [waitingEmbla, waitingApi] = useEmblaCarousel(
+    { loop: true, align: "start" },
+    [Autoplay({ delay: 6000, stopOnInteraction: false })]
+  );
+
+  const [resultsEmbla, resultsApi] = useEmblaCarousel(
+    { loop: true, align: "start" },
+    [Autoplay({ delay: 6000, stopOnInteraction: false })]
+  );
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
@@ -53,6 +71,25 @@ export default function Display() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Reset carousels when data changes
+  useEffect(() => {
+    if (matchesApi && currentMatches.length > 0) {
+      matchesApi.reInit();
+    }
+  }, [currentMatches, matchesApi]);
+
+  useEffect(() => {
+    if (waitingApi && waitingPairs.length > 0) {
+      waitingApi.reInit();
+    }
+  }, [waitingPairs, waitingApi]);
+
+  useEffect(() => {
+    if (resultsApi && recentResults.length > 0) {
+      resultsApi.reInit();
+    }
+  }, [recentResults, resultsApi]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('es-ES', { 
@@ -86,44 +123,50 @@ export default function Display() {
     return `${diffMinutes} min`;
   };
 
+  const activeBanners = banners
+    .filter((banner: any) => banner.isActive)
+    .sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
   return (
     <div className="fixed inset-0 z-50">
       <div className="h-screen flex flex-col tv-display">
         {/* Header */}
-        <div className="px-8 py-6 flex items-center justify-between border-b border-white/20">
+        <div className="px-8 py-4 flex items-center justify-between border-b border-white/20">
           <div className="flex items-center space-x-4">
             {tournament?.tournamentLogoUrl ? (
-              <img src={tournament.tournamentLogoUrl} alt="Logo Torneo" className="h-16 w-auto object-contain tv-display-logo" />
+              <img src={tournament.tournamentLogoUrl} alt="Logo Torneo" className="h-14 w-auto object-contain tv-display-logo" />
             ) : (
-              <img src={courtflowLogo} alt="CourtFlow" className="h-16 w-auto tv-display-logo" />
+              <img src={courtflowLogo} alt="CourtFlow" className="h-14 w-auto tv-display-logo" />
             )}
             <div className="text-white">
-              <h1 className="text-3xl font-bold">CourtFlow</h1>
-              <p className="text-xl" data-testid="text-tournament-name">
+              <h1 className="text-2xl font-bold">CourtFlow</h1>
+              <p className="text-lg" data-testid="text-tournament-name">
                 {tournament?.name || 'Torneo Pádel'}
               </p>
             </div>
           </div>
+          
           {(tournament?.clubLogoUrl || tournament?.systemLogoUrl) && (
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
               {tournament?.clubLogoUrl && (
-                <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-14 w-auto object-contain" />
+                <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-12 w-auto object-contain" />
               )}
               {tournament?.systemLogoUrl && (
-                <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-14 w-auto object-contain" />
+                <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-12 w-auto object-contain" />
               )}
             </div>
           )}
+
           <div className="text-right text-white">
-            <p className="text-5xl font-bold font-mono" data-testid="text-current-time">
+            <p className="text-4xl font-bold font-mono" data-testid="text-current-time">
               {formatTime(currentTime)}
             </p>
-            <p className="text-white/80">
+            <p className="text-sm text-white/80">
               {currentTime.toLocaleDateString('es-ES', { 
                 weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
               })}
             </p>
           </div>
@@ -131,154 +174,123 @@ export default function Display() {
             onClick={() => setLocation('/')}
             variant="ghost"
             size="sm"
-            className="text-white/60 hover:text-white text-2xl"
+            className="text-white/60 hover:text-white text-xl"
             data-testid="button-close-display"
           >
             <X />
           </Button>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-auto p-8">
-          <div className="grid grid-cols-2 gap-8 h-full">
+        {/* Main Content - 3 Equal Columns */}
+        <div className="flex-1 overflow-hidden p-6">
+          <div className="grid grid-cols-3 gap-6 h-full">
             
-            {/* Left Column: Current Matches */}
-            <div className="space-y-6">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+            {/* Column 1: Partidos en Curso */}
+            <div className="flex flex-col h-full">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 flex flex-col h-full">
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
                   <Volleyball className="mr-3" />
                   Partidos en Curso
                 </h2>
                 
-                <div className="space-y-4" data-testid="current-matches-list">
+                <div className="flex-1 overflow-hidden" data-testid="current-matches-list">
                   {currentMatches.length === 0 ? (
-                    <div className="text-white/60 text-center py-8">
+                    <div className="text-white/60 text-center py-12">
                       No hay partidos en curso
                     </div>
+                  ) : currentMatches.length <= 3 ? (
+                    <div className="space-y-3">
+                      {currentMatches.map((match: any) => (
+                        <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                      ))}
+                    </div>
                   ) : (
-                    currentMatches.map((match: any) => (
-                      <div 
-                        key={match.id} 
-                        className="bg-white/5 rounded-xl p-5 border border-white/10"
-                        data-testid={`match-card-${match.court.name.toLowerCase().replace(' ', '-')}`}
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="px-4 py-1 bg-destructive/80 text-white rounded-lg font-bold text-lg">
-                            {match.court.name}
-                          </span>
-                          <span className="text-white/60 text-sm">
-                            {formatMatchDuration(match.startTime)}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4 items-center text-white">
-                          <div className="text-lg font-medium">
-                            {match.pair1.player1.name} / {match.pair1.player2.name}
+                    <div ref={matchesEmbla} className="overflow-hidden">
+                      <div className="flex">
+                        {currentMatches.map((match: any) => (
+                          <div key={match.id} className="flex-[0_0_100%] min-w-0 pr-3">
+                            <MatchCard match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
                           </div>
-                          <div className="text-center">
-                            <div className="text-4xl font-mono font-bold">
-                              {formatScore(match.score)}
-                            </div>
-                          </div>
-                          <div className="text-lg font-medium text-right">
-                            {match.pair2.player1.name} / {match.pair2.player2.name}
-                          </div>
-                        </div>
+                        ))}
                       </div>
-                    ))
+                    </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Right Column: Waiting List & Results */}
-            <div className="space-y-6">
-              {/* Waiting List */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+            {/* Column 2: Próximos Partidos */}
+            <div className="flex flex-col h-full">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 flex flex-col h-full">
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
                   <Volleyball className="mr-3" />
                   Próximos Partidos
                 </h2>
                 
-                <div className="space-y-3" data-testid="waiting-pairs-list">
+                <div className="flex-1 overflow-hidden" data-testid="waiting-pairs-list">
                   {waitingPairs.length === 0 ? (
-                    <div className="text-white/60 text-center py-4">
+                    <div className="text-white/60 text-center py-12">
                       No hay parejas en espera
                     </div>
+                  ) : waitingPairs.length <= 6 ? (
+                    <div className="space-y-2">
+                      {waitingPairs.map((pair: any, index: number) => (
+                        <WaitingPairCard key={pair.id} pair={pair} index={index} formatWaitTime={formatWaitTime} />
+                      ))}
+                    </div>
                   ) : (
-                    waitingPairs.slice(0, 5).map((pair: any, index: number) => (
-                      <div 
-                        key={pair.id} 
-                        className="flex items-center justify-between p-4 bg-white/5 rounded-lg"
-                        data-testid={`waiting-pair-${index + 1}`}
-                      >
-                        <div className="flex items-center space-x-4">
-                          <span className="w-10 h-10 bg-warning text-warning-foreground rounded-full flex items-center justify-center font-bold text-lg">
-                            {index + 1}
-                          </span>
-                          <span className="text-white text-lg font-medium">
-                            {pair.player1.name} / {pair.player2.name}
-                          </span>
-                        </div>
-                        <span className="text-white/60">
-                          {pair.waitingSince ? formatWaitTime(pair.waitingSince) : '0 min'}
-                        </span>
+                    <div ref={waitingEmbla} className="overflow-hidden">
+                      <div className="flex flex-col">
+                        {Array.from({ length: Math.ceil(waitingPairs.length / 6) }).map((_, slideIndex) => (
+                          <div key={slideIndex} className="flex-[0_0_100%] min-w-0 space-y-2 pb-2">
+                            {waitingPairs.slice(slideIndex * 6, (slideIndex + 1) * 6).map((pair: any, pairIndex: number) => (
+                              <WaitingPairCard 
+                                key={pair.id} 
+                                pair={pair} 
+                                index={slideIndex * 6 + pairIndex} 
+                                formatWaitTime={formatWaitTime} 
+                              />
+                            ))}
+                          </div>
+                        ))}
                       </div>
-                    ))
+                    </div>
                   )}
                 </div>
               </div>
+            </div>
 
-              {/* Recent Results */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+            {/* Column 3: Últimos Resultados */}
+            <div className="flex flex-col h-full">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 flex flex-col h-full">
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
                   <Volleyball className="mr-3" />
                   Últimos Resultados
                 </h2>
                 
-                <div className="space-y-4" data-testid="recent-results-list">
+                <div className="flex-1 overflow-hidden" data-testid="recent-results-list">
                   {recentResults.length === 0 ? (
-                    <div className="text-white/60 text-center py-4">
+                    <div className="text-white/60 text-center py-12">
                       No hay resultados recientes
                     </div>
+                  ) : recentResults.length <= 4 ? (
+                    <div className="space-y-3">
+                      {recentResults.map((result: any) => (
+                        <ResultCard key={result.id} result={result} formatResultScore={formatResultScore} />
+                      ))}
+                    </div>
                   ) : (
-                    recentResults.slice(0, 4).map((result: any) => (
-                      <div 
-                        key={result.id} 
-                        className="pb-4 border-b border-white/20 last:border-b-0"
-                        data-testid={`result-${result.id}`}
-                      >
-                        <div className="flex items-center justify-between mb-2 text-white/60 text-sm">
-                          <span>
-                            {result.createdAt ? 
-                              `Hace ${Math.floor((new Date().getTime() - new Date(result.createdAt).getTime()) / (1000 * 60))} min` : 
-                              'Reciente'
-                            }
-                          </span>
-                          <span>{result.match?.court?.name || 'Cancha'}</span>
-                        </div>
-                        <div className="space-y-2 text-white">
-                          <div className="flex justify-between items-center">
-                            <span className="text-lg font-medium">
-                              {result.winner.player1.name} / {result.winner.player2.name}
-                            </span>
-                            <span className="font-mono font-bold text-success text-lg">
-                              {formatResultScore(result.score)}
-                            </span>
+                    <div ref={resultsEmbla} className="overflow-hidden">
+                      <div className="flex">
+                        {Array.from({ length: Math.ceil(recentResults.length / 4) }).map((_, slideIndex) => (
+                          <div key={slideIndex} className="flex-[0_0_100%] min-w-0 pr-3 space-y-3">
+                            {recentResults.slice(slideIndex * 4, (slideIndex + 1) * 4).map((result: any) => (
+                              <ResultCard key={result.id} result={result} formatResultScore={formatResultScore} />
+                            ))}
                           </div>
-                          <div className="flex justify-between items-center text-white/70">
-                            <span className="text-lg">
-                              {result.loser.player1.name} / {result.loser.player2.name}
-                            </span>
-                            <span className="font-mono text-lg">
-                              {formatResultScore(result.score).split(', ').map((set: string) => {
-                                const [a, b] = set.split('-');
-                                return `${b}-${a}`;
-                              }).join(', ')}
-                            </span>
-                          </div>
-                        </div>
+                        ))}
                       </div>
-                    ))
+                    </div>
                   )}
                 </div>
               </div>
@@ -286,40 +298,167 @@ export default function Display() {
           </div>
         </div>
 
-        {/* Footer with Sponsors */}
-        <div className="px-8 py-4 border-t border-white/20 bg-white/5">
+        {/* Footer with Sponsors - Auto Scrolling Marquee */}
+        <div className="px-8 py-3 border-t border-white/20 bg-white/5 overflow-hidden">
           <div className="flex items-center justify-between">
-            <div className="text-white/60 text-sm">
+            <div className="text-white/60 text-sm whitespace-nowrap">
               Patrocinadores:
             </div>
-            <div className="flex items-center space-x-8">
-              {banners.length > 0 ? (
-                banners
-                  .filter((banner: any) => banner.isActive)
-                  .sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0))
-                  .slice(0, 6)
-                  .map((banner: any) => (
-                    <div key={banner.id} className="h-12 flex items-center">
-                      <img 
-                        src={banner.imageUrl} 
-                        alt={banner.sponsorName} 
-                        className="h-full w-auto object-contain"
-                        title={banner.sponsorName}
-                      />
-                    </div>
-                  ))
+            <div className="flex-1 overflow-hidden mx-4">
+              {activeBanners.length > 0 ? (
+                <div className="relative">
+                  <div className="flex animate-marquee space-x-8">
+                    {/* Duplicate sponsors for seamless loop */}
+                    {[...activeBanners, ...activeBanners, ...activeBanners].map((banner: any, idx: number) => (
+                      <div key={`${banner.id}-${idx}`} className="h-10 flex items-center flex-shrink-0">
+                        <img 
+                          src={banner.imageUrl} 
+                          alt={banner.sponsorName} 
+                          className="h-full w-auto object-contain"
+                          title={banner.sponsorName}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : (
-                <>
+                <div className="flex items-center justify-center space-x-8">
                   <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 1</div>
                   <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 2</div>
                   <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 3</div>
-                </>
+                </div>
               )}
             </div>
-            <div className="text-white/60 text-sm">
+            <div className="text-white/60 text-sm whitespace-nowrap">
               Sistema de Control de Torneos v1.0
             </div>
           </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-33.333%);
+          }
+        }
+
+        .animate-marquee {
+          animation: marquee 30s linear infinite;
+          will-change: transform;
+        }
+
+        .animate-marquee:hover {
+          animation-play-state: paused;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .animate-marquee {
+            animation: none;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// Match Card Component
+function MatchCard({ match, formatMatchDuration, formatScore }: any) {
+  return (
+    <div 
+      className="bg-white/5 rounded-xl p-4 border border-white/10"
+      data-testid={`match-card-${match.court.name.toLowerCase().replace(' ', '-')}`}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <span className="px-3 py-1 bg-destructive/80 text-white rounded-lg font-bold text-base">
+          {match.court.name}
+        </span>
+        <span className="text-white/60 text-sm">
+          {formatMatchDuration(match.startTime)}
+        </span>
+      </div>
+      <div className="space-y-2 text-white">
+        <div className="flex items-center justify-between">
+          <span className="text-base font-medium truncate flex-1">
+            {match.pair1.player1.name} / {match.pair1.player2.name}
+          </span>
+          <span className="text-2xl font-mono font-bold ml-2">
+            {formatScore(match.score).split(' | ')[0] || '0'}
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-base font-medium truncate flex-1">
+            {match.pair2.player1.name} / {match.pair2.player2.name}
+          </span>
+          <span className="text-2xl font-mono font-bold ml-2">
+            {formatScore(match.score).split(' | ')[1] || '0'}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Waiting Pair Card Component
+function WaitingPairCard({ pair, index, formatWaitTime }: any) {
+  return (
+    <div 
+      className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
+      data-testid={`waiting-pair-${index + 1}`}
+    >
+      <div className="flex items-center space-x-3 flex-1 min-w-0">
+        <span className="w-8 h-8 bg-warning text-warning-foreground rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+          {index + 1}
+        </span>
+        <span className="text-white text-base font-medium truncate">
+          {pair.player1.name} / {pair.player2.name}
+        </span>
+      </div>
+      <span className="text-white/60 text-sm ml-2 flex-shrink-0">
+        {pair.waitingSince ? formatWaitTime(pair.waitingSince) : '0 min'}
+      </span>
+    </div>
+  );
+}
+
+// Result Card Component
+function ResultCard({ result, formatResultScore }: any) {
+  return (
+    <div 
+      className="pb-3 border-b border-white/20 last:border-b-0"
+      data-testid={`result-${result.id}`}
+    >
+      <div className="flex items-center justify-between mb-2 text-white/60 text-xs">
+        <span>
+          {result.createdAt ? 
+            `Hace ${Math.floor((new Date().getTime() - new Date(result.createdAt).getTime()) / (1000 * 60))} min` : 
+            'Reciente'
+          }
+        </span>
+        <span>{result.match?.court?.name || 'Cancha'}</span>
+      </div>
+      <div className="space-y-1 text-white">
+        <div className="flex justify-between items-center">
+          <span className="text-base font-medium truncate flex-1">
+            {result.winner.player1.name} / {result.winner.player2.name}
+          </span>
+          <span className="font-mono font-bold text-success text-base ml-2 flex-shrink-0">
+            {formatResultScore(result.score)}
+          </span>
+        </div>
+        <div className="flex justify-between items-center text-white/70">
+          <span className="text-base truncate flex-1">
+            {result.loser.player1.name} / {result.loser.player2.name}
+          </span>
+          <span className="font-mono text-base ml-2 flex-shrink-0">
+            {formatResultScore(result.score).split(', ').map((set: string) => {
+              const [a, b] = set.split('-');
+              return `${b}-${a}`;
+            }).join(', ')}
+          </span>
         </div>
       </div>
     </div>
