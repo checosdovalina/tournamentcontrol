@@ -152,6 +152,9 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export const insertTournamentSchema = createInsertSchema(tournaments).omit({
   id: true,
   createdAt: true,
+}).extend({
+  startDate: z.union([z.string(), z.date()]).transform(val => typeof val === 'string' ? new Date(val) : val),
+  endDate: z.union([z.string(), z.date()]).transform(val => typeof val === 'string' ? new Date(val) : val),
 });
 
 export const insertClubSchema = createInsertSchema(clubs).omit({
