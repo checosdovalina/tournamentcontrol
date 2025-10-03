@@ -52,13 +52,16 @@ Preferred communication style: Simple, everyday language.
 **Database**: PostgreSQL via Neon serverless driver (@neondatabase/serverless) for connection pooling and edge compatibility.
 
 **ORM**: Drizzle ORM with TypeScript-first schema definitions in `shared/schema.ts`. Schema includes:
-- Users (authentication and role-based access)
-- Tournaments (main event configuration)
+- Users (authentication and role-based access - supports superadmin, admin, scorekeeper, display roles)
+- Tournaments (main event configuration with logo URLs and branding)
+- Tournament Users (join table linking users to tournaments with specific roles)
+- Categories (tournament categories like "Masculino A", "Femenino B", "Mixto")
+- Sponsor Banners (sponsor logos and promotional banners per tournament)
 - Clubs (venue information)
 - Courts (playing surfaces with availability tracking)
 - Players (individual participants)
-- Pairs (team compositions)
-- Matches (game instances with court assignments)
+- Pairs (team compositions with category assignments)
+- Matches (game instances with court and category assignments)
 - Results (match outcomes with set scores)
 
 **Schema Strategy**: UUID primary keys using PostgreSQL's `gen_random_uuid()`. Foreign key relationships link tournaments to clubs, pairs to players, matches to pairs and courts. Timestamps track creation times across all entities.
@@ -69,9 +72,10 @@ Preferred communication style: Simple, everyday language.
 
 **Authentication Method**: Session-based authentication using username/password credentials. Sessions persist in server memory (development) with cookie-based session IDs.
 
-**Role-Based Access**: Three user roles defined:
-- `admin` - Full system access
-- `scorekeeper` - Can register players, record results, manage courts
+**Role-Based Access**: Four user roles defined:
+- `superadmin` - Can create tournaments, manage users, and assign users to tournaments
+- `admin` - Full access to assigned tournament(s), can configure tournament settings, logos, and banners
+- `scorekeeper` - Can register players, record results for assigned tournament(s)
 - `display` - Read-only access for display screens
 
 **Session Security**: HTTP-only cookies with secure flag in production. 24-hour session expiration. CSRF protection through same-origin policy.

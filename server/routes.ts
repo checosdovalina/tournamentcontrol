@@ -30,6 +30,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
+  // Superadmin role middleware
+  const requireSuperadmin = (req: any, res: any, next: any) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    if (req.session.userRole !== 'superadmin') {
+      return res.status(403).json({ message: "Superadmin access required" });
+    }
+    next();
+  };
+
+  // Tournament access middleware - checks if user has access to a specific tournament
+  const requireTournamentAccess = (tournamentIdParam: string = 'tournamentId') => {
+    return async (req: any, res: any, next: any) => {
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      // Superadmin bypasses tournament access checks
+      if (req.session.userRole === 'superadmin') {
+        return next();
+      }
+
+      // Get tournament ID from params, query, or body
+      const tournamentId = req.params[tournamentIdParam] || req.query[tournamentIdParam] || req.body[tournamentIdParam];
+      
+      if (!tournamentId) {
+        return res.status(400).json({ message: "Tournament ID required" });
+      }
+
+      try {
+        // Check if user has access to this tournament
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(req.session.userId, tournamentId);
+        
+        if (!tournamentUser || tournamentUser.status !== 'active') {
+          return res.status(403).json({ message: "You don't have access to this tournament" });
+        }
+
+        // Store tournament user info in request for later use
+        req.tournamentUser = tournamentUser;
+        next();
+      } catch (error: any) {
+        res.status(500).json({ message: "Failed to verify tournament access", error: error.message });
+      }
+    };
+  };
+
+  // Middleware to require specific tournament role (admin or scorekeeper)
+  const requireTournamentRole = (requiredRole: 'admin' | 'scorekeeper', tournamentIdParam: string = 'tournamentId') => {
+    return async (req: any, res: any, next: any) => {
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      // Superadmin bypasses role checks
+      if (req.session.userRole === 'superadmin') {
+        return next();
+      }
+
+      // Get tournament ID
+      const tournamentId = req.params[tournamentIdParam] || req.query[tournamentIdParam] || req.body[tournamentIdParam];
+      
+      if (!tournamentId) {
+        return res.status(400).json({ message: "Tournament ID required" });
+      }
+
+      try {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(req.session.userId, tournamentId);
+        
+        if (!tournamentUser || tournamentUser.status !== 'active') {
+          return res.status(403).json({ message: "You don't have access to this tournament" });
+        }
+
+        if (tournamentUser.role !== requiredRole && tournamentUser.role !== 'admin') {
+          return res.status(403).json({ message: `${requiredRole} role required for this action` });
+        }
+
+        req.tournamentUser = tournamentUser;
+        next();
+      } catch (error: any) {
+        res.status(500).json({ message: "Failed to verify tournament role", error: error.message });
+      }
+    };
+  };
+
   // Login endpoint
   app.post("/api/auth/login", async (req, res) => {
     try {
