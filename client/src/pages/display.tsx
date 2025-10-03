@@ -75,7 +75,7 @@ export default function Display() {
   };
 
   return (
-    <div className="fixed inset-0 bg-background z-50">
+    <div className="fixed inset-0 z-50">
       <div className="h-screen flex flex-col tv-display">
         {/* Header */}
         <div className="px-8 py-6 flex items-center justify-between border-b border-white/20">
