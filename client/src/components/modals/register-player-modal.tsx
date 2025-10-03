@@ -141,7 +141,11 @@ export default function RegisterPlayerModal({ open, onOpenChange, tournamentId }
               </SelectTrigger>
               <SelectContent>
                 {clubs.map((club: any) => (
-                  <SelectItem key={club.id} value={club.id}>
+                  <SelectItem 
+                    key={club.id} 
+                    value={club.id}
+                    data-testid={`option-club-${club.id}`}
+                  >
                     {club.name}
                   </SelectItem>
                 ))}

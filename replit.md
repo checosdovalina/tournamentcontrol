@@ -1,0 +1,168 @@
+# Padel Tournament Control System
+
+## Overview
+
+This is a real-time tournament management system for padel (paddle tennis) competitions. The system enables tournament organizers to manage courts, register player pairs, assign matches automatically, track game progress, and display live tournament information on screens. Built as a full-stack web application, it provides both a control dashboard for tournament staff and a public display view for participants and spectators.
+
+The application handles the complete tournament workflow: from player registration and court availability tracking, through automatic match assignment and live score updates, to historical results display.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+
+**Technology Stack**: React with TypeScript, built using Vite as the build tool and development server.
+
+**UI Framework**: Shadcn/ui component library based on Radix UI primitives, styled with Tailwind CSS. The design system uses a custom theme with CSS variables for colors and a "new-york" style variant.
+
+**State Management**: TanStack Query (React Query) for server state management with aggressive caching strategies. WebSocket connections provide real-time updates that trigger automatic cache invalidation and data refetching.
+
+**Routing**: Wouter for lightweight client-side routing with three main routes:
+- `/` - Dashboard (requires authentication)
+- `/display` - Public display screen (no authentication)
+- `/login` - Authentication page
+
+**Real-time Updates**: WebSocket connection established through custom `useWebSocket` hook that listens for server events (match_started, match_updated, result_recorded, pair_registered, court_updated) and invalidates relevant query caches to trigger UI updates.
+
+### Backend Architecture
+
+**Runtime**: Node.js with Express.js framework using ES modules.
+
+**Session Management**: Express-session middleware with configurable session storage. Sessions store userId and userRole for authentication/authorization.
+
+**WebSocket Server**: Standalone WebSocket server (using 'ws' library) running alongside Express for real-time bidirectional communication. Implements heartbeat mechanism for connection health monitoring.
+
+**API Design**: RESTful API endpoints organized by resource:
+- Authentication: `/api/auth/*`
+- Tournaments: `/api/tournaments/*`
+- Courts: `/api/courts/*`
+- Players: `/api/players/*`
+- Pairs: `/api/pairs/*`
+- Matches: `/api/matches/*`
+- Results: `/api/results/*`
+- Stats: `/api/stats/*`
+
+**Data Validation**: Zod schemas for runtime type validation integrated with Drizzle ORM schema definitions through drizzle-zod.
+
+### Data Storage
+
+**Database**: PostgreSQL via Neon serverless driver (@neondatabase/serverless) for connection pooling and edge compatibility.
+
+**ORM**: Drizzle ORM with TypeScript-first schema definitions in `shared/schema.ts`. Schema includes:
+- Users (authentication and role-based access)
+- Tournaments (main event configuration)
+- Clubs (venue information)
+- Courts (playing surfaces with availability tracking)
+- Players (individual participants)
+- Pairs (team compositions)
+- Matches (game instances with court assignments)
+- Results (match outcomes with set scores)
+
+**Schema Strategy**: UUID primary keys using PostgreSQL's `gen_random_uuid()`. Foreign key relationships link tournaments to clubs, pairs to players, matches to pairs and courts. Timestamps track creation times across all entities.
+
+**Data Access Layer**: Storage interface abstraction (`IStorage`) in `server/storage.ts` provides clean separation between business logic and data persistence, enabling potential future database swapping.
+
+### Authentication & Authorization
+
+**Authentication Method**: Session-based authentication using username/password credentials. Sessions persist in server memory (development) with cookie-based session IDs.
+
+**Role-Based Access**: Three user roles defined:
+- `admin` - Full system access
+- `scorekeeper` - Can register players, record results, manage courts
+- `display` - Read-only access for display screens
+
+**Session Security**: HTTP-only cookies with secure flag in production. 24-hour session expiration. CSRF protection through same-origin policy.
+
+### Key Architectural Decisions
+
+**Monorepo Structure**: Single repository with three main directories:
+- `client/` - React frontend application
+- `server/` - Express backend application  
+- `shared/` - Shared TypeScript types and schemas
+
+**Rationale**: Enables type safety across client-server boundary and simplifies deployment as a single unit.
+
+**Development Server Setup**: Vite middleware mode integrated with Express in development, allowing single-server development with HMR. Production builds serve static files from Express.
+
+**Rationale**: Simplified development workflow with single port, easier debugging, and production parity.
+
+**Real-time Architecture Choice**: WebSocket alongside REST API rather than full GraphQL subscriptions or Server-Sent Events.
+
+**Rationale**: WebSockets provide bidirectional communication needed for live updates while maintaining simple REST API for CRUD operations. Lower overhead than GraphQL for this use case.
+
+**Path Aliases**: TypeScript path mapping with Vite resolution:
+- `@/*` → `client/src/*`
+- `@shared/*` → `shared/*`
+- `@assets/*` → `attached_assets/*`
+
+**Rationale**: Cleaner imports, easier refactoring, and better IDE support.
+
+**Query Strategy**: Aggressive staleTime (Infinity) with manual invalidation via WebSocket events rather than automatic refetching.
+
+**Rationale**: Reduces unnecessary network requests while ensuring data freshness through event-driven updates. Better performance for real-time tournament scenarios.
+
+**Auto-Assignment Logic**: Server-side automatic court assignment algorithm that matches waiting pairs to available courts based on FIFO queue.
+
+**Rationale**: Centralized business logic prevents race conditions and ensures fair court allocation in multi-user scenarios.
+
+## External Dependencies
+
+### Core Framework Dependencies
+- **React 18+** - UI rendering with hooks-based architecture
+- **Express.js** - Backend HTTP server framework
+- **Vite** - Frontend build tool and development server
+- **TypeScript** - Type safety across the stack
+
+### Database & ORM
+- **@neondatabase/serverless** - Serverless PostgreSQL driver
+- **Drizzle ORM** - TypeScript ORM with type inference
+- **drizzle-kit** - Schema migration tooling
+- **drizzle-zod** - Runtime validation from ORM schemas
+
+### UI Component Libraries
+- **Radix UI** - Headless accessible component primitives (accordion, dialog, dropdown, select, etc.)
+- **Shadcn/ui** - Pre-styled Radix components with Tailwind
+- **Tailwind CSS** - Utility-first CSS framework
+- **Lucide React** - Icon library
+
+### State & Data Fetching
+- **TanStack Query** - Server state management and caching
+- **WebSocket (ws)** - Real-time bidirectional communication
+
+### Form & Validation
+- **React Hook Form** - Form state management
+- **Zod** - Schema validation library
+- **@hookform/resolvers** - Zod integration for React Hook Form
+
+### Session Management
+- **express-session** - Session middleware for Express
+- **connect-pg-simple** - PostgreSQL session store (configured but storage may be in-memory)
+
+### Development Tools
+- **@replit/vite-plugin-runtime-error-modal** - Enhanced error overlay for Replit
+- **@replit/vite-plugin-cartographer** - Development tooling
+- **tsx** - TypeScript execution for development server
+- **esbuild** - Production bundling for server code
+
+### Utilities
+- **date-fns** - Date manipulation and formatting
+- **nanoid** - Unique ID generation
+- **class-variance-authority** - Component variant management
+- **clsx** / **tailwind-merge** - Conditional class name utilities
+- **cmdk** - Command menu component
+- **embla-carousel-react** - Carousel functionality
+- **wouter** - Lightweight routing library
+
+### External Services
+- **Neon Database** - Serverless PostgreSQL hosting (requires DATABASE_URL environment variable)
+- **Session Secret** - Configured via SESSION_SECRET environment variable (defaults to 'default-secret-key' in development)
+
+### Build & Deployment Requirements
+- **Node.js** - Runtime environment (ES modules required)
+- **Environment Variables**:
+  - `DATABASE_URL` - PostgreSQL connection string (required)
+  - `SESSION_SECRET` - Session encryption key (optional, has default)
+  - `NODE_ENV` - Environment mode (development/production)

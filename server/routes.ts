@@ -19,6 +19,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
+  // Admin role middleware
+  const requireAdmin = (req: any, res: any, next: any) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    if (req.session.userRole !== 'admin') {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    next();
+  };
+
   // Login endpoint
   app.post("/api/auth/login", async (req, res) => {
     try {
@@ -98,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/courts", requireAuth, async (req, res) => {
+  app.post("/api/courts", requireAdmin, async (req, res) => {
     try {
       const court = insertCourtSchema.parse(req.body);
       const newCourt = await storage.createCourt(court);
@@ -109,7 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/courts/:id", requireAuth, async (req, res) => {
+  app.patch("/api/courts/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;

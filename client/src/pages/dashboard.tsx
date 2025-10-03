@@ -123,15 +123,17 @@ export default function Dashboard() {
             <ClipboardCheck className="w-4 h-4 mr-2" />
             Registrar Resultado
           </Button>
-          <Button 
-            onClick={() => setCourtsModalOpen(true)}
-            variant="secondary"
-            className="inline-flex items-center"
-            data-testid="button-manage-courts"
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Gestionar Canchas
-          </Button>
+          {user?.user?.role === 'admin' && (
+            <Button 
+              onClick={() => setCourtsModalOpen(true)}
+              variant="secondary"
+              className="inline-flex items-center"
+              data-testid="button-manage-courts"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Gestionar Canchas
+            </Button>
+          )}
           <Button 
             onClick={openFullScreenDisplay}
             variant="outline"
@@ -192,10 +194,12 @@ export default function Dashboard() {
         onOpenChange={setResultModalOpen}
         tournamentId={tournament?.id}
       />
-      <ManageCourtsModal 
-        open={courtsModalOpen}
-        onOpenChange={setCourtsModalOpen}
-      />
+      {user?.user?.role === 'admin' && (
+        <ManageCourtsModal 
+          open={courtsModalOpen}
+          onOpenChange={setCourtsModalOpen}
+        />
+      )}
       {user?.user?.role === 'admin' && (
         <TournamentConfigModal 
           open={configModalOpen}
