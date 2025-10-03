@@ -33,12 +33,11 @@ export default function Login() {
         description: `Bienvenido, ${data.user.name}`,
       });
       
-      // Invalidate and refetch user data
+      // Invalidate queries and force full page navigation
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      await queryClient.refetchQueries({ queryKey: ["/api/auth/me"] });
       
-      // Redirect to dashboard
-      setLocation("/");
+      // Use full page reload to ensure session is properly loaded
+      window.location.href = "/";
     } catch (error: any) {
       toast({
         title: "Error de inicio de sesión",
