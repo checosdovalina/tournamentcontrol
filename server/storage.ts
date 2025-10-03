@@ -23,7 +23,12 @@ import {
   type InsertResult,
   type MatchWithDetails,
   type PairWithPlayers,
-  type ResultWithDetails
+  type ResultWithDetails,
+  type ScheduledMatch,
+  type InsertScheduledMatch,
+  type ScheduledMatchPlayer,
+  type InsertScheduledMatchPlayer,
+  type ScheduledMatchWithDetails
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -102,6 +107,23 @@ export interface IStorage {
   getResults(): Promise<Result[]>;
   getRecentResults(tournamentId: string, limit?: number): Promise<ResultWithDetails[]>;
   createResult(result: InsertResult): Promise<Result>;
+  
+  // Scheduled Matches
+  getScheduledMatch(id: string): Promise<ScheduledMatch | undefined>;
+  getScheduledMatchesByTournament(tournamentId: string): Promise<ScheduledMatchWithDetails[]>;
+  getScheduledMatchesByDay(tournamentId: string, day: Date): Promise<ScheduledMatchWithDetails[]>;
+  createScheduledMatch(scheduledMatch: InsertScheduledMatch): Promise<ScheduledMatch>;
+  updateScheduledMatch(id: string, updates: Partial<ScheduledMatch>): Promise<ScheduledMatch | undefined>;
+  deleteScheduledMatch(id: string): Promise<boolean>;
+  
+  // Scheduled Match Players (Check-in)
+  getScheduledMatchPlayers(scheduledMatchId: string): Promise<(ScheduledMatchPlayer & { player: Player })[]>;
+  checkInPlayer(scheduledMatchId: string, playerId: string, checkedInBy: string): Promise<ScheduledMatchPlayer | undefined>;
+  checkOutPlayer(scheduledMatchId: string, playerId: string): Promise<ScheduledMatchPlayer | undefined>;
+  
+  // Court Assignment
+  autoAssignCourt(scheduledMatchId: string): Promise<ScheduledMatch | undefined>;
+  manualAssignCourt(scheduledMatchId: string, courtId: string): Promise<ScheduledMatch | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -116,6 +138,8 @@ export class MemStorage implements IStorage {
   private pairs: Map<string, Pair>;
   private matches: Map<string, Match>;
   private results: Map<string, Result>;
+  private scheduledMatches: Map<string, ScheduledMatch>;
+  private scheduledMatchPlayers: Map<string, ScheduledMatchPlayer>;
 
   constructor() {
     this.users = new Map();
@@ -129,6 +153,8 @@ export class MemStorage implements IStorage {
     this.pairs = new Map();
     this.matches = new Map();
     this.results = new Map();
+    this.scheduledMatches = new Map();
+    this.scheduledMatchPlayers = new Map();
     
     // Initialize with some test data
     this.initializeTestData();
@@ -662,6 +688,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const banner: SponsorBanner = {
       ...insertBanner,
+      link: insertBanner.link ?? null,
       displayOrder: insertBanner.displayOrder ?? 0,
       isActive: insertBanner.isActive ?? true,
       id,
@@ -682,6 +709,265 @@ export class MemStorage implements IStorage {
 
   async deleteSponsorBanner(id: string): Promise<boolean> {
     return this.sponsorBanners.delete(id);
+  }
+
+  private async buildScheduledMatchWithDetails(match: ScheduledMatch): Promise<ScheduledMatchWithDetails | null> {
+    const pair1 = await this.getPair(match.pair1Id);
+    const pair2 = await this.getPair(match.pair2Id);
+    
+    if (!pair1 || !pair2) return null;
+
+    const player1_1 = await this.getPlayer(pair1.player1Id);
+    const player1_2 = await this.getPlayer(pair1.player2Id);
+    const player2_1 = await this.getPlayer(pair2.player1Id);
+    const player2_2 = await this.getPlayer(pair2.player2Id);
+    
+    if (!player1_1 || !player1_2 || !player2_1 || !player2_2) return null;
+
+    const category = match.categoryId ? await this.getCategory(match.categoryId) : undefined;
+    const court = match.courtId ? await this.getCourt(match.courtId) : undefined;
+    
+    const players = await this.getScheduledMatchPlayers(match.id);
+
+    return {
+      ...match,
+      pair1: { ...pair1, player1: player1_1, player2: player1_2 },
+      pair2: { ...pair2, player1: player2_1, player2: player2_2 },
+      category,
+      court,
+      players
+    };
+  }
+
+  async getScheduledMatch(id: string): Promise<ScheduledMatch | undefined> {
+    return this.scheduledMatches.get(id);
+  }
+
+  async getScheduledMatchesByTournament(tournamentId: string): Promise<ScheduledMatchWithDetails[]> {
+    const matches = Array.from(this.scheduledMatches.values())
+      .filter(match => match.tournamentId === tournamentId)
+      .sort((a, b) => a.day.getTime() - b.day.getTime());
+
+    const matchesWithDetails: ScheduledMatchWithDetails[] = [];
+    for (const match of matches) {
+      const details = await this.buildScheduledMatchWithDetails(match);
+      if (details) {
+        matchesWithDetails.push(details);
+      }
+    }
+    return matchesWithDetails;
+  }
+
+  async getScheduledMatchesByDay(tournamentId: string, day: Date): Promise<ScheduledMatchWithDetails[]> {
+    const dayStart = new Date(day);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(day);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    const matches = Array.from(this.scheduledMatches.values())
+      .filter(match => {
+        const matchDay = new Date(match.day);
+        matchDay.setHours(0, 0, 0, 0);
+        return match.tournamentId === tournamentId && 
+               matchDay.getTime() === dayStart.getTime();
+      })
+      .sort((a, b) => {
+        if (a.plannedTime && b.plannedTime) {
+          return a.plannedTime.localeCompare(b.plannedTime);
+        }
+        return 0;
+      });
+
+    const matchesWithDetails: ScheduledMatchWithDetails[] = [];
+    for (const match of matches) {
+      const details = await this.buildScheduledMatchWithDetails(match);
+      if (details) {
+        matchesWithDetails.push(details);
+      }
+    }
+    return matchesWithDetails;
+  }
+
+  async createScheduledMatch(insertScheduledMatch: InsertScheduledMatch): Promise<ScheduledMatch> {
+    const id = randomUUID();
+    const scheduledMatch: ScheduledMatch = {
+      ...insertScheduledMatch,
+      categoryId: insertScheduledMatch.categoryId ?? null,
+      plannedTime: insertScheduledMatch.plannedTime ?? null,
+      status: insertScheduledMatch.status ?? "scheduled",
+      courtId: insertScheduledMatch.courtId ?? null,
+      matchId: insertScheduledMatch.matchId ?? null,
+      notes: insertScheduledMatch.notes ?? null,
+      id,
+      createdAt: new Date()
+    };
+    this.scheduledMatches.set(id, scheduledMatch);
+
+    const pair1 = await this.getPair(insertScheduledMatch.pair1Id);
+    const pair2 = await this.getPair(insertScheduledMatch.pair2Id);
+
+    if (pair1 && pair2) {
+      await this.createScheduledMatchPlayer({
+        scheduledMatchId: id,
+        playerId: pair1.player1Id,
+        pairId: pair1.id,
+        isPresent: false,
+        checkInTime: null,
+        checkedInBy: null
+      });
+
+      await this.createScheduledMatchPlayer({
+        scheduledMatchId: id,
+        playerId: pair1.player2Id,
+        pairId: pair1.id,
+        isPresent: false,
+        checkInTime: null,
+        checkedInBy: null
+      });
+
+      await this.createScheduledMatchPlayer({
+        scheduledMatchId: id,
+        playerId: pair2.player1Id,
+        pairId: pair2.id,
+        isPresent: false,
+        checkInTime: null,
+        checkedInBy: null
+      });
+
+      await this.createScheduledMatchPlayer({
+        scheduledMatchId: id,
+        playerId: pair2.player2Id,
+        pairId: pair2.id,
+        isPresent: false,
+        checkInTime: null,
+        checkedInBy: null
+      });
+    }
+
+    return scheduledMatch;
+  }
+
+  private async createScheduledMatchPlayer(insertPlayer: InsertScheduledMatchPlayer): Promise<ScheduledMatchPlayer> {
+    const id = randomUUID();
+    const player: ScheduledMatchPlayer = {
+      ...insertPlayer,
+      isPresent: insertPlayer.isPresent ?? false,
+      checkInTime: insertPlayer.checkInTime ?? null,
+      checkedInBy: insertPlayer.checkedInBy ?? null,
+      id,
+      createdAt: new Date()
+    };
+    this.scheduledMatchPlayers.set(id, player);
+    return player;
+  }
+
+  async updateScheduledMatch(id: string, updates: Partial<ScheduledMatch>): Promise<ScheduledMatch | undefined> {
+    const match = this.scheduledMatches.get(id);
+    if (!match) return undefined;
+    
+    const updated = { ...match, ...updates };
+    this.scheduledMatches.set(id, updated);
+    return updated;
+  }
+
+  async deleteScheduledMatch(id: string): Promise<boolean> {
+    const players = Array.from(this.scheduledMatchPlayers.values())
+      .filter(p => p.scheduledMatchId === id);
+    
+    for (const player of players) {
+      this.scheduledMatchPlayers.delete(player.id);
+    }
+    
+    return this.scheduledMatches.delete(id);
+  }
+
+  async getScheduledMatchPlayers(scheduledMatchId: string): Promise<(ScheduledMatchPlayer & { player: Player })[]> {
+    const matchPlayers = Array.from(this.scheduledMatchPlayers.values())
+      .filter(p => p.scheduledMatchId === scheduledMatchId);
+
+    const playersWithDetails: (ScheduledMatchPlayer & { player: Player })[] = [];
+    for (const matchPlayer of matchPlayers) {
+      const player = await this.getPlayer(matchPlayer.playerId);
+      if (player) {
+        playersWithDetails.push({ ...matchPlayer, player });
+      }
+    }
+    return playersWithDetails;
+  }
+
+  async checkInPlayer(scheduledMatchId: string, playerId: string, checkedInBy: string): Promise<ScheduledMatchPlayer | undefined> {
+    const matchPlayer = Array.from(this.scheduledMatchPlayers.values())
+      .find(p => p.scheduledMatchId === scheduledMatchId && p.playerId === playerId);
+
+    if (!matchPlayer) return undefined;
+
+    const updated: ScheduledMatchPlayer = {
+      ...matchPlayer,
+      isPresent: true,
+      checkInTime: new Date(),
+      checkedInBy
+    };
+    this.scheduledMatchPlayers.set(matchPlayer.id, updated);
+
+    const allPlayers = await this.getScheduledMatchPlayers(scheduledMatchId);
+    const allPresent = allPlayers.every(p => p.isPresent);
+
+    if (allPresent) {
+      await this.updateScheduledMatch(scheduledMatchId, { status: "ready" });
+    }
+
+    return updated;
+  }
+
+  async checkOutPlayer(scheduledMatchId: string, playerId: string): Promise<ScheduledMatchPlayer | undefined> {
+    const matchPlayer = Array.from(this.scheduledMatchPlayers.values())
+      .find(p => p.scheduledMatchId === scheduledMatchId && p.playerId === playerId);
+
+    if (!matchPlayer) return undefined;
+
+    const match = await this.getScheduledMatch(scheduledMatchId);
+    
+    const updated: ScheduledMatchPlayer = {
+      ...matchPlayer,
+      isPresent: false,
+      checkInTime: null,
+      checkedInBy: null
+    };
+    this.scheduledMatchPlayers.set(matchPlayer.id, updated);
+
+    if (match && match.status === "ready") {
+      await this.updateScheduledMatch(scheduledMatchId, { status: "scheduled" });
+    }
+
+    return updated;
+  }
+
+  async autoAssignCourt(scheduledMatchId: string): Promise<ScheduledMatch | undefined> {
+    const match = await this.getScheduledMatch(scheduledMatchId);
+    if (!match) return undefined;
+
+    const tournament = await this.getTournament(match.tournamentId);
+    if (!tournament) return undefined;
+
+    const availableCourt = Array.from(this.courts.values())
+      .find(court => court.clubId === tournament.clubId && court.isAvailable);
+
+    if (!availableCourt) return undefined;
+
+    return await this.updateScheduledMatch(scheduledMatchId, { 
+      courtId: availableCourt.id,
+      status: "assigned"
+    });
+  }
+
+  async manualAssignCourt(scheduledMatchId: string, courtId: string): Promise<ScheduledMatch | undefined> {
+    const match = await this.getScheduledMatch(scheduledMatchId);
+    if (!match) return undefined;
+
+    return await this.updateScheduledMatch(scheduledMatchId, { 
+      courtId,
+      status: "assigned"
+    });
   }
 }
 
