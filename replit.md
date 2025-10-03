@@ -10,7 +10,7 @@ Built as a full-stack web application, it provides:
 - **Scorekeeper Dashboard**: Register players, record results
 - **Public Display**: Real-time tournament information for participants and spectators
 
-Last Updated: October 03, 2025 - Improved scheduled match check-in UI with clear radio buttons for "Presente"/"Sin confirmar" status, making player presence tracking more intuitive for admins and scorekeepers
+Last Updated: October 03, 2025 - Enhanced scheduled match programming flow: category is now selected first, then only pairs from that category appear in the dropdown, streamlining the match creation process
 
 ## User Preferences
 
