@@ -21,6 +21,7 @@ interface ScheduleMatchModalProps {
 
 const formSchema = insertScheduledMatchSchema.extend({
   plannedTime: z.string().min(1, "La hora es requerida"),
+  categoryId: z.string().min(1, "La categoría es requerida"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -36,7 +37,7 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
       plannedTime: "",
       pair1Id: "",
       pair2Id: "",
-      categoryId: undefined,
+      categoryId: "",
       status: "scheduled",
       courtId: undefined,
     },
@@ -60,7 +61,7 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
         plannedTime: data.plannedTime,
         pair1Id: data.pair1Id,
         pair2Id: data.pair2Id,
-        categoryId: data.categoryId || undefined,
+        categoryId: data.categoryId,
         status: "scheduled" as const,
         courtId: undefined,
       };
@@ -88,6 +89,20 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
 
   const getPairLabel = (pair: any) => {
     return `${pair.player1?.name || "?"} / ${pair.player2?.name || "?"}`;
+  };
+
+  // Filter pairs by selected category
+  const selectedCategoryId = form.watch("categoryId");
+  const filteredPairs = pairs?.filter(pair => {
+    if (!selectedCategoryId) return true;
+    return pair.categoryId === selectedCategoryId;
+  }) || [];
+
+  // Reset pair selections when category changes
+  const handleCategoryChange = (value: string) => {
+    form.setValue("categoryId", value);
+    form.setValue("pair1Id", "");
+    form.setValue("pair2Id", "");
   };
 
   return (
@@ -123,18 +138,47 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
 
             <FormField
               control={form.control}
+              name="categoryId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoría</FormLabel>
+                  <Select onValueChange={handleCategoryChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-category">
+                        <SelectValue placeholder="Seleccionar categoría..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories?.map((category) => (
+                        <SelectItem key={category.id} value={category.id} data-testid={`option-category-${category.id}`}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="pair1Id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Pareja 1</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={!selectedCategoryId}
+                  >
                     <FormControl>
                       <SelectTrigger data-testid="select-pair1">
-                        <SelectValue placeholder="Seleccionar pareja..." />
+                        <SelectValue placeholder={selectedCategoryId ? "Seleccionar pareja..." : "Primero seleccione una categoría"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {pairs?.map((pair) => (
+                      {filteredPairs?.map((pair) => (
                         <SelectItem key={pair.id} value={pair.id} data-testid={`option-pair1-${pair.id}`}>
                           {getPairLabel(pair)}
                         </SelectItem>
@@ -152,42 +196,20 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Pareja 2</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={!selectedCategoryId}
+                  >
                     <FormControl>
                       <SelectTrigger data-testid="select-pair2">
-                        <SelectValue placeholder="Seleccionar pareja..." />
+                        <SelectValue placeholder={selectedCategoryId ? "Seleccionar pareja..." : "Primero seleccione una categoría"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {pairs?.filter(p => p.id !== form.watch("pair1Id")).map((pair) => (
+                      {filteredPairs?.filter(p => p.id !== form.watch("pair1Id")).map((pair) => (
                         <SelectItem key={pair.id} value={pair.id} data-testid={`option-pair2-${pair.id}`}>
                           {getPairLabel(pair)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categoría (opcional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || undefined}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-category">
-                        <SelectValue placeholder="Sin categoría" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">Sin categoría</SelectItem>
-                      {categories?.map((category) => (
-                        <SelectItem key={category.id} value={category.id} data-testid={`option-category-${category.id}`}>
-                          {category.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
