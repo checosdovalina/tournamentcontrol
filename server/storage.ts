@@ -92,8 +92,8 @@ export interface IStorage {
   
   // Pairs
   getPair(id: string): Promise<Pair | undefined>;
-  getPairs(): Promise<Pair[]>;
-  getPairsByTournament(tournamentId: string): Promise<Pair[]>;
+  getPairs(): Promise<PairWithPlayers[]>;
+  getPairsByTournament(tournamentId: string): Promise<PairWithPlayers[]>;
   getWaitingPairs(tournamentId: string): Promise<PairWithPlayers[]>;
   createPair(pair: InsertPair): Promise<Pair>;
   updatePair(id: string, updates: Partial<Pair>): Promise<Pair | undefined>;
@@ -393,12 +393,40 @@ export class MemStorage implements IStorage {
     return this.pairs.get(id);
   }
 
-  async getPairs(): Promise<Pair[]> {
-    return Array.from(this.pairs.values());
+  async getPairs(): Promise<PairWithPlayers[]> {
+    const allPairs = Array.from(this.pairs.values());
+    const result: PairWithPlayers[] = [];
+    
+    for (const pair of allPairs) {
+      const player1 = this.players.get(pair.player1Id);
+      const player2 = this.players.get(pair.player2Id);
+      if (player1 && player2) {
+        result.push({
+          ...pair,
+          player1,
+          player2,
+        });
+      }
+    }
+    return result;
   }
 
-  async getPairsByTournament(tournamentId: string): Promise<Pair[]> {
-    return Array.from(this.pairs.values()).filter(pair => pair.tournamentId === tournamentId);
+  async getPairsByTournament(tournamentId: string): Promise<PairWithPlayers[]> {
+    const tournamentPairs = Array.from(this.pairs.values()).filter(pair => pair.tournamentId === tournamentId);
+    const result: PairWithPlayers[] = [];
+    
+    for (const pair of tournamentPairs) {
+      const player1 = this.players.get(pair.player1Id);
+      const player2 = this.players.get(pair.player2Id);
+      if (player1 && player2) {
+        result.push({
+          ...pair,
+          player1,
+          player2,
+        });
+      }
+    }
+    return result;
   }
 
   async getWaitingPairs(tournamentId: string): Promise<PairWithPlayers[]> {

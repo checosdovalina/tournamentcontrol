@@ -272,12 +272,53 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async getPairs(): Promise<Pair[]> {
-    return await db.select().from(pairs);
+  async getPairs(): Promise<PairWithPlayers[]> {
+    const pairsData = await db
+      .select({
+        pair: pairs,
+        player1: players,
+        player2: players,
+      })
+      .from(pairs)
+      .leftJoin(players, eq(pairs.player1Id, players.id));
+
+    const result: PairWithPlayers[] = [];
+    for (const row of pairsData) {
+      const player2 = await db.select().from(players).where(eq(players.id, row.pair.player2Id)).limit(1);
+      if (row.player1 && player2[0]) {
+        result.push({
+          ...row.pair,
+          player1: row.player1,
+          player2: player2[0],
+        });
+      }
+    }
+    return result;
   }
 
-  async getPairsByTournament(tournamentId: string): Promise<Pair[]> {
-    return await db.select().from(pairs).where(eq(pairs.tournamentId, tournamentId));
+  async getPairsByTournament(tournamentId: string): Promise<PairWithPlayers[]> {
+    const pairsData = await db
+      .select({
+        pair: pairs,
+        player1: players,
+        player2: players,
+      })
+      .from(pairs)
+      .leftJoin(players, eq(pairs.player1Id, players.id))
+      .where(eq(pairs.tournamentId, tournamentId));
+
+    const result: PairWithPlayers[] = [];
+    for (const row of pairsData) {
+      const player2 = await db.select().from(players).where(eq(players.id, row.pair.player2Id)).limit(1);
+      if (row.player1 && player2[0]) {
+        result.push({
+          ...row.pair,
+          player1: row.player1,
+          player2: player2[0],
+        });
+      }
+    }
+    return result;
   }
 
   async getWaitingPairs(tournamentId: string): Promise<PairWithPlayers[]> {
