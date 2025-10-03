@@ -22,11 +22,15 @@ externalPort = 3000
 localPort = 35681
 externalPort = 3002
 
+[[ports]]
+localPort = 42393
+externalPort = 3001
+
 [env]
 PORT = "5000"
 
 [agent]
-integrations = ["javascript_mem_db:1.0.0", "javascript_websocket:1.0.0"]
+integrations = ["javascript_mem_db:1.0.0", "javascript_websocket:1.0.0", "javascript_database:1.0.0"]
 
 [workflows]
 runButton = "Project"
