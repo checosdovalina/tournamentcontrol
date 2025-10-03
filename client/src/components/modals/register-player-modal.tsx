@@ -19,11 +19,17 @@ export default function RegisterPlayerModal({ open, onOpenChange, tournamentId }
   const [player1Name, setPlayer1Name] = useState("");
   const [player2Name, setPlayer2Name] = useState("");
   const [selectedClub, setSelectedClub] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [markPresent, setMarkPresent] = useState(false);
   const { toast } = useToast();
 
   const { data: clubs = [] } = useQuery<any[]>({
     queryKey: ["/api/clubs"],
+  });
+
+  const { data: categories = [] } = useQuery<any[]>({
+    queryKey: [`/api/categories/${tournamentId}`],
+    enabled: open && !!tournamentId,
   });
 
   const registerPairMutation = useMutation({
@@ -46,6 +52,7 @@ export default function RegisterPlayerModal({ open, onOpenChange, tournamentId }
         player1Id: player1.id,
         player2Id: player2.id,
         tournamentId: data.tournamentId,
+        categoryId: data.categoryId || null,
         isPresent: data.markPresent,
         isWaiting: data.markPresent,
         waitingSince: data.markPresent ? new Date() : null
@@ -66,6 +73,7 @@ export default function RegisterPlayerModal({ open, onOpenChange, tournamentId }
       setPlayer1Name("");
       setPlayer2Name("");
       setSelectedClub("");
+      setSelectedCategory("");
       setMarkPresent(false);
       onOpenChange(false);
     },
@@ -95,6 +103,7 @@ export default function RegisterPlayerModal({ open, onOpenChange, tournamentId }
       player2Name,
       clubId: selectedClub,
       tournamentId,
+      categoryId: selectedCategory,
       markPresent,
     });
   };
@@ -147,6 +156,26 @@ export default function RegisterPlayerModal({ open, onOpenChange, tournamentId }
                     data-testid={`option-club-${club.id}`}
                   >
                     {club.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="category">Categoría</Label>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger data-testid="select-category">
+                <SelectValue placeholder="Seleccionar categoría (opcional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category: any) => (
+                  <SelectItem 
+                    key={category.id} 
+                    value={category.id}
+                    data-testid={`option-category-${category.id}`}
+                  >
+                    {category.name}
                   </SelectItem>
                 ))}
               </SelectContent>
