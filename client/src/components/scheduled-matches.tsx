@@ -43,7 +43,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const checkInMutation = useMutation({
     mutationFn: async ({ matchId, playerId }: { matchId: string; playerId: string }) => {
-      return apiRequest(`/api/scheduled-matches/${matchId}/check-in`, "POST", { playerId });
+      return apiRequest("POST", `/api/scheduled-matches/${matchId}/check-in`, { playerId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
@@ -56,7 +56,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const checkOutMutation = useMutation({
     mutationFn: async ({ matchId, playerId }: { matchId: string; playerId: string }) => {
-      return apiRequest(`/api/scheduled-matches/${matchId}/check-out`, "POST", { playerId });
+      return apiRequest("POST", `/api/scheduled-matches/${matchId}/check-out`, { playerId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
@@ -69,7 +69,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const autoAssignMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      return apiRequest(`/api/scheduled-matches/${matchId}/auto-assign`, "POST", {});
+      return apiRequest("POST", `/api/scheduled-matches/${matchId}/auto-assign`, {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
@@ -82,7 +82,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const manualAssignMutation = useMutation({
     mutationFn: async ({ matchId, courtId }: { matchId: string; courtId: string }) => {
-      return apiRequest(`/api/scheduled-matches/${matchId}/assign-court`, "POST", { courtId });
+      return apiRequest("POST", `/api/scheduled-matches/${matchId}/assign-court`, { courtId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
