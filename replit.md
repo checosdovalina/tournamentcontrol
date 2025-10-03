@@ -10,7 +10,7 @@ Built as a full-stack web application, it provides:
 - **Scorekeeper Dashboard**: Register players, record results
 - **Public Display**: Real-time tournament information for participants and spectators
 
-Last Updated: October 2025 - Multi-tenant architecture with tournament-scoped authorization implemented
+Last Updated: October 03, 2025 - Tournament configuration modal completed with full CRUD for categories/banners, category selection in pair registration implemented and tested
 
 ## User Preferences
 
