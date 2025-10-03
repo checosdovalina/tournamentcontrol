@@ -10,7 +10,13 @@ export default function Display() {
   const [, setLocation] = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  const { data: tournament } = useQuery<{ id: string; name: string }>({
+  const { data: tournament } = useQuery<{ 
+    id: string; 
+    name: string;
+    tournamentLogoUrl?: string;
+    clubLogoUrl?: string;
+    systemLogoUrl?: string;
+  }>({
     queryKey: ["/api/tournament"],
   });
 
@@ -30,6 +36,12 @@ export default function Display() {
     queryKey: ["/api/results/recent", tournament?.id],
     enabled: !!tournament?.id,
     refetchInterval: 30000,
+  });
+
+  const { data: banners = [] } = useQuery<any[]>({
+    queryKey: ["/api/banners", tournament?.id],
+    enabled: !!tournament?.id,
+    refetchInterval: 60000,
   });
 
   useWebSocket();
@@ -80,7 +92,11 @@ export default function Display() {
         {/* Header */}
         <div className="px-8 py-6 flex items-center justify-between border-b border-white/20">
           <div className="flex items-center space-x-4">
-            <img src={courtflowLogo} alt="CourtFlow" className="h-16 w-auto tv-display-logo" />
+            {tournament?.tournamentLogoUrl ? (
+              <img src={tournament.tournamentLogoUrl} alt="Logo Torneo" className="h-16 w-auto object-contain tv-display-logo" />
+            ) : (
+              <img src={courtflowLogo} alt="CourtFlow" className="h-16 w-auto tv-display-logo" />
+            )}
             <div className="text-white">
               <h1 className="text-3xl font-bold">CourtFlow</h1>
               <p className="text-xl" data-testid="text-tournament-name">
@@ -88,6 +104,16 @@ export default function Display() {
               </p>
             </div>
           </div>
+          {(tournament?.clubLogoUrl || tournament?.systemLogoUrl) && (
+            <div className="flex items-center space-x-6">
+              {tournament?.clubLogoUrl && (
+                <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-14 w-auto object-contain" />
+              )}
+              {tournament?.systemLogoUrl && (
+                <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-14 w-auto object-contain" />
+              )}
+            </div>
+          )}
           <div className="text-right text-white">
             <p className="text-5xl font-bold font-mono" data-testid="text-current-time">
               {formatTime(currentTime)}
@@ -267,9 +293,28 @@ export default function Display() {
               Patrocinadores:
             </div>
             <div className="flex items-center space-x-8">
-              <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 1</div>
-              <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 2</div>
-              <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 3</div>
+              {banners.length > 0 ? (
+                banners
+                  .filter((banner: any) => banner.isActive)
+                  .sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                  .slice(0, 6)
+                  .map((banner: any) => (
+                    <div key={banner.id} className="h-12 flex items-center">
+                      <img 
+                        src={banner.imageUrl} 
+                        alt={banner.sponsorName} 
+                        className="h-full w-auto object-contain"
+                        title={banner.sponsorName}
+                      />
+                    </div>
+                  ))
+              ) : (
+                <>
+                  <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 1</div>
+                  <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 2</div>
+                  <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 3</div>
+                </>
+              )}
             </div>
             <div className="text-white/60 text-sm">
               Sistema de Control de Torneos v1.0
