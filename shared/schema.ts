@@ -31,6 +31,7 @@ export const clubs = pgTable("clubs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   address: text("address"),
+  logoUrl: text("logo_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

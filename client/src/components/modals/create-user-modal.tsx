@@ -45,9 +45,9 @@ export default function CreateUserModal({ open, onOpenChange, user }: CreateUser
     mutationFn: async (data: FormData) => {
       const payload = data.password ? data : { ...data, password: undefined };
       if (isEditing) {
-        return apiRequest(`/api/admin/users/${user.id}`, "PATCH", payload);
+        return apiRequest("PATCH", `/api/admin/users/${user.id}`, payload);
       }
-      return apiRequest("/api/admin/users", "POST", data);
+      return apiRequest("POST", "/api/admin/users", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });

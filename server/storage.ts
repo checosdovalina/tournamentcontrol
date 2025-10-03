@@ -311,6 +311,7 @@ export class MemStorage implements IStorage {
     const club: Club = {
       ...insertClub,
       address: insertClub.address ?? null,
+      logoUrl: insertClub.logoUrl ?? null,
       id,
       createdAt: new Date()
     };

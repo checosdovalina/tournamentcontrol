@@ -36,6 +36,9 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
       startDate: tournament?.startDate ? new Date(tournament.startDate).toISOString().split('T')[0] : "",
       endDate: tournament?.endDate ? new Date(tournament.endDate).toISOString().split('T')[0] : "",
       isActive: tournament?.isActive ?? true,
+      tournamentLogoUrl: tournament?.tournamentLogoUrl || "",
+      clubLogoUrl: tournament?.clubLogoUrl || "",
+      systemLogoUrl: tournament?.systemLogoUrl || "",
     },
   });
 
@@ -51,9 +54,9 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
         endDate: new Date(data.endDate).toISOString(),
       };
       if (isEditing) {
-        return apiRequest(`/api/admin/tournaments/${tournament.id}`, "PATCH", payload);
+        return apiRequest("PATCH", `/api/admin/tournaments/${tournament.id}`, payload);
       }
-      return apiRequest("/api/admin/tournaments", "POST", payload);
+      return apiRequest("POST", "/api/admin/tournaments", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/tournaments"] });
@@ -154,6 +157,63 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="tournamentLogoUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL del Logo del Torneo (opcional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="https://ejemplo.com/torneo-logo.png" 
+                      data-testid="input-tournament-logo"
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="clubLogoUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL del Logo del Club (opcional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="https://ejemplo.com/club-logo.png" 
+                      data-testid="input-club-logo"
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="systemLogoUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL del Logo del Sistema (opcional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="https://ejemplo.com/sistema-logo.png" 
+                      data-testid="input-system-logo"
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="flex justify-end space-x-2 pt-4">
               <Button

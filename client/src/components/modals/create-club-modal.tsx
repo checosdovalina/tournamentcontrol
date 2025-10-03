@@ -28,15 +28,16 @@ export default function CreateClubModal({ open, onOpenChange, club }: CreateClub
     defaultValues: {
       name: club?.name || "",
       address: club?.address || "",
+      logoUrl: club?.logoUrl || "",
     },
   });
 
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
       if (isEditing) {
-        return apiRequest(`/api/clubs/${club.id}`, "PATCH", data);
+        return apiRequest("PATCH", `/api/clubs/${club.id}`, data);
       }
-      return apiRequest("/api/clubs", "POST", data);
+      return apiRequest("POST", "/api/clubs", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clubs"] });
@@ -94,6 +95,25 @@ export default function CreateClubModal({ open, onOpenChange, club }: CreateClub
                       {...field} 
                       placeholder="Av. Principal 123, Ciudad" 
                       data-testid="input-address"
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="logoUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL del Logo (opcional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="https://ejemplo.com/logo.png" 
+                      data-testid="input-logoUrl"
                       value={field.value || ""}
                     />
                   </FormControl>
