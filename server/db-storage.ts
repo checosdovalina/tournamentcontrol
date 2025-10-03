@@ -94,7 +94,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateTournament(id: string, updates: Partial<Tournament>): Promise<Tournament | undefined> {
-    const result = await db.update(tournaments).set(updates).where(eq(tournaments.id, id)).returning();
+    // Transform dates if they're strings
+    const cleanUpdates: any = { ...updates };
+    if (cleanUpdates.startDate && typeof cleanUpdates.startDate === 'string') {
+      cleanUpdates.startDate = new Date(cleanUpdates.startDate);
+    }
+    if (cleanUpdates.endDate && typeof cleanUpdates.endDate === 'string') {
+      cleanUpdates.endDate = new Date(cleanUpdates.endDate);
+    }
+    
+    const result = await db.update(tournaments).set(cleanUpdates).where(eq(tournaments.id, id)).returning();
     return result[0];
   }
 
