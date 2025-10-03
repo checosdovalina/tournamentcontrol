@@ -199,7 +199,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                       )}
                     </CardTitle>
                     <div className="flex items-center space-x-2">
-                      {getStatusBadge(match.status)}
+                      {getStatusBadge(match.status || "scheduled")}
                       {match.court && (
                         <Badge variant="secondary" data-testid={`badge-court-${match.id}`}>
                           <MapPin className="w-3 h-3 mr-1" />

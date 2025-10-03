@@ -28,8 +28,14 @@ export default function Display() {
     refetchInterval: 30000,
   });
 
-  const { data: waitingPairs = [] } = useQuery<any[]>({
-    queryKey: ["/api/pairs/waiting", tournament?.id],
+  const { data: scheduledMatches = [] } = useQuery<any[]>({
+    queryKey: ["/api/scheduled-matches/today", tournament?.id],
+    queryFn: async () => {
+      if (!tournament?.id) return [];
+      const today = new Date().toISOString().split('T')[0];
+      const response = await fetch(`/api/scheduled-matches/day/${tournament.id}?day=${today}`);
+      return response.json();
+    },
     enabled: !!tournament?.id,
     refetchInterval: 30000,
   });
@@ -54,7 +60,7 @@ export default function Display() {
     [Autoplay({ delay: 6000, stopOnInteraction: false })]
   );
 
-  const [waitingEmbla, waitingApi] = useEmblaCarousel(
+  const [nextMatchesEmbla, nextMatchesApi] = useEmblaCarousel(
     { loop: true, align: "start" },
     [Autoplay({ delay: 6000, stopOnInteraction: false })]
   );
@@ -80,10 +86,10 @@ export default function Display() {
   }, [currentMatches, matchesApi]);
 
   useEffect(() => {
-    if (waitingApi && waitingPairs.length > 0) {
-      waitingApi.reInit();
+    if (nextMatchesApi && scheduledMatches.length > 0) {
+      nextMatchesApi.reInit();
     }
-  }, [waitingPairs, waitingApi]);
+  }, [scheduledMatches, nextMatchesApi]);
 
   useEffect(() => {
     if (resultsApi && recentResults.length > 0) {
@@ -116,12 +122,6 @@ export default function Display() {
     return score.sets.map((set: any) => `${set[0] || 0}-${set[1] || 0}`).join(", ");
   };
 
-  const formatWaitTime = (waitingSince: string | Date) => {
-    const start = new Date(waitingSince);
-    const now = new Date();
-    const diffMinutes = Math.floor((now.getTime() - start.getTime()) / (1000 * 60));
-    return `${diffMinutes} min`;
-  };
 
   const activeBanners = banners
     .filter((banner: any) => banner.isActive)
@@ -227,30 +227,23 @@ export default function Display() {
                   Próximos Partidos
                 </h2>
                 
-                <div className="flex-1 overflow-hidden" data-testid="waiting-pairs-list">
-                  {waitingPairs.length === 0 ? (
+                <div className="flex-1 overflow-hidden" data-testid="next-matches-list">
+                  {scheduledMatches.filter((m: any) => m.status === 'ready' || m.status === 'assigned').length === 0 ? (
                     <div className="text-white/60 text-center py-12">
-                      No hay parejas en espera
+                      No hay partidos programados listos
                     </div>
-                  ) : waitingPairs.length <= 6 ? (
-                    <div className="space-y-2">
-                      {waitingPairs.map((pair: any, index: number) => (
-                        <WaitingPairCard key={pair.id} pair={pair} index={index} formatWaitTime={formatWaitTime} />
+                  ) : scheduledMatches.filter((m: any) => m.status === 'ready' || m.status === 'assigned').length <= 3 ? (
+                    <div className="space-y-3">
+                      {scheduledMatches.filter((m: any) => m.status === 'ready' || m.status === 'assigned').map((match: any) => (
+                        <NextMatchCard key={match.id} match={match} />
                       ))}
                     </div>
                   ) : (
-                    <div ref={waitingEmbla} className="overflow-hidden">
-                      <div className="flex flex-col">
-                        {Array.from({ length: Math.ceil(waitingPairs.length / 6) }).map((_, slideIndex) => (
-                          <div key={slideIndex} className="flex-[0_0_100%] min-w-0 space-y-2 pb-2">
-                            {waitingPairs.slice(slideIndex * 6, (slideIndex + 1) * 6).map((pair: any, pairIndex: number) => (
-                              <WaitingPairCard 
-                                key={pair.id} 
-                                pair={pair} 
-                                index={slideIndex * 6 + pairIndex} 
-                                formatWaitTime={formatWaitTime} 
-                              />
-                            ))}
+                    <div ref={nextMatchesEmbla} className="overflow-hidden">
+                      <div className="flex">
+                        {scheduledMatches.filter((m: any) => m.status === 'ready' || m.status === 'assigned').map((match: any) => (
+                          <div key={match.id} className="flex-[0_0_100%] min-w-0 pr-3">
+                            <NextMatchCard match={match} />
                           </div>
                         ))}
                       </div>
@@ -402,24 +395,43 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
   );
 }
 
-// Waiting Pair Card Component
-function WaitingPairCard({ pair, index, formatWaitTime }: any) {
+// Next Match Card Component
+function NextMatchCard({ match }: any) {
   return (
     <div 
-      className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
-      data-testid={`waiting-pair-${index + 1}`}
+      className="bg-white/5 rounded-xl p-4 border border-white/10"
+      data-testid={`next-match-${match.id}`}
     >
-      <div className="flex items-center space-x-3 flex-1 min-w-0">
-        <span className="w-8 h-8 bg-warning text-warning-foreground rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
-          {index + 1}
+      <div className="flex items-center justify-between mb-3">
+        <span className="px-3 py-1 bg-blue-600/80 text-white rounded-lg font-bold text-sm">
+          {match.plannedTime || 'Por confirmar'}
         </span>
-        <span className="text-white text-base font-medium truncate">
-          {pair.player1.name} / {pair.player2.name}
-        </span>
+        {match.court && (
+          <span className="text-white/60 text-sm">
+            {match.court.name}
+          </span>
+        )}
+        {!match.court && match.status === 'ready' && (
+          <span className="text-green-400 text-xs">
+            ✓ Listos
+          </span>
+        )}
       </div>
-      <span className="text-white/60 text-sm ml-2 flex-shrink-0">
-        {pair.waitingSince ? formatWaitTime(pair.waitingSince) : '0 min'}
-      </span>
+      {match.category && (
+        <div className="mb-2">
+          <span className="text-white/60 text-xs bg-white/10 px-2 py-1 rounded">
+            {match.category.name}
+          </span>
+        </div>
+      )}
+      <div className="space-y-2 text-white">
+        <div className="text-base font-medium truncate">
+          {match.pair1.player1.name} / {match.pair1.player2.name}
+        </div>
+        <div className="text-base font-medium truncate">
+          {match.pair2.player1.name} / {match.pair2.player2.name}
+        </div>
+      </div>
     </div>
   );
 }
