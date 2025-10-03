@@ -77,7 +77,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
 
   const updateTournamentMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("PATCH", `/api/tournaments/${tournament.id}`, data);
+      const response = await apiRequest("PATCH", `/api/admin/tournaments/${tournament.id}`, data);
       return response.json();
     },
     onSuccess: () => {
