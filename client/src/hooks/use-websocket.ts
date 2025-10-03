@@ -49,6 +49,16 @@ export function useWebSocket(userId?: string) {
             case "court_updated":
               queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
               break;
+            case "scheduled_match_created":
+            case "scheduled_match_updated":
+            case "scheduled_match_deleted":
+            case "player_checked_in":
+            case "player_checked_out":
+            case "court_auto_assigned":
+            case "court_manually_assigned":
+              queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
+              break;
             default:
               console.log("WebSocket message:", message);
           }

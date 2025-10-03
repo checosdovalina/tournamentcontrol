@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { UserPlus, ClipboardCheck, Settings, Tv, Bell } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar } from "lucide-react";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
 import RecentResults from "@/components/recent-results";
 import TournamentStats from "@/components/tournament-stats";
+import ScheduledMatches from "@/components/scheduled-matches";
 import RegisterPlayerModal from "@/components/modals/register-player-modal";
 import RecordResultModal from "@/components/modals/record-result-modal";
 import ManageCourtsModal from "@/components/modals/manage-courts-modal";
@@ -105,83 +107,102 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Quick Actions Bar */}
-        <div className="mb-6 flex flex-wrap gap-3">
-          <Button 
-            onClick={() => setRegisterModalOpen(true)}
-            className="inline-flex items-center"
-            data-testid="button-register-pair"
-          >
-            <UserPlus className="w-4 h-4 mr-2" />
-            Registrar Pareja
-          </Button>
-          <Button 
-            onClick={() => setResultModalOpen(true)}
-            variant="secondary"
-            className="inline-flex items-center bg-accent text-accent-foreground hover:bg-accent/90"
-            data-testid="button-record-result"
-          >
-            <ClipboardCheck className="w-4 h-4 mr-2" />
-            Registrar Resultado
-          </Button>
-          {user?.user?.role === 'admin' && (
-            <Button 
-              onClick={() => setCourtsModalOpen(true)}
-              variant="secondary"
-              className="inline-flex items-center"
-              data-testid="button-manage-courts"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Gestionar Canchas
-            </Button>
-          )}
-          <Button 
-            onClick={openFullScreenDisplay}
-            variant="outline"
-            className="inline-flex items-center"
-            data-testid="button-fullscreen-display"
-          >
-            <Tv className="w-4 h-4 mr-2" />
-            Modo Pantalla Completa
-          </Button>
-          {user?.user?.role === 'admin' && (
-            <Button 
-              onClick={() => setConfigModalOpen(true)}
-              variant="outline"
-              className="inline-flex items-center"
-              data-testid="button-tournament-config"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Configuración
-            </Button>
-          )}
-        </div>
+        <Tabs defaultValue="control" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="control" data-testid="tab-control">
+              <ClipboardCheck className="w-4 h-4 mr-2" />
+              Control
+            </TabsTrigger>
+            <TabsTrigger value="schedule" data-testid="tab-schedule">
+              <Calendar className="w-4 h-4 mr-2" />
+              Programación
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Current Matches */}
-          <div className="lg:col-span-2">
-            <CurrentMatches tournamentId={tournament?.id} />
-          </div>
+          <TabsContent value="control" className="space-y-6">
+            {/* Quick Actions Bar */}
+            <div className="flex flex-wrap gap-3">
+              <Button 
+                onClick={() => setRegisterModalOpen(true)}
+                className="inline-flex items-center"
+                data-testid="button-register-pair"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Registrar Pareja
+              </Button>
+              <Button 
+                onClick={() => setResultModalOpen(true)}
+                variant="secondary"
+                className="inline-flex items-center bg-accent text-accent-foreground hover:bg-accent/90"
+                data-testid="button-record-result"
+              >
+                <ClipboardCheck className="w-4 h-4 mr-2" />
+                Registrar Resultado
+              </Button>
+              {user?.user?.role === 'admin' && (
+                <Button 
+                  onClick={() => setCourtsModalOpen(true)}
+                  variant="secondary"
+                  className="inline-flex items-center"
+                  data-testid="button-manage-courts"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Gestionar Canchas
+                </Button>
+              )}
+              <Button 
+                onClick={openFullScreenDisplay}
+                variant="outline"
+                className="inline-flex items-center"
+                data-testid="button-fullscreen-display"
+              >
+                <Tv className="w-4 h-4 mr-2" />
+                Modo Pantalla Completa
+              </Button>
+              {user?.user?.role === 'admin' && (
+                <Button 
+                  onClick={() => setConfigModalOpen(true)}
+                  variant="outline"
+                  className="inline-flex items-center"
+                  data-testid="button-tournament-config"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Configuración
+                </Button>
+              )}
+            </div>
 
-          {/* Court Status */}
-          <div className="lg:col-span-1">
-            <CourtStatus />
-          </div>
+            {/* Dashboard Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Current Matches */}
+              <div className="lg:col-span-2">
+                <CurrentMatches tournamentId={tournament?.id} />
+              </div>
 
-          {/* Waiting List */}
-          <div className="lg:col-span-2">
-            <WaitingList tournamentId={tournament?.id} />
-          </div>
+              {/* Court Status */}
+              <div className="lg:col-span-1">
+                <CourtStatus />
+              </div>
 
-          {/* Recent Results */}
-          <div className="lg:col-span-1">
-            <RecentResults tournamentId={tournament?.id} />
-          </div>
-        </div>
+              {/* Waiting List */}
+              <div className="lg:col-span-2">
+                <WaitingList tournamentId={tournament?.id} />
+              </div>
 
-        {/* Tournament Statistics */}
-        <TournamentStats tournamentId={tournament?.id} />
+              {/* Recent Results */}
+              <div className="lg:col-span-1">
+                <RecentResults tournamentId={tournament?.id} />
+              </div>
+            </div>
+
+            {/* Tournament Statistics */}
+            <TournamentStats tournamentId={tournament?.id} />
+          </TabsContent>
+
+          <TabsContent value="schedule">
+            <ScheduledMatches tournamentId={tournament?.id} userRole={user?.user?.role} />
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Modals */}
