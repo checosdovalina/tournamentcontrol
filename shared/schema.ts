@@ -116,6 +116,32 @@ export const sponsorBanners = pgTable("sponsor_banners", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const scheduledMatches = pgTable("scheduled_matches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tournamentId: varchar("tournament_id").notNull(),
+  day: timestamp("day").notNull(), // Date of the match (e.g., 2024-03-15 00:00:00)
+  plannedTime: text("planned_time"), // Optional time slot (e.g., "10:00", "14:30")
+  pair1Id: varchar("pair1_id").notNull(),
+  pair2Id: varchar("pair2_id").notNull(),
+  categoryId: varchar("category_id"),
+  status: text("status").default("scheduled"), // scheduled, ready, assigned, playing, completed, cancelled
+  courtId: varchar("court_id"), // Assigned court (nullable until assigned)
+  matchId: varchar("match_id"), // Link to active match when playing (nullable)
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const scheduledMatchPlayers = pgTable("scheduled_match_players", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  scheduledMatchId: varchar("scheduled_match_id").notNull(),
+  playerId: varchar("player_id").notNull(),
+  pairId: varchar("pair_id").notNull(), // Which pair this player belongs to in this match
+  isPresent: boolean("is_present").default(false),
+  checkInTime: timestamp("check_in_time"),
+  checkedInBy: varchar("checked_in_by"), // User ID who marked them present
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -178,6 +204,21 @@ export const insertSponsorBannerSchema = createInsertSchema(sponsorBanners).omit
   createdAt: true,
 });
 
+export const insertScheduledMatchSchema = createInsertSchema(scheduledMatches).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  day: z.union([z.string(), z.date()]).transform((val) => {
+    if (typeof val === 'string') return new Date(val);
+    return val;
+  }),
+});
+
+export const insertScheduledMatchPlayerSchema = createInsertSchema(scheduledMatchPlayers).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type Tournament = typeof tournaments.$inferSelect;
@@ -190,6 +231,8 @@ export type Result = typeof results.$inferSelect;
 export type TournamentUser = typeof tournamentUsers.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type SponsorBanner = typeof sponsorBanners.$inferSelect;
+export type ScheduledMatch = typeof scheduledMatches.$inferSelect;
+export type ScheduledMatchPlayer = typeof scheduledMatchPlayers.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertTournament = z.infer<typeof insertTournamentSchema>;
@@ -202,6 +245,8 @@ export type InsertResult = z.infer<typeof insertResultSchema>;
 export type InsertTournamentUser = z.infer<typeof insertTournamentUserSchema>;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertSponsorBanner = z.infer<typeof insertSponsorBannerSchema>;
+export type InsertScheduledMatch = z.infer<typeof insertScheduledMatchSchema>;
+export type InsertScheduledMatchPlayer = z.infer<typeof insertScheduledMatchPlayerSchema>;
 
 // Extended types for UI
 export type MatchWithDetails = Match & {
@@ -225,4 +270,14 @@ export type ResultWithDetails = Result & {
   match: MatchWithDetails;
   winner: PairWithPlayers;
   loser: PairWithPlayers;
+};
+
+export type ScheduledMatchWithDetails = ScheduledMatch & {
+  pair1: PairWithPlayers;
+  pair2: PairWithPlayers;
+  category?: Category;
+  court?: Court;
+  players: (ScheduledMatchPlayer & {
+    player: Player;
+  })[];
 };
