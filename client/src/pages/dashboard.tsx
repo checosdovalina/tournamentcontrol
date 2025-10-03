@@ -2,13 +2,14 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar } from "lucide-react";
+import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield } from "lucide-react";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
 import RecentResults from "@/components/recent-results";
 import TournamentStats from "@/components/tournament-stats";
 import ScheduledMatches from "@/components/scheduled-matches";
+import SuperAdminPanel from "@/components/super-admin-panel";
 import RegisterPlayerModal from "@/components/modals/register-player-modal";
 import RecordResultModal from "@/components/modals/record-result-modal";
 import ManageCourtsModal from "@/components/modals/manage-courts-modal";
@@ -107,8 +108,14 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Tabs defaultValue="control" className="w-full">
+        <Tabs defaultValue={user?.user?.role === 'superadmin' ? 'admin' : 'control'} className="w-full">
           <TabsList className="mb-6">
+            {user?.user?.role === 'superadmin' && (
+              <TabsTrigger value="admin" data-testid="tab-admin">
+                <Shield className="w-4 h-4 mr-2" />
+                Administración
+              </TabsTrigger>
+            )}
             <TabsTrigger value="control" data-testid="tab-control">
               <ClipboardCheck className="w-4 h-4 mr-2" />
               Control
@@ -118,6 +125,12 @@ export default function Dashboard() {
               Programación
             </TabsTrigger>
           </TabsList>
+
+          {user?.user?.role === 'superadmin' && (
+            <TabsContent value="admin">
+              <SuperAdminPanel />
+            </TabsContent>
+          )}
 
           <TabsContent value="control" className="space-y-6">
             {/* Quick Actions Bar */}
