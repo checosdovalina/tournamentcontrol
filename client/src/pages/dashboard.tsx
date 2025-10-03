@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Volleyball, UserPlus, ClipboardCheck, Settings, Tv, Bell } from "lucide-react";
+import { UserPlus, ClipboardCheck, Settings, Tv, Bell } from "lucide-react";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
@@ -12,6 +12,7 @@ import RecordResultModal from "@/components/modals/record-result-modal";
 import ManageCourtsModal from "@/components/modals/manage-courts-modal";
 import TournamentConfigModal from "@/components/modals/tournament-config-modal";
 import { useLocation } from "wouter";
+import courtflowLogo from "@assets/courtflow-logo.png";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -49,9 +50,9 @@ export default function Dashboard() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
-                <Volleyball className="text-primary text-2xl" />
+                <img src={courtflowLogo} alt="CourtFlow" className="h-10 w-auto" />
                 <div>
-                  <h1 className="text-lg font-bold text-foreground">Control de Torneos</h1>
+                  <h1 className="text-lg font-bold text-foreground">CourtFlow</h1>
                   <p className="text-xs text-muted-foreground">
                     {tournament?.name || "Cargando..."}
                   </p>

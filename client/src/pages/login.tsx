@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
-import { Volleyball } from "lucide-react";
+import courtflowLogo from "@assets/courtflow-logo.png";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -47,10 +47,10 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <Volleyball className="h-12 w-12 text-primary" />
+            <img src={courtflowLogo} alt="CourtFlow" className="h-24 w-auto" />
           </div>
-          <CardTitle className="text-2xl">Sistema de Control de Torneos</CardTitle>
-          <p className="text-muted-foreground">Iniciar sesión para continuar</p>
+          <CardTitle className="text-2xl">CourtFlow</CardTitle>
+          <p className="text-muted-foreground">Sistema de Control de Torneos de Pádel</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">

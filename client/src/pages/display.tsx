@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { X, Volleyball } from "lucide-react";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
+import courtflowLogo from "@assets/courtflow-logo.png";
 
 export default function Display() {
   const [, setLocation] = useLocation();
@@ -79,12 +80,12 @@ export default function Display() {
         {/* Header */}
         <div className="px-8 py-6 flex items-center justify-between border-b border-white/20">
           <div className="flex items-center space-x-4">
-            <Volleyball className="text-white text-4xl" />
+            <img src={courtflowLogo} alt="CourtFlow" className="h-16 w-auto" />
             <div className="text-white">
-              <h1 className="text-3xl font-bold" data-testid="text-tournament-name">
+              <h1 className="text-3xl font-bold">CourtFlow</h1>
+              <p className="text-xl" data-testid="text-tournament-name">
                 {tournament?.name || 'Torneo Pádel'}
-              </h1>
-              <p className="text-white/80">Club Deportivo Central</p>
+              </p>
             </div>
           </div>
           <div className="text-right text-white">
