@@ -1,0 +1,72 @@
+📌 Requerimientos Funcionales – Sistema de Control de Torneos de Pádel
+1. Gestión de clubes y canchas
+
+RF1.1 El sistema debe permitir registrar clubes participantes.
+
+RF1.2 El sistema debe permitir registrar las canchas disponibles de cada club.
+
+RF1.3 El sistema debe identificar una cancha como disponible/libre cuando no se esté jugando un partido en ella.
+
+2. Registro de jugadores y parejas
+
+RF2.1 El sistema debe permitir registrar a los jugadores o parejas en la mesa de control al llegar al club.
+
+RF2.2 El sistema debe generar una lista de espera de parejas registradas para asignación de partidos.
+
+RF2.3 El sistema debe poder marcar la asistencia de jugadores/parejas al llegar.
+
+3. Asignación de canchas y partidos
+
+RF3.1 El sistema debe asignar automáticamente una cancha libre a la siguiente pareja en la lista de espera.
+
+RF3.2 El sistema debe permitir que el administrador o escribano reasigne manualmente una cancha o partido en caso necesario.
+
+RF3.3 El sistema debe registrar el inicio del partido en la cancha asignada.
+
+4. Registro de resultados
+
+RF4.1 El sistema debe permitir que el escribano registre el marcador una vez que finalice un partido.
+
+RF4.2 El sistema debe actualizar el estado de la cancha a disponible al finalizar un partido.
+
+RF4.3 El sistema debe registrar los resultados en la base de datos y asociarlos a la pareja/jugadores.
+
+5. Flujo de control en mesa
+
+RF5.1 El sistema debe mostrar en tiempo real:
+
+Partidos en curso (canchas ocupadas).
+
+Parejas que ya jugaron (histórico).
+
+Próximos partidos a jugar (lista de espera).
+
+RF5.2 El sistema debe actualizar automáticamente la lista de espera al asignar una cancha.
+
+RF5.3 El sistema debe notificar visualmente cuando un partido esté listo para iniciar.
+
+6. Pantallas de visualización
+
+RF6.1 El sistema debe contar con un modo de pantalla completa (full screen) para proyectar en TV/monitores.
+
+RF6.2 La pantalla debe mostrar:
+
+Partidos en curso.
+
+Próximos partidos.
+
+Resultados de partidos finalizados.
+
+RF6.3 El sistema debe permitir mostrar banners de patrocinadores, el logo del club y el logo del sistema en las pantallas.
+
+7. Administración del sistema
+
+RF7.1 El sistema debe permitir registrar y gestionar usuarios con diferentes roles:
+
+Administrador del torneo.
+
+Escribano/mesa de control.
+
+Visualización pública (solo lectura).
+
+RF7.2 El sistema debe permitir configurar parámetros generales del torneo (nombre, fechas, clubs, horarios, logos).
