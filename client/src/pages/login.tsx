@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import courtflowLogo from "@assets/courtflow-logo.png";
 
 export default function Login() {
@@ -13,6 +14,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,12 +27,18 @@ export default function Login() {
       });
       
       const data = await response.json();
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       
       toast({
         title: "Inicio de sesión exitoso",
         description: `Bienvenido, ${data.user.name}`,
       });
+      
+      // Invalidate and refetch user data
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/me"] });
+      
+      // Redirect to dashboard
+      setLocation("/");
     } catch (error: any) {
       toast({
         title: "Error de inicio de sesión",
