@@ -99,6 +99,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clubs routes
+  app.get("/api/clubs", async (req, res) => {
+    try {
+      const clubs = await storage.getClubs();
+      res.json(clubs);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get clubs", error: error.message });
+    }
+  });
+
   // Courts routes
   app.get("/api/courts", async (req, res) => {
     try {
