@@ -37,7 +37,7 @@ Preferred communication style: Simple, everyday language.
 
 **Runtime**: Node.js with Express.js framework using ES modules.
 
-**Session Management**: Express-session middleware with configurable session storage. Sessions store userId and userRole for authentication/authorization.
+**Session Management**: Express-session middleware with PostgreSQL session store (connect-pg-simple) for persistent session storage. Sessions store userId and userRole for authentication/authorization. Cookie configuration includes sameSite: 'lax' and secure flag in production.
 
 **WebSocket Server**: Standalone WebSocket server (using 'ws' library) running alongside Express for real-time bidirectional communication. Implements heartbeat mechanism for connection health monitoring.
 
