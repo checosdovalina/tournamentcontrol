@@ -135,6 +135,14 @@
   background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
 }
 
+.tv-display-logo {
+  filter: brightness(1.5) contrast(1.2);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
 .transition-all {
   transition: all 0.3s ease;
 }
