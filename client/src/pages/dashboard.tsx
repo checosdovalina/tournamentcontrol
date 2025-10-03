@@ -1,0 +1,208 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Volleyball, UserPlus, ClipboardCheck, Settings, Tv, Bell } from "lucide-react";
+import CurrentMatches from "@/components/current-matches";
+import CourtStatus from "@/components/court-status";
+import WaitingList from "@/components/waiting-list";
+import RecentResults from "@/components/recent-results";
+import TournamentStats from "@/components/tournament-stats";
+import RegisterPlayerModal from "@/components/modals/register-player-modal";
+import RecordResultModal from "@/components/modals/record-result-modal";
+import ManageCourtsModal from "@/components/modals/manage-courts-modal";
+import TournamentConfigModal from "@/components/modals/tournament-config-modal";
+import { useLocation } from "wouter";
+
+export default function Dashboard() {
+  const [, setLocation] = useLocation();
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [resultModalOpen, setResultModalOpen] = useState(false);
+  const [courtsModalOpen, setCourtsModalOpen] = useState(false);
+  const [configModalOpen, setConfigModalOpen] = useState(false);
+
+  const { data: user } = useQuery<{ user: { id: string; username: string; name: string; role: string } }>({
+    queryKey: ["/api/auth/me"],
+  });
+
+  const { data: tournament } = useQuery<{ id: string; name: string; clubId: string; startDate: Date; endDate: Date; isActive: boolean | null; config: any }>({
+    queryKey: ["/api/tournament"],
+  });
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      window.location.reload();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const openFullScreenDisplay = () => {
+    setLocation("/display");
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Top Navigation */}
+      <nav className="bg-card border-b border-border sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <Volleyball className="text-primary text-2xl" />
+                <div>
+                  <h1 className="text-lg font-bold text-foreground">Control de Torneos</h1>
+                  <p className="text-xs text-muted-foreground">
+                    {tournament?.name || "Cargando..."}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              {/* Real-time connection status indicator */}
+              <div className="flex items-center space-x-2 text-sm">
+                <span className="status-indicator status-available pulse-dot"></span>
+                <span className="text-muted-foreground hidden sm:inline">Conectado</span>
+              </div>
+              
+              {/* User Menu */}
+              <div className="flex items-center space-x-3">
+                <Button variant="ghost" size="sm" data-testid="button-notifications">
+                  <Bell className="h-4 w-4" />
+                </Button>
+                
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold">
+                    <span data-testid="text-user-initials">
+                      {user?.user?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
+                    </span>
+                  </div>
+                  <div className="hidden md:block">
+                    <p className="text-sm font-medium" data-testid="text-user-name">
+                      {user?.user?.name || 'Usuario'}
+                    </p>
+                    <p className="text-xs text-muted-foreground" data-testid="text-user-role">
+                      {user?.user?.role || 'Usuario'}
+                    </p>
+                  </div>
+                </div>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleLogout}
+                  data-testid="button-logout"
+                >
+                  Salir
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Quick Actions Bar */}
+        <div className="mb-6 flex flex-wrap gap-3">
+          <Button 
+            onClick={() => setRegisterModalOpen(true)}
+            className="inline-flex items-center"
+            data-testid="button-register-pair"
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Registrar Pareja
+          </Button>
+          <Button 
+            onClick={() => setResultModalOpen(true)}
+            variant="secondary"
+            className="inline-flex items-center bg-accent text-accent-foreground hover:bg-accent/90"
+            data-testid="button-record-result"
+          >
+            <ClipboardCheck className="w-4 h-4 mr-2" />
+            Registrar Resultado
+          </Button>
+          <Button 
+            onClick={() => setCourtsModalOpen(true)}
+            variant="secondary"
+            className="inline-flex items-center"
+            data-testid="button-manage-courts"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Gestionar Canchas
+          </Button>
+          <Button 
+            onClick={openFullScreenDisplay}
+            variant="outline"
+            className="inline-flex items-center"
+            data-testid="button-fullscreen-display"
+          >
+            <Tv className="w-4 h-4 mr-2" />
+            Modo Pantalla Completa
+          </Button>
+          {user?.user?.role === 'admin' && (
+            <Button 
+              onClick={() => setConfigModalOpen(true)}
+              variant="outline"
+              className="inline-flex items-center"
+              data-testid="button-tournament-config"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Configuración
+            </Button>
+          )}
+        </div>
+
+        {/* Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Current Matches */}
+          <div className="lg:col-span-2">
+            <CurrentMatches tournamentId={tournament?.id} />
+          </div>
+
+          {/* Court Status */}
+          <div className="lg:col-span-1">
+            <CourtStatus />
+          </div>
+
+          {/* Waiting List */}
+          <div className="lg:col-span-2">
+            <WaitingList tournamentId={tournament?.id} />
+          </div>
+
+          {/* Recent Results */}
+          <div className="lg:col-span-1">
+            <RecentResults tournamentId={tournament?.id} />
+          </div>
+        </div>
+
+        {/* Tournament Statistics */}
+        <TournamentStats tournamentId={tournament?.id} />
+      </main>
+
+      {/* Modals */}
+      <RegisterPlayerModal 
+        open={registerModalOpen}
+        onOpenChange={setRegisterModalOpen}
+        tournamentId={tournament?.id}
+      />
+      <RecordResultModal 
+        open={resultModalOpen}
+        onOpenChange={setResultModalOpen}
+        tournamentId={tournament?.id}
+      />
+      <ManageCourtsModal 
+        open={courtsModalOpen}
+        onOpenChange={setCourtsModalOpen}
+      />
+      {user?.user?.role === 'admin' && (
+        <TournamentConfigModal 
+          open={configModalOpen}
+          onOpenChange={setConfigModalOpen}
+          tournament={tournament}
+        />
+      )}
+    </div>
+  );
+}
