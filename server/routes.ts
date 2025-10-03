@@ -581,10 +581,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/tournaments/:id", requireSuperadmin, async (req, res) => {
+  app.patch("/api/admin/tournaments/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
+      
+      // Check authorization - superadmin or tournament admin
+      let isAuthorized = false;
+      
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          id
+        );
+        
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+      
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Superadmin or tournament admin access required" });
+      }
+      
       const tournament = await storage.updateTournament(id, updates);
       if (!tournament) {
         return res.status(404).json({ message: "Tournament not found" });
