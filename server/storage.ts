@@ -31,6 +31,7 @@ import {
   type ScheduledMatchWithDetails
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { DatabaseStorage } from "./db-storage";
 
 export interface IStorage {
   // Users
@@ -987,4 +988,8 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Use DatabaseStorage for PostgreSQL persistence
+export const storage = new DatabaseStorage();
+
+// MemStorage is still available for development/testing if needed
+// export const storage = new MemStorage();
