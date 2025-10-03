@@ -7,6 +7,10 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// Trust proxy - Required for Replit deployment to work with secure cookies
+// Replit terminates TLS at the edge and forwards HTTP traffic
+app.set('trust proxy', 1);
+
 declare module 'http' {
   interface IncomingMessage {
     rawBody: unknown
