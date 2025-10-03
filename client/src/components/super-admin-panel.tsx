@@ -3,20 +3,37 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Building, Users, UserCheck, Trash2, MapPin } from "lucide-react";
+import { Plus, Building, Users, UserCheck, Trash2, MapPin, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import CreateTournamentModal from "@/components/modals/create-tournament-modal";
 import CreateUserModal from "@/components/modals/create-user-modal";
 import CreateClubModal from "@/components/modals/create-club-modal";
 import AssignUserModal from "@/components/modals/assign-user-modal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function SuperAdminPanel() {
   const [createTournamentOpen, setCreateTournamentOpen] = useState(false);
   const [createUserOpen, setCreateUserOpen] = useState(false);
   const [createClubOpen, setCreateClubOpen] = useState(false);
   const [assignUserOpen, setAssignUserOpen] = useState(false);
+  const [editClubOpen, setEditClubOpen] = useState(false);
+  const [editTournamentOpen, setEditTournamentOpen] = useState(false);
+  const [editUserOpen, setEditUserOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState<string | null>(null);
+  const [selectedClub, setSelectedClub] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [itemToDelete, setItemToDelete] = useState<{type: string; id: string; name: string} | null>(null);
   const { toast } = useToast();
 
   const { data: tournaments, isLoading: loadingTournaments } = useQuery<any[]>({
@@ -31,35 +48,60 @@ export default function SuperAdminPanel() {
     queryKey: ["/api/clubs"],
   });
 
-  const deleteTournamentMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return apiRequest(`/api/admin/tournaments/${id}`, "DELETE", {});
+  const deleteMutation = useMutation({
+    mutationFn: async ({ type, id }: { type: string; id: string }) => {
+      const endpoints = {
+        club: `/api/clubs/${id}`,
+        tournament: `/api/admin/tournaments/${id}`,
+        user: `/api/admin/users/${id}`,
+      };
+      return apiRequest(endpoints[type as keyof typeof endpoints], "DELETE", {});
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/tournaments"] });
-      toast({ title: "Torneo eliminado", description: "El torneo se eliminó correctamente" });
+    onSuccess: (_, variables) => {
+      const queryKeys = {
+        club: ["/api/clubs"],
+        tournament: ["/api/admin/tournaments"],
+        user: ["/api/admin/users"],
+      };
+      queryClient.invalidateQueries({ queryKey: queryKeys[variables.type as keyof typeof queryKeys] });
+      toast({ title: "Eliminado", description: `${variables.type === 'club' ? 'Club' : variables.type === 'tournament' ? 'Torneo' : 'Usuario'} eliminado correctamente` });
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
     },
     onError: () => {
-      toast({ title: "Error", description: "No se pudo eliminar el torneo", variant: "destructive" });
-    },
-  });
-
-  const deleteUserMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return apiRequest(`/api/admin/users/${id}`, "DELETE", {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
-      toast({ title: "Usuario eliminado", description: "El usuario se eliminó correctamente" });
-    },
-    onError: () => {
-      toast({ title: "Error", description: "No se pudo eliminar el usuario", variant: "destructive" });
+      toast({ title: "Error", description: "No se pudo eliminar", variant: "destructive" });
     },
   });
 
   const handleAssignUser = (tournamentId: string) => {
     setSelectedTournament(tournamentId);
     setAssignUserOpen(true);
+  };
+
+  const handleEditClub = (club: any) => {
+    setSelectedClub(club);
+    setEditClubOpen(true);
+  };
+
+  const handleEditTournament = (tournament: any) => {
+    setSelectedClub(tournament); // Reusing selectedClub for tournament
+    setEditTournamentOpen(true);
+  };
+
+  const handleEditUser = (user: any) => {
+    setSelectedUser(user);
+    setEditUserOpen(true);
+  };
+
+  const handleDelete = (type: string, id: string, name: string) => {
+    setItemToDelete({ type, id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      deleteMutation.mutate({ type: itemToDelete.type, id: itemToDelete.id });
+    }
   };
 
   if (loadingTournaments || loadingUsers || loadingClubs) {
@@ -113,6 +155,24 @@ export default function SuperAdminPanel() {
                     {club.address && (
                       <p className="text-sm text-muted-foreground">{club.address}</p>
                     )}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditClub(club)}
+                      data-testid={`button-edit-club-${club.id}`}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete('club', club.id, club.name)}
+                      data-testid={`button-delete-club-${club.id}`}
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -174,6 +234,22 @@ export default function SuperAdminPanel() {
                       <UserCheck className="w-4 h-4 mr-2" />
                       Asignar Usuarios
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditTournament(tournament)}
+                      data-testid={`button-edit-tournament-${tournament.id}`}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete('tournament', tournament.id, tournament.name)}
+                      data-testid={`button-delete-tournament-${tournament.id}`}
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -222,6 +298,22 @@ export default function SuperAdminPanel() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Badge variant="outline">{user.role}</Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditUser(user)}
+                      data-testid={`button-edit-user-${user.id}`}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete('user', user.id, user.name)}
+                      data-testid={`button-delete-user-${user.id}`}
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -235,19 +327,56 @@ export default function SuperAdminPanel() {
         open={createClubOpen}
         onOpenChange={setCreateClubOpen}
       />
+      <CreateClubModal
+        open={editClubOpen}
+        onOpenChange={setEditClubOpen}
+        club={selectedClub}
+      />
       <CreateTournamentModal
         open={createTournamentOpen}
         onOpenChange={setCreateTournamentOpen}
       />
+      <CreateTournamentModal
+        open={editTournamentOpen}
+        onOpenChange={setEditTournamentOpen}
+        tournament={selectedClub}
+      />
       <CreateUserModal
         open={createUserOpen}
         onOpenChange={setCreateUserOpen}
+      />
+      <CreateUserModal
+        open={editUserOpen}
+        onOpenChange={setEditUserOpen}
+        user={selectedUser}
       />
       <AssignUserModal
         open={assignUserOpen}
         onOpenChange={setAssignUserOpen}
         tournamentId={selectedTournament}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente{" "}
+              <span className="font-semibold">{itemToDelete?.name}</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

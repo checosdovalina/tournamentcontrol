@@ -14,49 +14,57 @@ import { z } from "zod";
 interface CreateClubModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  club?: any;
 }
 
 type FormData = z.infer<typeof insertClubSchema>;
 
-export default function CreateClubModal({ open, onOpenChange }: CreateClubModalProps) {
+export default function CreateClubModal({ open, onOpenChange, club }: CreateClubModalProps) {
   const { toast } = useToast();
+  const isEditing = !!club;
 
   const form = useForm<FormData>({
     resolver: zodResolver(insertClubSchema),
     defaultValues: {
-      name: "",
-      address: "",
+      name: club?.name || "",
+      address: club?.address || "",
     },
   });
 
-  const createMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      if (isEditing) {
+        return apiRequest(`/api/clubs/${club.id}`, "PATCH", data);
+      }
       return apiRequest("/api/clubs", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clubs"] });
-      toast({ title: "Club creado", description: "El club se creó exitosamente" });
+      toast({ 
+        title: isEditing ? "Club actualizado" : "Club creado", 
+        description: isEditing ? "El club se actualizó exitosamente" : "El club se creó exitosamente"
+      });
       onOpenChange(false);
       form.reset();
     },
     onError: (error: any) => {
       toast({ 
         title: "Error", 
-        description: error.message || "No se pudo crear el club", 
+        description: error.message || `No se pudo ${isEditing ? 'actualizar' : 'crear'} el club`, 
         variant: "destructive" 
       });
     },
   });
 
   const onSubmit = (data: FormData) => {
-    createMutation.mutate(data);
+    saveMutation.mutate(data);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" data-testid="modal-create-club">
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Club</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Club' : 'Crear Nuevo Club'}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -105,10 +113,10 @@ export default function CreateClubModal({ open, onOpenChange }: CreateClubModalP
               </Button>
               <Button
                 type="submit"
-                disabled={createMutation.isPending}
+                disabled={saveMutation.isPending}
                 data-testid="button-submit"
               >
-                {createMutation.isPending ? "Creando..." : "Crear Club"}
+                {saveMutation.isPending ? "Guardando..." : (isEditing ? "Actualizar" : "Crear Club")}
               </Button>
             </div>
           </form>

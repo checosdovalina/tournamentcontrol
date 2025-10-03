@@ -14,55 +14,68 @@ import { z } from "zod";
 interface CreateUserModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  user?: any;
 }
 
-const formSchema = insertUserSchema.extend({
-  password: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
-});
+type FormData = z.infer<typeof insertUserSchema> & { password?: string };
 
-type FormData = z.infer<typeof formSchema>;
-
-export default function CreateUserModal({ open, onOpenChange }: CreateUserModalProps) {
+export default function CreateUserModal({ open, onOpenChange, user }: CreateUserModalProps) {
   const { toast } = useToast();
+  const isEditing = !!user;
+
+  const formSchema = isEditing
+    ? insertUserSchema.extend({
+        password: z.string().min(6, "Contraseña debe tener al menos 6 caracteres").optional(),
+      })
+    : insertUserSchema.extend({
+        password: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
+      });
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      username: user?.username || "",
       password: "",
-      name: "",
-      role: "scorekeeper",
+      name: user?.name || "",
+      role: user?.role || "scorekeeper",
     },
   });
 
-  const createMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      const payload = data.password ? data : { ...data, password: undefined };
+      if (isEditing) {
+        return apiRequest(`/api/admin/users/${user.id}`, "PATCH", payload);
+      }
       return apiRequest("/api/admin/users", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
-      toast({ title: "Usuario creado", description: "El usuario se creó exitosamente" });
+      toast({ 
+        title: isEditing ? "Usuario actualizado" : "Usuario creado", 
+        description: isEditing ? "El usuario se actualizó exitosamente" : "El usuario se creó exitosamente"
+      });
       onOpenChange(false);
       form.reset();
     },
     onError: (error: any) => {
       toast({ 
         title: "Error", 
-        description: error.message || "No se pudo crear el usuario", 
+        description: error.message || `No se pudo ${isEditing ? 'actualizar' : 'crear'} el usuario`, 
         variant: "destructive" 
       });
     },
   });
 
   const onSubmit = (data: FormData) => {
-    createMutation.mutate(data);
+    saveMutation.mutate(data);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" data-testid="modal-create-user">
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -100,7 +113,7 @@ export default function CreateUserModal({ open, onOpenChange }: CreateUserModalP
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contraseña</FormLabel>
+                  <FormLabel>Contraseña {isEditing && "(dejar en blanco para no cambiar)"}</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} placeholder="••••••" data-testid="input-password" />
                   </FormControl>
@@ -143,10 +156,10 @@ export default function CreateUserModal({ open, onOpenChange }: CreateUserModalP
               </Button>
               <Button
                 type="submit"
-                disabled={createMutation.isPending}
+                disabled={saveMutation.isPending}
                 data-testid="button-submit"
               >
-                {createMutation.isPending ? "Creando..." : "Crear Usuario"}
+                {saveMutation.isPending ? "Guardando..." : (isEditing ? "Actualizar" : "Crear Usuario")}
               </Button>
             </div>
           </form>

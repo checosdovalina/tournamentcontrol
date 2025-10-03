@@ -14,6 +14,7 @@ import { z } from "zod";
 interface CreateTournamentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  tournament?: any;
 }
 
 const formSchema = insertTournamentSchema.extend({
@@ -23,17 +24,18 @@ const formSchema = insertTournamentSchema.extend({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function CreateTournamentModal({ open, onOpenChange }: CreateTournamentModalProps) {
+export default function CreateTournamentModal({ open, onOpenChange, tournament }: CreateTournamentModalProps) {
   const { toast } = useToast();
+  const isEditing = !!tournament;
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      clubId: "",
-      startDate: "",
-      endDate: "",
-      isActive: true,
+      name: tournament?.name || "",
+      clubId: tournament?.clubId || "",
+      startDate: tournament?.startDate ? new Date(tournament.startDate).toISOString().split('T')[0] : "",
+      endDate: tournament?.endDate ? new Date(tournament.endDate).toISOString().split('T')[0] : "",
+      isActive: tournament?.isActive ?? true,
     },
   });
 
@@ -41,39 +43,45 @@ export default function CreateTournamentModal({ open, onOpenChange }: CreateTour
     queryKey: ["/api/clubs"],
   });
 
-  const createMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const payload = {
         ...data,
         startDate: new Date(data.startDate).toISOString(),
         endDate: new Date(data.endDate).toISOString(),
       };
+      if (isEditing) {
+        return apiRequest(`/api/admin/tournaments/${tournament.id}`, "PATCH", payload);
+      }
       return apiRequest("/api/admin/tournaments", "POST", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/tournaments"] });
-      toast({ title: "Torneo creado", description: "El torneo se creó exitosamente" });
+      toast({ 
+        title: isEditing ? "Torneo actualizado" : "Torneo creado", 
+        description: isEditing ? "El torneo se actualizó exitosamente" : "El torneo se creó exitosamente"
+      });
       onOpenChange(false);
       form.reset();
     },
     onError: (error: any) => {
       toast({ 
         title: "Error", 
-        description: error.message || "No se pudo crear el torneo", 
+        description: error.message || `No se pudo ${isEditing ? 'actualizar' : 'crear'} el torneo`, 
         variant: "destructive" 
       });
     },
   });
 
   const onSubmit = (data: FormData) => {
-    createMutation.mutate(data);
+    saveMutation.mutate(data);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" data-testid="modal-create-tournament">
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Torneo</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -158,10 +166,10 @@ export default function CreateTournamentModal({ open, onOpenChange }: CreateTour
               </Button>
               <Button
                 type="submit"
-                disabled={createMutation.isPending}
+                disabled={saveMutation.isPending}
                 data-testid="button-submit"
               >
-                {createMutation.isPending ? "Creando..." : "Crear Torneo"}
+                {saveMutation.isPending ? "Guardando..." : (isEditing ? "Actualizar" : "Crear Torneo")}
               </Button>
             </div>
           </form>
