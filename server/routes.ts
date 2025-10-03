@@ -8,6 +8,7 @@ import {
   insertMatchSchema, 
   insertResultSchema, 
   insertCourtSchema,
+  insertClubSchema,
   insertUserSchema,
   insertTournamentSchema,
   insertTournamentUserSchema,
@@ -203,6 +204,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(clubs);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to get clubs", error: error.message });
+    }
+  });
+
+  app.post("/api/clubs", requireSuperadmin, async (req, res) => {
+    try {
+      const insertClub = insertClubSchema.parse(req.body);
+      const club = await storage.createClub(insertClub);
+      res.status(201).json(club);
+    } catch (error: any) {
+      res.status(400).json({ message: "Invalid club data", error: error.message });
+    }
+  });
+
+  app.patch("/api/clubs/:id", requireSuperadmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const club = await storage.updateClub(id, updates);
+      if (!club) {
+        return res.status(404).json({ message: "Club not found" });
+      }
+      res.json(club);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to update club", error: error.message });
+    }
+  });
+
+  app.delete("/api/clubs/:id", requireSuperadmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteClub(id);
+      if (!success) {
+        return res.status(404).json({ message: "Club not found" });
+      }
+      res.json({ message: "Club deleted" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete club", error: error.message });
     }
   });
 

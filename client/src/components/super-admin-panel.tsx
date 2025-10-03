@@ -3,16 +3,18 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Building, Users, UserCheck, Trash2 } from "lucide-react";
+import { Plus, Building, Users, UserCheck, Trash2, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import CreateTournamentModal from "@/components/modals/create-tournament-modal";
 import CreateUserModal from "@/components/modals/create-user-modal";
+import CreateClubModal from "@/components/modals/create-club-modal";
 import AssignUserModal from "@/components/modals/assign-user-modal";
 
 export default function SuperAdminPanel() {
   const [createTournamentOpen, setCreateTournamentOpen] = useState(false);
   const [createUserOpen, setCreateUserOpen] = useState(false);
+  const [createClubOpen, setCreateClubOpen] = useState(false);
   const [assignUserOpen, setAssignUserOpen] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState<string | null>(null);
   const { toast } = useToast();
@@ -23,6 +25,10 @@ export default function SuperAdminPanel() {
 
   const { data: users, isLoading: loadingUsers } = useQuery<any[]>({
     queryKey: ["/api/admin/users"],
+  });
+
+  const { data: clubs, isLoading: loadingClubs } = useQuery<any[]>({
+    queryKey: ["/api/clubs"],
   });
 
   const deleteTournamentMutation = useMutation({
@@ -56,9 +62,10 @@ export default function SuperAdminPanel() {
     setAssignUserOpen(true);
   };
 
-  if (loadingTournaments || loadingUsers) {
+  if (loadingTournaments || loadingUsers || loadingClubs) {
     return (
       <div className="space-y-6">
+        <div className="h-64 bg-muted animate-pulse rounded" />
         <div className="h-64 bg-muted animate-pulse rounded" />
         <div className="h-64 bg-muted animate-pulse rounded" />
       </div>
@@ -67,6 +74,53 @@ export default function SuperAdminPanel() {
 
   return (
     <div className="space-y-6">
+      {/* Clubs Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="flex items-center">
+                <MapPin className="w-5 h-5 mr-2" />
+                Clubes
+              </CardTitle>
+              <CardDescription>Gestiona los clubes del sistema</CardDescription>
+            </div>
+            <Button onClick={() => setCreateClubOpen(true)} data-testid="button-create-club">
+              <Plus className="w-4 h-4 mr-2" />
+              Crear Club
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!clubs || clubs.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <MapPin className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No hay clubes creados</p>
+              <p className="text-sm mt-2">Haz clic en "Crear Club" para agregar uno</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {clubs.map((club) => (
+                <div
+                  key={club.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                  data-testid={`club-item-${club.id}`}
+                >
+                  <div className="flex-1">
+                    <h4 className="font-semibold" data-testid={`text-club-name-${club.id}`}>
+                      {club.name}
+                    </h4>
+                    {club.address && (
+                      <p className="text-sm text-muted-foreground">{club.address}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Tournaments Section */}
       <Card>
         <CardHeader>
@@ -177,6 +231,10 @@ export default function SuperAdminPanel() {
       </Card>
 
       {/* Modals */}
+      <CreateClubModal
+        open={createClubOpen}
+        onOpenChange={setCreateClubOpen}
+      />
       <CreateTournamentModal
         open={createTournamentOpen}
         onOpenChange={setCreateTournamentOpen}

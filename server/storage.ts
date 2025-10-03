@@ -74,6 +74,8 @@ export interface IStorage {
   getClub(id: string): Promise<Club | undefined>;
   getClubs(): Promise<Club[]>;
   createClub(club: InsertClub): Promise<Club>;
+  updateClub(id: string, updates: Partial<InsertClub>): Promise<Club | undefined>;
+  deleteClub(id: string): Promise<boolean>;
   
   // Courts
   getCourt(id: string): Promise<Court | undefined>;
@@ -314,6 +316,19 @@ export class MemStorage implements IStorage {
     };
     this.clubs.set(id, club);
     return club;
+  }
+
+  async updateClub(id: string, updates: Partial<InsertClub>): Promise<Club | undefined> {
+    const club = this.clubs.get(id);
+    if (!club) return undefined;
+    
+    const updated = { ...club, ...updates };
+    this.clubs.set(id, updated);
+    return updated;
+  }
+
+  async deleteClub(id: string): Promise<boolean> {
+    return this.clubs.delete(id);
   }
 
   // Courts
