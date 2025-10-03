@@ -27,7 +27,7 @@ interface Category {
 
 interface SponsorBanner {
   id: string;
-  name: string;
+  sponsorName: string;
   imageUrl: string;
   link: string | null;
   displayOrder: number;
@@ -163,7 +163,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   });
 
   const createBannerMutation = useMutation({
-    mutationFn: async (data: { name: string; imageUrl: string; link: string | null; tournamentId: string; displayOrder: number }) => {
+    mutationFn: async (data: { sponsorName: string; imageUrl: string; link: string | null; tournamentId: string; displayOrder: number }) => {
       const response = await apiRequest("POST", "/api/banners", data);
       return response.json();
     },
@@ -187,7 +187,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   });
 
   const updateBannerMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name?: string; imageUrl?: string; link?: string | null } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: { sponsorName?: string; imageUrl?: string; link?: string | null } }) => {
       const response = await apiRequest("PATCH", `/api/banners/${id}`, data);
       return response.json();
     },
@@ -309,7 +309,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
     const maxOrder = banners.length > 0 ? Math.max(...banners.map(b => b.displayOrder)) : 0;
     
     createBannerMutation.mutate({
-      name: newBannerName,
+      sponsorName: newBannerName,
       imageUrl: newBannerUrl,
       link: newBannerLink || null,
       tournamentId: tournament.id,
@@ -319,7 +319,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
 
   const handleStartEditBanner = (banner: SponsorBanner) => {
     setEditingBanner(banner.id);
-    setEditBannerName(banner.name);
+    setEditBannerName(banner.sponsorName);
     setEditBannerUrl(banner.imageUrl);
     setEditBannerLink(banner.link || "");
   };
@@ -330,7 +330,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
     updateBannerMutation.mutate({
       id: editingBanner,
       data: {
-        name: editBannerName,
+        sponsorName: editBannerName,
         imageUrl: editBannerUrl,
         link: editBannerLink || null,
       },
@@ -768,7 +768,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                             <div className="w-20 h-20 border border-border rounded flex items-center justify-center bg-muted overflow-hidden">
                               <img 
                                 src={banner.imageUrl} 
-                                alt={banner.name}
+                                alt={banner.sponsorName}
                                 className="max-w-full max-h-full object-contain"
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).style.display = 'none';
@@ -777,7 +777,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                             </div>
                             <div>
                               <p className="font-medium" data-testid={`banner-name-${banner.id}`}>
-                                {banner.name}
+                                {banner.sponsorName}
                               </p>
                               {banner.link && (
                                 <a 

@@ -110,6 +110,7 @@ export const sponsorBanners = pgTable("sponsor_banners", {
   tournamentId: varchar("tournament_id").notNull(),
   sponsorName: text("sponsor_name").notNull(),
   imageUrl: text("image_url").notNull(),
+  link: text("link"), // Optional sponsor website link
   displayOrder: integer("display_order").default(0),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
@@ -144,6 +145,12 @@ export const insertPlayerSchema = createInsertSchema(players).omit({
 export const insertPairSchema = createInsertSchema(pairs).omit({
   id: true,
   createdAt: true,
+}).extend({
+  waitingSince: z.union([z.string(), z.date(), z.null()]).transform((val) => {
+    if (val === null || val === undefined) return null;
+    if (typeof val === 'string') return new Date(val);
+    return val;
+  }).optional(),
 });
 
 export const insertMatchSchema = createInsertSchema(matches).omit({

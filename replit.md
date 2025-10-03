@@ -2,9 +2,15 @@
 
 ## Overview
 
-This is a real-time tournament management system for padel (paddle tennis) competitions. The system enables tournament organizers to manage courts, register player pairs, assign matches automatically, track game progress, and display live tournament information on screens. Built as a full-stack web application, it provides both a control dashboard for tournament staff and a public display view for participants and spectators.
+This is a real-time **multi-tenant** tournament management system for padel (paddle tennis) competitions. The system enables superadmins to create multiple tournaments and assign administrators/scorekeepers to each. Tournament administrators can configure their tournaments with logos, categories, and sponsor banners. The system handles player registration with category selection, automatic court assignment, match tracking, and real-time displays.
 
-The application handles the complete tournament workflow: from player registration and court availability tracking, through automatic match assignment and live score updates, to historical results display.
+Built as a full-stack web application, it provides:
+- **Superadmin Panel**: Create tournaments, manage users, assign roles
+- **Admin Dashboard**: Configure tournaments, manage categories/banners, register players
+- **Scorekeeper Dashboard**: Register players, record results
+- **Public Display**: Real-time tournament information for participants and spectators
+
+Last Updated: October 2025 - Multi-tenant architecture with tournament-scoped authorization implemented
 
 ## User Preferences
 
@@ -64,7 +70,13 @@ Preferred communication style: Simple, everyday language.
 - Matches (game instances with court and category assignments)
 - Results (match outcomes with set scores)
 
-**Schema Strategy**: UUID primary keys using PostgreSQL's `gen_random_uuid()`. Foreign key relationships link tournaments to clubs, pairs to players, matches to pairs and courts. Timestamps track creation times across all entities.
+**Schema Strategy**: UUID primary keys using PostgreSQL's `gen_random_uuid()`. Foreign key relationships link tournaments to clubs, pairs to players, matches to pairs and courts. Multi-tenant isolation via tournament_users join table linking users to tournaments with role assignments (admin, scorekeeper, display). Timestamps track creation times across all entities.
+
+**Multi-Tenant Features**:
+- Tournament-scoped categories (e.g., "Masculino A", "Femenino B") stored in categories table
+- Sponsor banners per tournament with displayOrder for carousel display
+- Logo URLs (tournament, club, system) stored directly in tournaments table
+- Pair-category assignment via nullable categoryId foreign key
 
 **Data Access Layer**: Storage interface abstraction (`IStorage`) in `server/storage.ts` provides clean separation between business logic and data persistence, enabling potential future database swapping.
 
