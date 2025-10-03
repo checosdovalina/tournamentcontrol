@@ -46,7 +46,7 @@ export default function AssignUserModal({ open, onOpenChange, tournamentId }: As
 
   const assignMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return apiRequest("/api/admin/tournament-users", "POST", {
+      return apiRequest("POST", "/api/admin/tournament-users", {
         ...data,
         tournamentId,
       });
@@ -68,7 +68,7 @@ export default function AssignUserModal({ open, onOpenChange, tournamentId }: As
 
   const removeMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/admin/tournament-users/${id}`, "DELETE", {});
+      return apiRequest("DELETE", `/api/admin/tournament-users/${id}`, {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/tournament-users"] });

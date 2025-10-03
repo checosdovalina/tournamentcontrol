@@ -55,7 +55,7 @@ export default function SuperAdminPanel() {
         tournament: `/api/admin/tournaments/${id}`,
         user: `/api/admin/users/${id}`,
       };
-      return apiRequest(endpoints[type as keyof typeof endpoints], "DELETE", {});
+      return apiRequest("DELETE", endpoints[type as keyof typeof endpoints], {});
     },
     onSuccess: (_, variables) => {
       const queryKeys = {

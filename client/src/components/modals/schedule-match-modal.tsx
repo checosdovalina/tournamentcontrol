@@ -65,7 +65,7 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
         courtId: undefined,
       };
 
-      return apiRequest("/api/scheduled-matches", "POST", payload);
+      return apiRequest("POST", "/api/scheduled-matches", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
