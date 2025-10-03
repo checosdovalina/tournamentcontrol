@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Calendar as CalendarIcon, Plus, UserCheck, UserX, Zap, MapPin, Clock, Users } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Zap, MapPin, Clock, Users, CheckCircle2, Circle } from "lucide-react";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
 import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/schema";
 
@@ -221,39 +223,61 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                       {match.pair1.player1.name} / {match.pair1.player2.name}
                     </span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="space-y-3">
                     {match.players
                       .filter(p => p.pairId === match.pair1Id)
                       .map((player) => (
                         <div
                           key={player.playerId}
-                          className={`flex items-center justify-between p-2 rounded border ${
-                            player.isPresent ? "bg-green-50 border-green-200 dark:bg-green-950/20" : "bg-muted"
-                          }`}
+                          className="border rounded-lg p-3 bg-card"
                           data-testid={`player-status-${player.playerId}`}
                         >
-                          <span className="text-sm font-medium" data-testid={`text-player-name-${player.playerId}`}>
-                            {player.player.name}
-                          </span>
-                          {player.isPresent ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleCheckOut(match.id, player.playerId)}
-                              data-testid={`button-checkout-${player.playerId}`}
-                            >
-                              <UserX className="w-4 h-4 text-green-600" />
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleCheckIn(match.id, player.playerId)}
-                              data-testid={`button-checkin-${player.playerId}`}
-                            >
-                              <UserCheck className="w-4 h-4" />
-                            </Button>
-                          )}
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium" data-testid={`text-player-name-${player.playerId}`}>
+                              {player.player.name}
+                            </span>
+                          </div>
+                          <RadioGroup
+                            value={player.isPresent ? "present" : "pending"}
+                            onValueChange={(value) => {
+                              if (value === "present" && !player.isPresent) {
+                                handleCheckIn(match.id, player.playerId);
+                              } else if (value === "pending" && player.isPresent) {
+                                handleCheckOut(match.id, player.playerId);
+                              }
+                            }}
+                          >
+                            <div className="flex gap-4">
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem 
+                                  value="present" 
+                                  id={`${player.playerId}-present`}
+                                  data-testid={`radio-present-${player.playerId}`}
+                                />
+                                <Label 
+                                  htmlFor={`${player.playerId}-present`}
+                                  className="flex items-center gap-1.5 cursor-pointer font-normal"
+                                >
+                                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                  <span>Presente</span>
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem 
+                                  value="pending" 
+                                  id={`${player.playerId}-pending`}
+                                  data-testid={`radio-pending-${player.playerId}`}
+                                />
+                                <Label 
+                                  htmlFor={`${player.playerId}-pending`}
+                                  className="flex items-center gap-1.5 cursor-pointer font-normal"
+                                >
+                                  <Circle className="w-4 h-4 text-muted-foreground" />
+                                  <span>Sin confirmar</span>
+                                </Label>
+                              </div>
+                            </div>
+                          </RadioGroup>
                         </div>
                       ))}
                   </div>
@@ -270,39 +294,61 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                       {match.pair2.player1.name} / {match.pair2.player2.name}
                     </span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="space-y-3">
                     {match.players
                       .filter(p => p.pairId === match.pair2Id)
                       .map((player) => (
                         <div
                           key={player.playerId}
-                          className={`flex items-center justify-between p-2 rounded border ${
-                            player.isPresent ? "bg-green-50 border-green-200 dark:bg-green-950/20" : "bg-muted"
-                          }`}
+                          className="border rounded-lg p-3 bg-card"
                           data-testid={`player-status-${player.playerId}`}
                         >
-                          <span className="text-sm font-medium" data-testid={`text-player-name-${player.playerId}`}>
-                            {player.player.name}
-                          </span>
-                          {player.isPresent ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleCheckOut(match.id, player.playerId)}
-                              data-testid={`button-checkout-${player.playerId}`}
-                            >
-                              <UserX className="w-4 h-4 text-green-600" />
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleCheckIn(match.id, player.playerId)}
-                              data-testid={`button-checkin-${player.playerId}`}
-                            >
-                              <UserCheck className="w-4 h-4" />
-                            </Button>
-                          )}
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium" data-testid={`text-player-name-${player.playerId}`}>
+                              {player.player.name}
+                            </span>
+                          </div>
+                          <RadioGroup
+                            value={player.isPresent ? "present" : "pending"}
+                            onValueChange={(value) => {
+                              if (value === "present" && !player.isPresent) {
+                                handleCheckIn(match.id, player.playerId);
+                              } else if (value === "pending" && player.isPresent) {
+                                handleCheckOut(match.id, player.playerId);
+                              }
+                            }}
+                          >
+                            <div className="flex gap-4">
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem 
+                                  value="present" 
+                                  id={`${player.playerId}-present`}
+                                  data-testid={`radio-present-${player.playerId}`}
+                                />
+                                <Label 
+                                  htmlFor={`${player.playerId}-present`}
+                                  className="flex items-center gap-1.5 cursor-pointer font-normal"
+                                >
+                                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                  <span>Presente</span>
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem 
+                                  value="pending" 
+                                  id={`${player.playerId}-pending`}
+                                  data-testid={`radio-pending-${player.playerId}`}
+                                />
+                                <Label 
+                                  htmlFor={`${player.playerId}-pending`}
+                                  className="flex items-center gap-1.5 cursor-pointer font-normal"
+                                >
+                                  <Circle className="w-4 h-4 text-muted-foreground" />
+                                  <span>Sin confirmar</span>
+                                </Label>
+                              </div>
+                            </div>
+                          </RadioGroup>
                         </div>
                       ))}
                   </div>
