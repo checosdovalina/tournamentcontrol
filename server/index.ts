@@ -1,5 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
+import { Pool } from "@neondatabase/serverless";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -25,8 +27,17 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: false }));
 
+// Session store configuration
+const PgSession = connectPgSimple(session);
+const sessionStore = new PgSession({
+  pool: new Pool({ connectionString: process.env.DATABASE_URL }),
+  tableName: 'session',
+  createTableIfMissing: true,
+});
+
 // Session middleware
 app.use(session({
+  store: sessionStore,
   secret: process.env.SESSION_SECRET || 'default-secret-key',
   resave: false,
   saveUninitialized: false,
@@ -34,6 +45,7 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax',
   },
 }));
 
