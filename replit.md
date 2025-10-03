@@ -10,7 +10,7 @@ Built as a full-stack web application, it provides:
 - **Scorekeeper Dashboard**: Register players, record results
 - **Public Display**: Real-time tournament information for participants and spectators
 
-Last Updated: October 03, 2025 - Enhanced scheduled match programming flow: category is now selected first, then only pairs from that category appear in the dropdown, streamlining the match creation process
+Last Updated: October 03, 2025 - Display screen now shows scheduled matches that are ready to play (status 'ready' or 'assigned') in the "Próximos Partidos" column instead of waiting pairs, providing better visibility of programmed matches
 
 ## User Preferences
 
