@@ -2,7 +2,18 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertPlayerSchema, insertPairSchema, insertMatchSchema, insertResultSchema, insertCourtSchema } from "@shared/schema";
+import { 
+  insertPlayerSchema, 
+  insertPairSchema, 
+  insertMatchSchema, 
+  insertResultSchema, 
+  insertCourtSchema,
+  insertUserSchema,
+  insertTournamentSchema,
+  insertTournamentUserSchema,
+  insertCategorySchema,
+  insertSponsorBannerSchema
+} from "@shared/schema";
 import { z } from "zod";
 
 interface ExtendedWebSocket extends WebSocket {
@@ -472,6 +483,340 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: `Assigned ${assignedMatches} matches`, assigned: assignedMatches });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to auto-assign", error: error.message });
+    }
+  });
+
+  // ========== SUPERADMIN ROUTES ==========
+  
+  // User Management
+  app.get("/api/admin/users", requireSuperadmin, async (req, res) => {
+    try {
+      const users = await storage.getUsers();
+      res.json(users.map(u => ({ id: u.id, username: u.username, name: u.name, role: u.role, email: u.email })));
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get users", error: error.message });
+    }
+  });
+
+  app.post("/api/admin/users", requireSuperadmin, async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      const user = await storage.createUser(userData);
+      res.json({ id: user.id, username: user.username, name: user.name, role: user.role });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to create user", error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/users/:id", requireSuperadmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const user = await storage.updateUser(id, updates);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ id: user.id, username: user.username, name: user.name, role: user.role });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update user", error: error.message });
+    }
+  });
+
+  // Tournament Management
+  app.get("/api/admin/tournaments", requireSuperadmin, async (req, res) => {
+    try {
+      const tournaments = await storage.getTournaments();
+      res.json(tournaments);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get tournaments", error: error.message });
+    }
+  });
+
+  app.post("/api/admin/tournaments", requireSuperadmin, async (req, res) => {
+    try {
+      const tournamentData = insertTournamentSchema.parse(req.body);
+      const tournament = await storage.createTournament(tournamentData);
+      res.json(tournament);
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to create tournament", error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/tournaments/:id", requireSuperadmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const tournament = await storage.updateTournament(id, updates);
+      if (!tournament) {
+        return res.status(404).json({ message: "Tournament not found" });
+      }
+      res.json(tournament);
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update tournament", error: error.message });
+    }
+  });
+
+  // Tournament User Assignment
+  app.get("/api/admin/tournament-users/:tournamentId", requireSuperadmin, async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const tournamentUsers = await storage.getTournamentUsersByTournament(tournamentId);
+      
+      // Enrich with user details
+      const enriched = await Promise.all(
+        tournamentUsers.map(async (tu) => {
+          const user = await storage.getUser(tu.userId);
+          return { ...tu, user: user ? { id: user.id, username: user.username, name: user.name } : null };
+        })
+      );
+      
+      res.json(enriched);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get tournament users", error: error.message });
+    }
+  });
+
+  app.post("/api/admin/tournament-users", requireSuperadmin, async (req, res) => {
+    try {
+      const assignmentData = insertTournamentUserSchema.parse(req.body);
+      
+      // Check if assignment already exists
+      const existing = await storage.getTournamentUserByUserAndTournament(
+        assignmentData.userId,
+        assignmentData.tournamentId
+      );
+      
+      if (existing) {
+        return res.status(400).json({ message: "User already assigned to this tournament" });
+      }
+      
+      const tournamentUser = await storage.createTournamentUser(assignmentData);
+      res.json(tournamentUser);
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to assign user to tournament", error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/tournament-users/:id", requireSuperadmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteTournamentUser(id);
+      if (!success) {
+        return res.status(404).json({ message: "Tournament user assignment not found" });
+      }
+      res.json({ message: "User removed from tournament" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to remove user from tournament", error: error.message });
+    }
+  });
+
+  // ========== TOURNAMENT ADMIN ROUTES (require tournament admin role) ==========
+  
+  // Category Management
+  app.get("/api/categories/:tournamentId", requireTournamentAccess(), async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const categories = await storage.getCategoriesByTournament(tournamentId);
+      res.json(categories);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get categories", error: error.message });
+    }
+  });
+
+  app.post("/api/categories", requireTournamentRole('admin'), async (req, res) => {
+    try {
+      const categoryData = insertCategorySchema.parse(req.body);
+      const category = await storage.createCategory(categoryData);
+      res.json(category);
+      broadcastUpdate({ type: "category_created", data: category });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to create category", error: error.message });
+    }
+  });
+
+  app.patch("/api/categories/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      // Fetch category to get tournamentId for authorization
+      const existingCategory = await storage.getCategory(id);
+      if (!existingCategory) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      
+      // Check authorization - explicit permission check
+      let isAuthorized = false;
+      
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          existingCategory.tournamentId
+        );
+        
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+      
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Admin access required for this tournament" });
+      }
+      
+      // Authorization passed - proceed with update
+      const category = await storage.updateCategory(id, updates);
+      res.json(category);
+      broadcastUpdate({ type: "category_updated", data: category });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update category", error: error.message });
+    }
+  });
+
+  app.delete("/api/categories/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Fetch category to get tournamentId for authorization
+      const existingCategory = await storage.getCategory(id);
+      if (!existingCategory) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      
+      // Check authorization - explicit permission check
+      let isAuthorized = false;
+      
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          existingCategory.tournamentId
+        );
+        
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+      
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Admin access required for this tournament" });
+      }
+      
+      // Authorization passed - proceed with delete
+      const success = await storage.deleteCategory(id);
+      if (!success) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.json({ message: "Category deleted" });
+      broadcastUpdate({ type: "category_deleted", data: { id } });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete category", error: error.message });
+    }
+  });
+
+  // Sponsor Banner Management
+  app.get("/api/banners/:tournamentId", async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const banners = await storage.getSponsorBannersByTournament(tournamentId);
+      res.json(banners);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get banners", error: error.message });
+    }
+  });
+
+  app.post("/api/banners", requireTournamentRole('admin'), async (req, res) => {
+    try {
+      const bannerData = insertSponsorBannerSchema.parse(req.body);
+      const banner = await storage.createSponsorBanner(bannerData);
+      res.json(banner);
+      broadcastUpdate({ type: "banner_created", data: banner });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to create banner", error: error.message });
+    }
+  });
+
+  app.patch("/api/banners/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      // Fetch banner to get tournamentId for authorization
+      const existingBanner = await storage.getSponsorBanner(id);
+      if (!existingBanner) {
+        return res.status(404).json({ message: "Banner not found" });
+      }
+      
+      // Check authorization - explicit permission check
+      let isAuthorized = false;
+      
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          existingBanner.tournamentId
+        );
+        
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+      
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Admin access required for this tournament" });
+      }
+      
+      // Authorization passed - proceed with update
+      const banner = await storage.updateSponsorBanner(id, updates);
+      res.json(banner);
+      broadcastUpdate({ type: "banner_updated", data: banner });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update banner", error: error.message });
+    }
+  });
+
+  app.delete("/api/banners/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Fetch banner to get tournamentId for authorization
+      const existingBanner = await storage.getSponsorBanner(id);
+      if (!existingBanner) {
+        return res.status(404).json({ message: "Banner not found" });
+      }
+      
+      // Check authorization - explicit permission check
+      let isAuthorized = false;
+      
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          existingBanner.tournamentId
+        );
+        
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+      
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Admin access required for this tournament" });
+      }
+      
+      // Authorization passed - proceed with delete
+      const success = await storage.deleteSponsorBanner(id);
+      if (!success) {
+        return res.status(404).json({ message: "Banner not found" });
+      }
+      res.json({ message: "Banner deleted" });
+      broadcastUpdate({ type: "banner_deleted", data: { id } });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete banner", error: error.message });
     }
   });
 
