@@ -44,6 +44,11 @@ function Router() {
           <Dashboard />
         </AuthWrapper>
       )} />
+      <Route path="/dashboard" component={() => (
+        <AuthWrapper>
+          <Dashboard />
+        </AuthWrapper>
+      )} />
       <Route path="/display" component={Display} />
       <Route path="/login" component={Login} />
       <Route component={NotFound} />

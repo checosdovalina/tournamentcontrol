@@ -398,18 +398,39 @@ export class MemStorage implements IStorage {
   }
 
   async getRecentResults(tournamentId: string, limit = 10): Promise<ResultWithDetails[]> {
-    const allResults = Array.from(this.results.values())
-      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
-      .slice(0, limit);
-
     const resultsWithDetails: ResultWithDetails[] = [];
+    
+    // First filter by tournament, then sort and limit
+    const allResults = Array.from(this.results.values());
+    const tournamentResults: Result[] = [];
+    
     for (const result of allResults) {
       const match = await this.getMatch(result.matchId);
       if (match && match.tournamentId === tournamentId) {
-        const matchWithDetails = (await this.getCurrentMatches(tournamentId))
-          .find(m => m.id === match.id);
+        tournamentResults.push(result);
+      }
+    }
+    
+    // Sort by creation date and apply limit
+    const recentResults = tournamentResults
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+      .slice(0, limit);
+
+    for (const result of recentResults) {
+      const match = await this.getMatch(result.matchId);
+      if (match) {
+        const court = await this.getCourt(match.courtId);
+        const pair1 = await this.getPair(match.pair1Id);
+        const pair2 = await this.getPair(match.pair2Id);
         
-        if (!matchWithDetails) continue;
+        if (!court || !pair1 || !pair2) continue;
+
+        const pair1_p1 = await this.getPlayer(pair1.player1Id);
+        const pair1_p2 = await this.getPlayer(pair1.player2Id);
+        const pair2_p1 = await this.getPlayer(pair2.player1Id);
+        const pair2_p2 = await this.getPlayer(pair2.player2Id);
+        
+        if (!pair1_p1 || !pair1_p2 || !pair2_p1 || !pair2_p2) continue;
 
         const winner = await this.getPair(result.winnerId);
         const loser = await this.getPair(result.loserId);
@@ -423,7 +444,12 @@ export class MemStorage implements IStorage {
           if (winner_p1 && winner_p2 && loser_p1 && loser_p2) {
             resultsWithDetails.push({
               ...result,
-              match: matchWithDetails,
+              match: {
+                ...match,
+                court,
+                pair1: { ...pair1, player1: pair1_p1, player2: pair1_p2 },
+                pair2: { ...pair2, player1: pair2_p1, player2: pair2_p2 }
+              },
               winner: { ...winner, player1: winner_p1, player2: winner_p2 },
               loser: { ...loser, player1: loser_p1, player2: loser_p2 }
             });
