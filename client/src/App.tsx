@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Display from "@/pages/display";
 import Login from "@/pages/login";
+import Setup from "@/pages/setup";
 import { useWebSocket } from "@/hooks/use-websocket";
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
@@ -51,6 +52,7 @@ function Router() {
       )} />
       <Route path="/display" component={Display} />
       <Route path="/login" component={Login} />
+      <Route path="/setup" component={Setup} />
       <Route component={NotFound} />
     </Switch>
   );

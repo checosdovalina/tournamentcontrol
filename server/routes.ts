@@ -128,6 +128,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   };
 
+  // Initial setup endpoint - ONLY for creating first superadmin (works only if no users exist)
+  app.post("/api/auth/setup", async (req, res) => {
+    try {
+      // Check if any users exist
+      const users = await storage.getUsers();
+      if (users.length > 0) {
+        return res.status(403).json({ message: "Setup already completed. Users exist in the system." });
+      }
+
+      const { username, password, name } = req.body;
+      
+      if (!username || !password || !name) {
+        return res.status(400).json({ message: "Username, password, and name are required" });
+      }
+
+      // Create first superadmin user (plain password, will be hashed in production)
+      const user = await storage.createUser({
+        username,
+        password,
+        name,
+        role: "superadmin",
+      });
+
+      res.json({ 
+        message: "Superadmin created successfully! You can now login.", 
+        user: { id: user.id, username: user.username, name: user.name, role: user.role }
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Setup failed", error: error.message });
+    }
+  });
+
   // Login endpoint
   app.post("/api/auth/login", async (req, res) => {
     try {
