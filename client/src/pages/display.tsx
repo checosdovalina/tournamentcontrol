@@ -228,20 +228,20 @@ export default function Display() {
                 </h2>
                 
                 <div className="flex-1 overflow-hidden" data-testid="next-matches-list">
-                  {scheduledMatches.filter((m: any) => m.status === 'ready' || m.status === 'assigned').length === 0 ? (
+                  {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length === 0 ? (
                     <div className="text-white/60 text-center py-12">
-                      No hay partidos programados listos
+                      No hay partidos programados
                     </div>
-                  ) : scheduledMatches.filter((m: any) => m.status === 'ready' || m.status === 'assigned').length <= 3 ? (
+                  ) : scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length <= 3 ? (
                     <div className="space-y-3">
-                      {scheduledMatches.filter((m: any) => m.status === 'ready' || m.status === 'assigned').map((match: any) => (
+                      {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
                         <NextMatchCard key={match.id} match={match} />
                       ))}
                     </div>
                   ) : (
                     <div ref={nextMatchesEmbla} className="overflow-hidden">
                       <div className="flex">
-                        {scheduledMatches.filter((m: any) => m.status === 'ready' || m.status === 'assigned').map((match: any) => (
+                        {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
                           <div key={match.id} className="flex-[0_0_100%] min-w-0 pr-3">
                             <NextMatchCard match={match} />
                           </div>
@@ -397,6 +397,20 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
 
 // Next Match Card Component
 function NextMatchCard({ match }: any) {
+  const getStatusBadge = () => {
+    if (match.status === 'assigned' && match.court) {
+      return <span className="text-white bg-purple-600/80 text-xs px-2 py-1 rounded">Cancha asignada</span>;
+    }
+    if (match.status === 'ready') {
+      return <span className="text-white bg-green-600/80 text-xs px-2 py-1 rounded">✓ Listos</span>;
+    }
+    const presentCount = match.players?.filter((p: any) => p.isPresent).length || 0;
+    if (presentCount > 0) {
+      return <span className="text-white/60 text-xs">{presentCount}/4 presentes</span>;
+    }
+    return <span className="text-white/40 text-xs">Esperando jugadores</span>;
+  };
+
   return (
     <div 
       className="bg-white/5 rounded-xl p-4 border border-white/10"
@@ -406,16 +420,14 @@ function NextMatchCard({ match }: any) {
         <span className="px-3 py-1 bg-blue-600/80 text-white rounded-lg font-bold text-sm">
           {match.plannedTime || 'Por confirmar'}
         </span>
-        {match.court && (
-          <span className="text-white/60 text-sm">
-            {match.court.name}
-          </span>
-        )}
-        {!match.court && match.status === 'ready' && (
-          <span className="text-green-400 text-xs">
-            ✓ Listos
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {match.court && (
+            <span className="text-white/80 text-sm font-medium">
+              {match.court.name}
+            </span>
+          )}
+          {getStatusBadge()}
+        </div>
       </div>
       {match.category && (
         <div className="mb-2">
