@@ -93,6 +93,20 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     },
   });
 
+  const startMatchMutation = useMutation({
+    mutationFn: async (matchId: string) => {
+      return apiRequest("POST", `/api/scheduled-matches/${matchId}/start`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
+      toast({ title: "Partido iniciado", description: "El partido está ahora en curso" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "No se pudo iniciar el partido", variant: "destructive" });
+    },
+  });
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "scheduled":
@@ -384,6 +398,21 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                         </Select>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* Start Match Control */}
+                {match.status === 'assigned' && (userRole === 'admin' || userRole === 'scorekeeper') && (
+                  <div className="border-t pt-4">
+                    <Button
+                      onClick={() => startMatchMutation.mutate(match.id)}
+                      disabled={startMatchMutation.isPending}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      data-testid={`button-start-match-${match.id}`}
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      {startMatchMutation.isPending ? "Iniciando..." : "Iniciar Partido"}
+                    </Button>
                   </div>
                 )}
               </CardContent>

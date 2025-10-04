@@ -57,7 +57,7 @@ export default function PairsManagement() {
 
   const updatePairMutation = useMutation({
     mutationFn: async ({ pairId, categoryId }: { pairId: string; categoryId: string }) => {
-      return apiRequest(`/api/pairs/${pairId}`, "PATCH", { categoryId });
+      return apiRequest("PATCH", `/api/pairs/${pairId}`, { categoryId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/pairs"] });
@@ -72,7 +72,7 @@ export default function PairsManagement() {
 
   const deletePairMutation = useMutation({
     mutationFn: async (pairId: string) => {
-      return apiRequest(`/api/pairs/${pairId}`, "DELETE");
+      return apiRequest("DELETE", `/api/pairs/${pairId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/pairs"] });
