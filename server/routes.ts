@@ -382,6 +382,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/pairs/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deletePair(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Pair not found" });
+      }
+      
+      broadcastUpdate({ type: "pair_deleted", data: { id } });
+      res.json({ message: "Pair deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete pair", error: error.message });
+    }
+  });
+
   // Matches routes
   app.get("/api/matches/current/:tournamentId", async (req, res) => {
     try {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield } from "lucide-react";
+import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users } from "lucide-react";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
@@ -10,6 +10,7 @@ import RecentResults from "@/components/recent-results";
 import TournamentStats from "@/components/tournament-stats";
 import ScheduledMatches from "@/components/scheduled-matches";
 import SuperAdminPanel from "@/components/super-admin-panel";
+import PairsManagement from "@/components/pairs-management";
 import RegisterPlayerModal from "@/components/modals/register-player-modal";
 import RecordResultModal from "@/components/modals/record-result-modal";
 import ManageCourtsModal from "@/components/modals/manage-courts-modal";
@@ -124,6 +125,12 @@ export default function Dashboard() {
               <Calendar className="w-4 h-4 mr-2" />
               Programación
             </TabsTrigger>
+            {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && (
+              <TabsTrigger value="pairs" data-testid="tab-pairs">
+                <Users className="w-4 h-4 mr-2" />
+                Parejas
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {user?.user?.role === 'superadmin' && (
@@ -215,6 +222,12 @@ export default function Dashboard() {
           <TabsContent value="schedule">
             <ScheduledMatches tournamentId={tournament?.id} userRole={user?.user?.role} />
           </TabsContent>
+
+          {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && (
+            <TabsContent value="pairs">
+              <PairsManagement />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
 

@@ -43,7 +43,9 @@ export function useWebSocket(userId?: string) {
               break;
             case "pair_registered":
             case "pair_updated":
+            case "pair_deleted":
               queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/pairs"] });
               break;
             case "court_created":
             case "court_updated":

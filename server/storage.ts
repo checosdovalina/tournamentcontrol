@@ -97,6 +97,7 @@ export interface IStorage {
   getWaitingPairs(tournamentId: string): Promise<PairWithPlayers[]>;
   createPair(pair: InsertPair): Promise<Pair>;
   updatePair(id: string, updates: Partial<Pair>): Promise<Pair | undefined>;
+  deletePair(id: string): Promise<boolean>;
   
   // Matches
   getMatch(id: string): Promise<Match | undefined>;
@@ -467,6 +468,10 @@ export class MemStorage implements IStorage {
     const updated = { ...pair, ...updates };
     this.pairs.set(id, updated);
     return updated;
+  }
+
+  async deletePair(id: string): Promise<boolean> {
+    return this.pairs.delete(id);
   }
 
   // Matches

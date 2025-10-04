@@ -357,6 +357,11 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async deletePair(id: string): Promise<boolean> {
+    const result = await db.delete(pairs).where(eq(pairs.id, id)).returning();
+    return result.length > 0;
+  }
+
   // Matches
   async getMatch(id: string): Promise<Match | undefined> {
     const result = await db.select().from(matches).where(eq(matches.id, id)).limit(1);
