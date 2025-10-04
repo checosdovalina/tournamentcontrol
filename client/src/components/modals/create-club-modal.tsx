@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -26,11 +27,22 @@ export default function CreateClubModal({ open, onOpenChange, club }: CreateClub
   const form = useForm<FormData>({
     resolver: zodResolver(insertClubSchema),
     defaultValues: {
-      name: club?.name || "",
-      address: club?.address || "",
-      logoUrl: club?.logoUrl || "",
+      name: "",
+      address: "",
+      logoUrl: "",
     },
   });
+
+  // Reset form when club changes or modal opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: club?.name || "",
+        address: club?.address || "",
+        logoUrl: club?.logoUrl || "",
+      });
+    }
+  }, [open, club, form]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {

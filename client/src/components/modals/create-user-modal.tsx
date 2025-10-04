@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -34,12 +35,24 @@ export default function CreateUserModal({ open, onOpenChange, user }: CreateUser
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: user?.username || "",
+      username: "",
       password: "",
-      name: user?.name || "",
-      role: user?.role || "scorekeeper",
+      name: "",
+      role: "scorekeeper",
     },
   });
+
+  // Reset form when user changes or modal opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        username: user?.username || "",
+        password: "",
+        name: user?.name || "",
+        role: user?.role || "scorekeeper",
+      });
+    }
+  }, [open, user, form]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -31,16 +32,32 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: tournament?.name || "",
-      clubId: tournament?.clubId || "",
-      startDate: tournament?.startDate ? new Date(tournament.startDate).toISOString().split('T')[0] : "",
-      endDate: tournament?.endDate ? new Date(tournament.endDate).toISOString().split('T')[0] : "",
-      isActive: tournament?.isActive ?? true,
-      tournamentLogoUrl: tournament?.tournamentLogoUrl || "",
-      clubLogoUrl: tournament?.clubLogoUrl || "",
-      systemLogoUrl: tournament?.systemLogoUrl || "",
+      name: "",
+      clubId: "",
+      startDate: "",
+      endDate: "",
+      isActive: true,
+      tournamentLogoUrl: "",
+      clubLogoUrl: "",
+      systemLogoUrl: "",
     },
   });
+
+  // Reset form when tournament changes or modal opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: tournament?.name || "",
+        clubId: tournament?.clubId || "",
+        startDate: tournament?.startDate ? new Date(tournament.startDate).toISOString().split('T')[0] : "",
+        endDate: tournament?.endDate ? new Date(tournament.endDate).toISOString().split('T')[0] : "",
+        isActive: tournament?.isActive ?? true,
+        tournamentLogoUrl: tournament?.tournamentLogoUrl || "",
+        clubLogoUrl: tournament?.clubLogoUrl || "",
+        systemLogoUrl: tournament?.systemLogoUrl || "",
+      });
+    }
+  }, [open, tournament, form]);
 
   const { data: clubs } = useQuery<any[]>({
     queryKey: ["/api/clubs"],
