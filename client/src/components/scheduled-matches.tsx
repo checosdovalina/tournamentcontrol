@@ -24,6 +24,7 @@ interface ScheduledMatchesProps {
 export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMatchesProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const { toast } = useToast();
 
   const { data: matches, isLoading } = useQuery<ScheduledMatchWithDetails[]>({
@@ -36,10 +37,24 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     enabled: !!tournamentId,
   });
 
+  const { data: categories } = useQuery<any[]>({
+    queryKey: ["/api/categories", tournamentId],
+    queryFn: async () => {
+      if (!tournamentId) return [];
+      const response = await fetch(`/api/categories/${tournamentId}`);
+      return response.json();
+    },
+    enabled: !!tournamentId,
+  });
+
   const { data: courts } = useQuery<any[]>({
     queryKey: ["/api/courts"],
     enabled: !!tournamentId,
   });
+
+  const filteredMatches = matches?.filter(match => 
+    selectedCategory === "all" || match.categoryId === selectedCategory
+  ) || [];
 
   const checkInMutation = useMutation({
     mutationFn: async ({ matchId, playerId }: { matchId: string; playerId: string }) => {
@@ -149,9 +164,9 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   return (
     <div className="space-y-6">
-      {/* Header with Date Selector and Schedule Button */}
+      {/* Header with Date Selector, Category Filter and Schedule Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-1">
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" data-testid="button-select-date">
@@ -169,6 +184,22 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
               />
             </PopoverContent>
           </Popover>
+
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-[200px]" data-testid="select-category-filter">
+              <SelectValue placeholder="Todas las categorías" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" data-testid="option-category-all">
+                Todas las categorías
+              </SelectItem>
+              {categories?.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id} data-testid={`option-category-${cat.id}`}>
+                  {cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {userRole === 'admin' && (
@@ -180,12 +211,16 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
       </div>
 
       {/* Scheduled Matches List */}
-      {!matches || matches.length === 0 ? (
+      {!filteredMatches || filteredMatches.length === 0 ? (
         <Card>
           <CardContent className="py-12">
             <div className="text-center text-muted-foreground">
               <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">No hay partidos programados para este día</p>
+              <p className="text-lg font-medium">
+                {selectedCategory === "all" 
+                  ? "No hay partidos programados para este día" 
+                  : "No hay partidos de esta categoría para este día"}
+              </p>
               <p className="text-sm mt-2">
                 {userRole === 'admin' 
                   ? "Haz clic en 'Programar Partido' para agregar uno" 
@@ -196,7 +231,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
         </Card>
       ) : (
         <div className="space-y-4">
-          {matches.map((match) => (
+          {filteredMatches.map((match) => (
             <Card key={match.id} data-testid={`card-scheduled-match-${match.id}`}>
               <CardHeader>
                 <div className="flex justify-between items-start">
