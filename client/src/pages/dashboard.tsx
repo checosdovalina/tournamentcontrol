@@ -29,7 +29,7 @@ export default function Dashboard() {
     queryKey: ["/api/auth/me"],
   });
 
-  const { data: tournament } = useQuery<{ id: string; name: string; clubId: string; startDate: Date; endDate: Date; isActive: boolean | null; config: any }>({
+  const { data: tournament } = useQuery<{ id: string; name: string; clubId: string; startDate: Date; endDate: Date; isActive: boolean | null; config: any; userRole?: string }>({
     queryKey: ["/api/tournament"],
   });
 
@@ -220,7 +220,7 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="schedule">
-            <ScheduledMatches tournamentId={tournament?.id} userRole={user?.user?.role} />
+            <ScheduledMatches tournamentId={tournament?.id} userRole={tournament?.userRole} />
           </TabsContent>
 
           {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && (

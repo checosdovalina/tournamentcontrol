@@ -223,7 +223,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!tournament) {
         return res.status(404).json({ message: "No active tournament found" });
       }
-      res.json(tournament);
+      
+      // Include user's role in this tournament if authenticated
+      let userRole = null;
+      if (req.session.userId) {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId,
+          tournament.id
+        );
+        userRole = tournamentUser?.role || null;
+      }
+      
+      res.json({ ...tournament, userRole });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to get tournament", error: error.message });
     }
