@@ -1,11 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { X, Volleyball } from "lucide-react";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
-import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
 import courtflowLogo from "@assets/courtflow-logo.png";
 
 export default function Display() {
@@ -54,22 +52,6 @@ export default function Display() {
 
   useWebSocket();
 
-  // Carousels for each section
-  const [matchesEmbla, matchesApi] = useEmblaCarousel(
-    { loop: true, align: "start" },
-    [Autoplay({ delay: 6000, stopOnInteraction: false })]
-  );
-
-  const [nextMatchesEmbla, nextMatchesApi] = useEmblaCarousel(
-    { loop: true, align: "start" },
-    [Autoplay({ delay: 6000, stopOnInteraction: false })]
-  );
-
-  const [resultsEmbla, resultsApi] = useEmblaCarousel(
-    { loop: true, align: "start" },
-    [Autoplay({ delay: 6000, stopOnInteraction: false })]
-  );
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
@@ -77,25 +59,6 @@ export default function Display() {
 
     return () => clearInterval(interval);
   }, []);
-
-  // Reset carousels when data changes
-  useEffect(() => {
-    if (matchesApi && currentMatches.length > 0) {
-      matchesApi.reInit();
-    }
-  }, [currentMatches, matchesApi]);
-
-  useEffect(() => {
-    if (nextMatchesApi && scheduledMatches.length > 0) {
-      nextMatchesApi.reInit();
-    }
-  }, [scheduledMatches, nextMatchesApi]);
-
-  useEffect(() => {
-    if (resultsApi && recentResults.length > 0) {
-      resultsApi.reInit();
-    }
-  }, [recentResults, resultsApi]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('es-ES', { 
@@ -193,7 +156,7 @@ export default function Display() {
                   Partidos en Curso
                 </h2>
                 
-                <div className="flex-1 overflow-hidden" data-testid="current-matches-list">
+                <div className="flex-1 overflow-hidden relative" data-testid="current-matches-list">
                   {currentMatches.length === 0 ? (
                     <div className="text-white/60 text-center py-12">
                       No hay partidos en curso
@@ -205,12 +168,13 @@ export default function Display() {
                       ))}
                     </div>
                   ) : (
-                    <div ref={matchesEmbla} className="overflow-hidden">
-                      <div className="flex">
+                    <div className="h-full overflow-hidden">
+                      <div className="animate-scroll-vertical space-y-3">
                         {currentMatches.map((match: any) => (
-                          <div key={match.id} className="flex-[0_0_100%] min-w-0 pr-3">
-                            <MatchCard match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
-                          </div>
+                          <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                        ))}
+                        {currentMatches.map((match: any) => (
+                          <MatchCard key={`${match.id}-dup`} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
                         ))}
                       </div>
                     </div>
@@ -227,7 +191,7 @@ export default function Display() {
                   Próximos Partidos
                 </h2>
                 
-                <div className="flex-1 overflow-hidden" data-testid="next-matches-list">
+                <div className="flex-1 overflow-hidden relative" data-testid="next-matches-list">
                   {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length === 0 ? (
                     <div className="text-white/60 text-center py-12">
                       No hay partidos programados
@@ -239,12 +203,13 @@ export default function Display() {
                       ))}
                     </div>
                   ) : (
-                    <div ref={nextMatchesEmbla} className="overflow-hidden">
-                      <div className="flex">
+                    <div className="h-full overflow-hidden">
+                      <div className="animate-scroll-vertical space-y-3">
                         {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
-                          <div key={match.id} className="flex-[0_0_100%] min-w-0 pr-3">
-                            <NextMatchCard match={match} />
-                          </div>
+                          <NextMatchCard key={match.id} match={match} />
+                        ))}
+                        {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
+                          <NextMatchCard key={`${match.id}-dup`} match={match} />
                         ))}
                       </div>
                     </div>
@@ -261,7 +226,7 @@ export default function Display() {
                   Últimos Resultados
                 </h2>
                 
-                <div className="flex-1 overflow-hidden" data-testid="recent-results-list">
+                <div className="flex-1 overflow-hidden relative" data-testid="recent-results-list">
                   {recentResults.length === 0 ? (
                     <div className="text-white/60 text-center py-12">
                       No hay resultados recientes
@@ -273,14 +238,13 @@ export default function Display() {
                       ))}
                     </div>
                   ) : (
-                    <div ref={resultsEmbla} className="overflow-hidden">
-                      <div className="flex">
-                        {Array.from({ length: Math.ceil(recentResults.length / 4) }).map((_, slideIndex) => (
-                          <div key={slideIndex} className="flex-[0_0_100%] min-w-0 pr-3 space-y-3">
-                            {recentResults.slice(slideIndex * 4, (slideIndex + 1) * 4).map((result: any) => (
-                              <ResultCard key={result.id} result={result} formatResultScore={formatResultScore} />
-                            ))}
-                          </div>
+                    <div className="h-full overflow-hidden">
+                      <div className="animate-scroll-vertical space-y-3">
+                        {recentResults.map((result: any) => (
+                          <ResultCard key={result.id} result={result} formatResultScore={formatResultScore} />
+                        ))}
+                        {recentResults.map((result: any) => (
+                          <ResultCard key={`${result.id}-dup`} result={result} formatResultScore={formatResultScore} />
                         ))}
                       </div>
                     </div>
@@ -339,6 +303,15 @@ export default function Display() {
           }
         }
 
+        @keyframes scroll-vertical {
+          0% {
+            transform: translateY(0);
+          }
+          100% {
+            transform: translateY(-50%);
+          }
+        }
+
         .animate-marquee {
           animation: marquee 30s linear infinite;
           will-change: transform;
@@ -348,8 +321,20 @@ export default function Display() {
           animation-play-state: paused;
         }
 
+        .animate-scroll-vertical {
+          animation: scroll-vertical 20s linear infinite;
+          will-change: transform;
+        }
+
+        .animate-scroll-vertical:hover {
+          animation-play-state: paused;
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .animate-marquee {
+            animation: none;
+          }
+          .animate-scroll-vertical {
             animation: none;
           }
         }
