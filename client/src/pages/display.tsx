@@ -134,9 +134,9 @@ export default function Display() {
         <div className="px-8 py-4 flex items-center justify-between border-b border-white/20">
           <div className="flex items-center space-x-4">
             {tournament?.tournamentLogoUrl ? (
-              <img src={tournament.tournamentLogoUrl} alt="Logo Torneo" className="h-14 w-auto object-contain tv-display-logo" />
+              <img src={tournament.tournamentLogoUrl} alt="Logo Torneo" className="h-16 w-auto object-contain tv-display-logo" />
             ) : (
-              <img src={courtflowLogo} alt="CourtFlow" className="h-14 w-auto tv-display-logo" />
+              <img src={courtflowLogo} alt="CourtFlow" className="h-16 w-auto tv-display-logo" />
             )}
             <div className="text-white">
               <h1 className="text-2xl font-bold">CourtFlow</h1>
@@ -149,10 +149,10 @@ export default function Display() {
           {(tournament?.clubLogoUrl || tournament?.systemLogoUrl) && (
             <div className="flex items-center space-x-4">
               {tournament?.clubLogoUrl && (
-                <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-12 w-auto object-contain" />
+                <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-16 w-auto object-contain" />
               )}
               {tournament?.systemLogoUrl && (
-                <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-12 w-auto object-contain" />
+                <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-16 w-auto object-contain" />
               )}
             </div>
           )}
