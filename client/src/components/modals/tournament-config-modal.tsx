@@ -234,7 +234,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
       setSelectedClub(tournament.clubId || "");
       setStartDate(tournament.startDate ? new Date(tournament.startDate).toISOString().split('T')[0] : "");
       setEndDate(tournament.endDate ? new Date(tournament.endDate).toISOString().split('T')[0] : "");
-      setLogoUrl(tournament.logoUrl || "");
+      setLogoUrl(tournament.tournamentLogoUrl || "");
       setClubLogoUrl(tournament.clubLogoUrl || "");
       setSystemLogoUrl(tournament.systemLogoUrl || "");
     }
@@ -257,7 +257,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
       clubId: selectedClub,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
-      logoUrl: logoUrl || null,
+      tournamentLogoUrl: logoUrl || null,
       clubLogoUrl: clubLogoUrl || null,
       systemLogoUrl: systemLogoUrl || null,
     });
@@ -591,8 +591,8 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                   <div className="flex items-center space-x-2">
                     <Input
                       id="logoUrl"
-                      type="url"
-                      placeholder="https://ejemplo.com/logo-torneo.png"
+                      type="text"
+                      placeholder="https://ejemplo.com/logo-torneo.png o data:image/..."
                       value={logoUrl}
                       onChange={(e) => setLogoUrl(e.target.value)}
                       data-testid="input-logo-url"
@@ -617,8 +617,8 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                   <div className="flex items-center space-x-2">
                     <Input
                       id="clubLogoUrl"
-                      type="url"
-                      placeholder="https://ejemplo.com/logo-club.png"
+                      type="text"
+                      placeholder="https://ejemplo.com/logo-club.png o data:image/..."
                       value={clubLogoUrl}
                       onChange={(e) => setClubLogoUrl(e.target.value)}
                       data-testid="input-club-logo-url"
@@ -643,8 +643,8 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                   <div className="flex items-center space-x-2">
                     <Input
                       id="systemLogoUrl"
-                      type="url"
-                      placeholder="https://ejemplo.com/logo-sistema.png"
+                      type="text"
+                      placeholder="https://ejemplo.com/logo-sistema.png o data:image/..."
                       value={systemLogoUrl}
                       onChange={(e) => setSystemLogoUrl(e.target.value)}
                       data-testid="input-system-logo-url"

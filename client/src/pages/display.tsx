@@ -303,7 +303,7 @@ export default function Display() {
                   <div className="flex animate-marquee space-x-8">
                     {/* Duplicate sponsors for seamless loop */}
                     {[...activeBanners, ...activeBanners, ...activeBanners].map((banner: any, idx: number) => (
-                      <div key={`${banner.id}-${idx}`} className="h-10 flex items-center flex-shrink-0">
+                      <div key={`${banner.id}-${idx}`} className="h-16 flex items-center flex-shrink-0">
                         <img 
                           src={banner.imageUrl} 
                           alt={banner.sponsorName} 
