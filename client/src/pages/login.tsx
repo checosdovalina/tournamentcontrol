@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import courtflowLogo from "@assets/courtflow-logo.png";
+import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
 
 export default function Login() {
   const [username, setUsername] = useState("");

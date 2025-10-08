@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { X, Volleyball } from "lucide-react";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
-import courtflowLogo from "@assets/courtflow-logo.png";
+import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
 
 export default function Display() {
   const [, setLocation] = useLocation();

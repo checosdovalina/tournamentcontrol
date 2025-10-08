@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import courtflowLogo from "@assets/courtflow-logo.png";
+import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
 
 const setupSchema = z.object({
   username: z.string().min(3, "El usuario debe tener al menos 3 caracteres"),

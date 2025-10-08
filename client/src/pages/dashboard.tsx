@@ -16,7 +16,7 @@ import RecordResultModal from "@/components/modals/record-result-modal";
 import ManageCourtsModal from "@/components/modals/manage-courts-modal";
 import TournamentConfigModal from "@/components/modals/tournament-config-modal";
 import { useLocation } from "wouter";
-import courtflowLogo from "@assets/courtflow-logo.png";
+import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
