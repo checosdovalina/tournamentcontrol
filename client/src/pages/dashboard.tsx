@@ -54,7 +54,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
-                <img src={courtflowLogo} alt="CourtFlow" className="h-16 w-auto" />
+                <img src={courtflowLogo} alt="CourtFlow" className="h-[75px] w-auto" />
                 <div>
                   <p className="text-sm text-muted-foreground">
                     {tournament?.name || "Cargando..."}
