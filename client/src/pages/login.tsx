@@ -53,10 +53,9 @@ export default function Login() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <img src={courtflowLogo} alt="CourtFlow" className="h-24 w-auto" />
+          <div className="flex justify-center mb-6">
+            <img src={courtflowLogo} alt="CourtFlow" className="h-40 w-auto" />
           </div>
-          <CardTitle className="text-2xl">CourtFlow</CardTitle>
           <p className="text-muted-foreground">Sistema de Control de Torneos de Pádel</p>
         </CardHeader>
         <CardContent>
