@@ -172,32 +172,35 @@ export default function LiveScoreCapture() {
     const games = newScore.sets[currentSetIndex];
     const otherIndex = playerIndex === 0 ? 1 : 0;
 
-    // Check if set is won (need 6 games and lead by 2, or tiebreak at 7-6)
-    if (games[playerIndex] >= 6 && games[playerIndex] - games[otherIndex] >= 2) {
+    // Reset points after game
+    newScore.currentPoints = [0, 0];
+
+    // Check if set is won
+    let setWon = false;
+    
+    // Win by 2 games difference (e.g., 6-4, 6-3, 6-2, 6-1, 6-0, or 7-5, 8-6, etc.)
+    if (games[playerIndex] >= 6 && (games[playerIndex] - games[otherIndex]) >= 2) {
+      setWon = true;
+    }
+    // Tiebreak won (7-6)
+    else if (games[playerIndex] === 7 && games[otherIndex] === 6) {
+      setWon = true;
+    }
+    // At 6-6, enter tiebreak mode (don't end set)
+    else if (games[0] === 6 && games[1] === 6) {
+      setWon = false;
+    }
+
+    if (setWon) {
       // Set won, check if match is won (best of 3)
       const setsWon = getSetsWon(newScore.sets);
       if (setsWon[playerIndex] + 1 >= 2) {
-        // Match won! Don't increment set
-        newScore.currentPoints = [0, 0];
+        // Match won! Don't increment set number
+        // Match is over
       } else {
         // Start new set
         newScore.currentSet++;
-        newScore.currentPoints = [0, 0];
       }
-    } else if (games[playerIndex] === 7 && games[otherIndex] === 6) {
-      // Tiebreak won, check if match is won
-      const setsWon = getSetsWon(newScore.sets);
-      if (setsWon[playerIndex] + 1 >= 2) {
-        // Match won! Don't increment set
-        newScore.currentPoints = [0, 0];
-      } else {
-        // Start new set
-        newScore.currentSet++;
-        newScore.currentPoints = [0, 0];
-      }
-    } else {
-      // Game won, reset points
-      newScore.currentPoints = [0, 0];
     }
 
     setLiveScore(newScore);
