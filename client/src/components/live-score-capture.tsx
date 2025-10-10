@@ -1,0 +1,350 @@
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Trophy, Plus, Minus, RotateCcw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+
+export default function LiveScoreCapture() {
+  const { toast } = useToast();
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+
+  const { data: tournament } = useQuery<{ id: string; name: string }>({
+    queryKey: ["/api/tournament"],
+  });
+
+  const { data: currentMatches = [] } = useQuery<any[]>({
+    queryKey: ["/api/matches/current", tournament?.id],
+    enabled: !!tournament?.id,
+    refetchInterval: 10000,
+  });
+
+  const selectedMatch = currentMatches.find((m: any) => m.id === selectedMatchId);
+
+  // Initialize score structure
+  const getInitialScore = () => ({
+    sets: [] as number[][],
+    currentSet: 1,
+    currentPoints: [0, 0] // Using numeric points: 0, 15, 30, 40, advantage
+  });
+
+  const [liveScore, setLiveScore] = useState<any>(getInitialScore());
+
+  // Load score when match is selected
+  const handleSelectMatch = (match: any) => {
+    setSelectedMatchId(match.id);
+    
+    if (match.score) {
+      setLiveScore(match.score);
+    } else {
+      setLiveScore(getInitialScore());
+    }
+  };
+
+  const updateScoreMutation = useMutation({
+    mutationFn: async (score: any) => {
+      const response = await apiRequest("PATCH", `/api/matches/${selectedMatchId}/score`, { score });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/matches/current", tournament?.id] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al actualizar score",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const pointMap = [0, 15, 30, 40];
+
+  const addPoint = (playerIndex: 0 | 1) => {
+    const newScore = { ...liveScore };
+    const currentPoints = [...newScore.currentPoints];
+    const otherIndex = playerIndex === 0 ? 1 : 0;
+
+    // Handle deuce and advantage
+    if (currentPoints[0] >= 3 && currentPoints[1] >= 3) {
+      if (currentPoints[playerIndex] === currentPoints[otherIndex]) {
+        // Deuce - give advantage
+        currentPoints[playerIndex] = 4;
+      } else if (currentPoints[playerIndex] === 4) {
+        // Had advantage, wins game
+        addGame(playerIndex);
+        return;
+      } else {
+        // Other had advantage, back to deuce
+        currentPoints[otherIndex] = 3;
+      }
+    } else if (currentPoints[playerIndex] === 3) {
+      // Wins game (40 to win)
+      addGame(playerIndex);
+      return;
+    } else {
+      currentPoints[playerIndex]++;
+    }
+
+    newScore.currentPoints = currentPoints;
+    setLiveScore(newScore);
+    updateScoreMutation.mutate(newScore);
+  };
+
+  const addGame = (playerIndex: 0 | 1) => {
+    const newScore = { ...liveScore };
+    const currentSetIndex = newScore.currentSet - 1;
+    
+    // Initialize current set if needed
+    if (!newScore.sets[currentSetIndex]) {
+      newScore.sets[currentSetIndex] = [0, 0];
+    }
+
+    newScore.sets[currentSetIndex][playerIndex]++;
+    const games = newScore.sets[currentSetIndex];
+    const otherIndex = playerIndex === 0 ? 1 : 0;
+
+    // Check if set is won (need 6 games and lead by 2, or tiebreak at 7-6)
+    if (games[playerIndex] >= 6 && games[playerIndex] - games[otherIndex] >= 2) {
+      // Set won, start new set
+      newScore.currentSet++;
+      newScore.currentPoints = [0, 0];
+    } else if (games[playerIndex] === 7 && games[otherIndex] === 6) {
+      // Tiebreak won
+      newScore.currentSet++;
+      newScore.currentPoints = [0, 0];
+    } else {
+      // Game won, reset points
+      newScore.currentPoints = [0, 0];
+    }
+
+    setLiveScore(newScore);
+    updateScoreMutation.mutate(newScore);
+  };
+
+  const removePoint = (playerIndex: 0 | 1) => {
+    const newScore = { ...liveScore };
+    const currentPoints = [...newScore.currentPoints];
+
+    if (currentPoints[playerIndex] > 0) {
+      currentPoints[playerIndex]--;
+      newScore.currentPoints = currentPoints;
+      setLiveScore(newScore);
+      updateScoreMutation.mutate(newScore);
+    }
+  };
+
+  const resetScore = () => {
+    const newScore = getInitialScore();
+    setLiveScore(newScore);
+    updateScoreMutation.mutate(newScore);
+  };
+
+  const formatPoints = (points: number) => {
+    if (points === 4) return "AD";
+    return pointMap[points] || 0;
+  };
+
+  const getCurrentSetGames = () => {
+    const currentSetIndex = liveScore.currentSet - 1;
+    return liveScore.sets[currentSetIndex] || [0, 0];
+  };
+
+  if (!selectedMatch) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Trophy className="mr-2 h-5 w-5" />
+            Captura de Score en Tiempo Real
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {currentMatches.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">
+              No hay partidos en curso para capturar score
+            </p>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground mb-4">
+                Selecciona un partido para comenzar a capturar el score:
+              </p>
+              {currentMatches.map((match: any) => (
+                <Button
+                  key={match.id}
+                  variant="outline"
+                  className="w-full justify-start h-auto py-4"
+                  onClick={() => handleSelectMatch(match)}
+                  data-testid={`button-select-match-${match.id}`}
+                >
+                  <div className="w-full">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-semibold">{match.pair1Player1} / {match.pair1Player2}</p>
+                        <p className="text-xs text-muted-foreground">vs</p>
+                        <p className="font-semibold">{match.pair2Player1} / {match.pair2Player2}</p>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant="secondary">{match.courtName}</Badge>
+                        {match.categoryName && (
+                          <p className="text-xs text-muted-foreground mt-1">{match.categoryName}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const currentSetGames = getCurrentSetGames();
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="flex items-center">
+              <Trophy className="mr-2 h-5 w-5" />
+              Captura de Score - {selectedMatch.courtName}
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedMatchId(null)}
+              data-testid="button-back-to-matches"
+            >
+              ← Volver
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Match Info */}
+          <div className="bg-muted/50 p-4 rounded-lg">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="font-semibold">{selectedMatch.pair1Player1} / {selectedMatch.pair1Player2}</p>
+              </div>
+              <div className="text-right">
+                <Badge variant="secondary">{selectedMatch.categoryName || "Sin categoría"}</Badge>
+              </div>
+            </div>
+            <p className="text-center text-xs text-muted-foreground my-2">vs</p>
+            <div>
+              <p className="font-semibold">{selectedMatch.pair2Player1} / {selectedMatch.pair2Player2}</p>
+            </div>
+          </div>
+
+          {/* Sets History */}
+          {liveScore.sets.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium mb-2">Sets Completados:</h4>
+              <div className="flex gap-2">
+                {liveScore.sets.map((set: number[], index: number) => (
+                  <Badge key={index} variant="outline" className="text-lg px-3 py-1">
+                    {set[0]}-{set[1]}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <Separator />
+
+          {/* Current Set */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-sm font-medium">Set {liveScore.currentSet}</h4>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetScore}
+                data-testid="button-reset-score"
+              >
+                <RotateCcw className="h-4 w-4 mr-1" />
+                Reiniciar
+              </Button>
+            </div>
+
+            {/* Games in Current Set */}
+            <div className="bg-primary/5 p-4 rounded-lg mb-4">
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <p className="text-3xl font-bold">{currentSetGames[0]}</p>
+                  <p className="text-xs text-muted-foreground">Juegos</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold">{currentSetGames[1]}</p>
+                  <p className="text-xs text-muted-foreground">Juegos</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Current Points */}
+            <div className="bg-secondary/20 p-6 rounded-lg">
+              <p className="text-xs text-center text-muted-foreground mb-3">Puntos Actuales</p>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="text-center">
+                  <p className="text-5xl font-bold mb-3">{formatPoints(liveScore.currentPoints[0])}</p>
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removePoint(0)}
+                      disabled={liveScore.currentPoints[0] === 0}
+                      data-testid="button-remove-point-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      onClick={() => addPoint(0)}
+                      size="lg"
+                      data-testid="button-add-point-0"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Punto
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-5xl font-bold mb-3">{formatPoints(liveScore.currentPoints[1])}</p>
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removePoint(1)}
+                      disabled={liveScore.currentPoints[1] === 0}
+                      data-testid="button-remove-point-1"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      onClick={() => addPoint(1)}
+                      size="lg"
+                      data-testid="button-add-point-1"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Punto
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-xs text-muted-foreground text-center">
+            Los cambios se guardan automáticamente y se reflejan en tiempo real
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
