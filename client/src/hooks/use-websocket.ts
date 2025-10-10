@@ -31,6 +31,7 @@ export function useWebSocket(userId?: string) {
           switch (message.type) {
             case "match_started":
             case "match_updated":
+            case "score_updated":
               queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
               queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
               queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting"] });

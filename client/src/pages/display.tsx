@@ -76,8 +76,32 @@ export default function Display() {
   };
 
   const formatScore = (score: any) => {
-    if (!score || !Array.isArray(score.sets)) return "0-0";
-    return score.sets.map((set: any) => `${set[0] || 0}-${set[1] || 0}`).join(" | ");
+    if (!score) return "0-0";
+    
+    // Handle new live score format
+    if (score.sets && Array.isArray(score.sets)) {
+      const pointMap = [0, 15, 30, 40];
+      const formatPoints = (points: number) => {
+        if (points === 4) return "AD";
+        return pointMap[points] || 0;
+      };
+
+      // Show completed sets
+      let result = score.sets.map((set: any) => `${set[0]}-${set[1]}`).join(" | ");
+      
+      // Show current game points if available
+      if (score.currentPoints && score.currentPoints.length === 2) {
+        const p1 = formatPoints(score.currentPoints[0]);
+        const p2 = formatPoints(score.currentPoints[1]);
+        if (result) result += " | ";
+        result += `${p1}-${p2}`;
+      }
+      
+      return result || "0-0";
+    }
+    
+    // Fallback for old format
+    return "0-0";
   };
 
   const formatResultScore = (score: any) => {

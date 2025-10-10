@@ -7,10 +7,11 @@ This is a real-time **multi-tenant** tournament management system for padel (pad
 Built as a full-stack web application, it provides:
 - **Superadmin Panel**: Create tournaments, manage users, assign roles
 - **Admin Dashboard**: Configure tournaments, manage categories/banners, register players
-- **Scorekeeper Dashboard**: Register players, record results
-- **Public Display**: Real-time tournament information for participants and spectators
+- **Scorekeeper Dashboard**: Register players, record results, capture live scores
+- **Live Score Capture**: Real-time point-by-point score tracking with automatic game/set calculation
+- **Public Display**: Real-time tournament information for participants and spectators with live score updates
 
-Last Updated: October 03, 2025 - Display screen now shows scheduled matches that are ready to play (status 'ready' or 'assigned') in the "Próximos Partidos" column instead of waiting pairs, providing better visibility of programmed matches
+Last Updated: October 10, 2025 - Added live score capture module allowing scorekeepers to track match scores in real-time with point-by-point updates that display immediately on screens via WebSocket
 
 ## User Preferences
 
@@ -31,7 +32,7 @@ Preferred communication style: Simple, everyday language.
 - `/display` - Public display screen (no authentication)
 - `/login` - Authentication page
 
-**Real-time Updates**: WebSocket connection established through custom `useWebSocket` hook that listens for server events (match_started, match_updated, result_recorded, pair_registered, court_updated) and invalidates relevant query caches to trigger UI updates.
+**Real-time Updates**: WebSocket connection established through custom `useWebSocket` hook that listens for server events (match_started, match_updated, score_updated, result_recorded, pair_registered, court_updated) and invalidates relevant query caches to trigger UI updates.
 
 ### Backend Architecture
 
@@ -67,7 +68,7 @@ Preferred communication style: Simple, everyday language.
 - Courts (playing surfaces with availability tracking)
 - Players (individual participants)
 - Pairs (team compositions with category assignments)
-- Matches (game instances with court and category assignments)
+- Matches (game instances with court and category assignments, includes live score tracking)
 - Results (match outcomes with set scores)
 
 **Schema Strategy**: UUID primary keys using PostgreSQL's `gen_random_uuid()`. Foreign key relationships link tournaments to clubs, pairs to players, matches to pairs and courts. Multi-tenant isolation via tournament_users join table linking users to tournaments with role assignments (admin, scorekeeper, display). Timestamps track creation times across all entities.
