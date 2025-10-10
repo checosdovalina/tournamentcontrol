@@ -469,6 +469,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update match score in real-time (for live score capture)
+  app.patch("/api/matches/:id/score", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { score } = req.body;
+      
+      if (!score) {
+        return res.status(400).json({ message: "Score is required" });
+      }
+      
+      const updatedMatch = await storage.updateMatch(id, { score });
+      
+      if (!updatedMatch) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+      
+      // Broadcast score update for real-time display
+      broadcastUpdate({ type: "score_updated", data: updatedMatch });
+      res.json(updatedMatch);
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update score", error: error.message });
+    }
+  });
+
   // Results routes
   app.get("/api/results/recent/:tournamentId", async (req, res) => {
     try {
