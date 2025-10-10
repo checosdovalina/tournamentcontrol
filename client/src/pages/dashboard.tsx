@@ -11,6 +11,7 @@ import TournamentStats from "@/components/tournament-stats";
 import ScheduledMatches from "@/components/scheduled-matches";
 import SuperAdminPanel from "@/components/super-admin-panel";
 import PairsManagement from "@/components/pairs-management";
+import LiveScoreCapture from "@/components/live-score-capture";
 import RegisterPlayerModal from "@/components/modals/register-player-modal";
 import RecordResultModal from "@/components/modals/record-result-modal";
 import ManageCourtsModal from "@/components/modals/manage-courts-modal";
@@ -120,6 +121,10 @@ export default function Dashboard() {
               <ClipboardCheck className="w-4 h-4 mr-2" />
               Control
             </TabsTrigger>
+            <TabsTrigger value="live-score" data-testid="tab-live-score">
+              <Tv className="w-4 h-4 mr-2" />
+              Captura de Score
+            </TabsTrigger>
             <TabsTrigger value="schedule" data-testid="tab-schedule">
               <Calendar className="w-4 h-4 mr-2" />
               Programación
@@ -216,6 +221,10 @@ export default function Dashboard() {
 
             {/* Tournament Statistics */}
             <TournamentStats tournamentId={tournament?.id} />
+          </TabsContent>
+
+          <TabsContent value="live-score">
+            <LiveScoreCapture />
           </TabsContent>
 
           <TabsContent value="schedule">
