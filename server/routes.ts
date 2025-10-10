@@ -1280,6 +1280,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reset player status to unconfirmed
+  app.post("/api/scheduled-matches/:id/reset-status", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { playerId } = req.body;
+      
+      if (!playerId) {
+        return res.status(400).json({ message: "Player ID is required" });
+      }
+      
+      const player = await storage.resetPlayerStatus(id, playerId);
+      
+      if (!player) {
+        return res.status(404).json({ message: "Scheduled match or player not found" });
+      }
+      
+      const match = await storage.getScheduledMatch(id);
+      res.json({ player, match });
+      broadcastUpdate({ type: "player_status_reset", data: { scheduledMatchId: id, playerId, match } });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to reset player status", error: error.message });
+    }
+  });
+
   // Auto-assign court to a ready match
   app.post("/api/scheduled-matches/:id/auto-assign", requireAuth, async (req, res) => {
     try {

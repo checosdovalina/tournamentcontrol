@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Calendar as CalendarIcon, Plus, Zap, MapPin, Clock, Users, CheckCircle2, Circle } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Zap, MapPin, Clock, Users, Check, X, Minus } from "lucide-react";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
 import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/schema";
 
@@ -75,10 +75,23 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
-      toast({ title: "Check-out realizado", description: "El jugador ya no está presente" });
+      toast({ title: "Jugador marcado como ausente", description: "El jugador no se presentó" });
     },
     onError: () => {
-      toast({ title: "Error", description: "No se pudo realizar el check-out", variant: "destructive" });
+      toast({ title: "Error", description: "No se pudo marcar como ausente", variant: "destructive" });
+    },
+  });
+
+  const resetStatusMutation = useMutation({
+    mutationFn: async ({ matchId, playerId }: { matchId: string; playerId: string }) => {
+      return apiRequest("POST", `/api/scheduled-matches/${matchId}/reset-status`, { playerId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      toast({ title: "Estado reseteado", description: "El jugador está sin confirmar" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "No se pudo resetear el estado", variant: "destructive" });
     },
   });
 
@@ -143,6 +156,10 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const handleCheckOut = (matchId: string, playerId: string) => {
     checkOutMutation.mutate({ matchId, playerId });
+  };
+
+  const handleResetStatus = (matchId: string, playerId: string) => {
+    resetStatusMutation.mutate({ matchId, playerId });
   };
 
   const handleAutoAssign = (matchId: string) => {
@@ -260,147 +277,121 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {/* Pair 1 */}
-                <div className="border rounded-lg p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold flex items-center">
-                      <Users className="w-4 h-4 mr-2" />
-                      Pareja 1
-                    </h4>
+                <div className="border rounded-md p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Pareja 1</span>
+                    </div>
                     <span className="text-sm text-muted-foreground" data-testid={`text-pair1-name-${match.id}`}>
                       {match.pair1.player1.name} / {match.pair1.player2.name}
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    {match.players
-                      .filter(p => p.pairId === match.pair1Id)
-                      .map((player) => (
-                        <div
-                          key={player.playerId}
-                          className="border rounded-lg p-3 bg-card"
-                          data-testid={`player-status-${player.playerId}`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium" data-testid={`text-player-name-${player.playerId}`}>
-                              {player.player.name}
-                            </span>
-                          </div>
-                          <RadioGroup
-                            value={player.isPresent ? "present" : "pending"}
-                            onValueChange={(value) => {
-                              if (value === "present" && !player.isPresent) {
-                                handleCheckIn(match.id, player.playerId);
-                              } else if (value === "pending" && player.isPresent) {
-                                handleCheckOut(match.id, player.playerId);
-                              }
-                            }}
+                  {match.players
+                    .filter(p => p.pairId === match.pair1Id)
+                    .map((player) => (
+                      <div
+                        key={player.playerId}
+                        className="flex items-center justify-between py-1.5"
+                        data-testid={`player-status-${player.playerId}`}
+                      >
+                        <span className="text-sm" data-testid={`text-player-name-${player.playerId}`}>
+                          {player.player.name}
+                        </span>
+                        <div className="flex gap-1">
+                          <Button
+                            variant={player.isPresent === true ? "default" : "outline"}
+                            size="sm"
+                            className={`w-8 h-8 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                            onClick={() => handleCheckIn(match.id, player.playerId)}
+                            data-testid={`button-present-${player.playerId}`}
+                            title="Marcar como presente"
                           >
-                            <div className="flex gap-4">
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem 
-                                  value="present" 
-                                  id={`${player.playerId}-present`}
-                                  data-testid={`radio-present-${player.playerId}`}
-                                />
-                                <Label 
-                                  htmlFor={`${player.playerId}-present`}
-                                  className="flex items-center gap-1.5 cursor-pointer font-normal"
-                                >
-                                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                  <span>Presente</span>
-                                </Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem 
-                                  value="pending" 
-                                  id={`${player.playerId}-pending`}
-                                  data-testid={`radio-pending-${player.playerId}`}
-                                />
-                                <Label 
-                                  htmlFor={`${player.playerId}-pending`}
-                                  className="flex items-center gap-1.5 cursor-pointer font-normal"
-                                >
-                                  <Circle className="w-4 h-4 text-muted-foreground" />
-                                  <span>Sin confirmar</span>
-                                </Label>
-                              </div>
-                            </div>
-                          </RadioGroup>
+                            <Check className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant={player.isPresent === false ? "default" : "outline"}
+                            size="sm"
+                            className={`w-8 h-8 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                            onClick={() => handleCheckOut(match.id, player.playerId)}
+                            data-testid={`button-absent-${player.playerId}`}
+                            title="No se presentó"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant={player.isPresent === null ? "default" : "outline"}
+                            size="sm"
+                            className={`w-8 h-8 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
+                            onClick={() => handleResetStatus(match.id, player.playerId)}
+                            data-testid={`button-pending-${player.playerId}`}
+                            title="Sin confirmar"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
                         </div>
-                      ))}
-                  </div>
+                      </div>
+                    ))}
                 </div>
 
                 {/* Pair 2 */}
-                <div className="border rounded-lg p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold flex items-center">
-                      <Users className="w-4 h-4 mr-2" />
-                      Pareja 2
-                    </h4>
+                <div className="border rounded-md p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Pareja 2</span>
+                    </div>
                     <span className="text-sm text-muted-foreground" data-testid={`text-pair2-name-${match.id}`}>
                       {match.pair2.player1.name} / {match.pair2.player2.name}
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    {match.players
-                      .filter(p => p.pairId === match.pair2Id)
-                      .map((player) => (
-                        <div
-                          key={player.playerId}
-                          className="border rounded-lg p-3 bg-card"
-                          data-testid={`player-status-${player.playerId}`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium" data-testid={`text-player-name-${player.playerId}`}>
-                              {player.player.name}
-                            </span>
-                          </div>
-                          <RadioGroup
-                            value={player.isPresent ? "present" : "pending"}
-                            onValueChange={(value) => {
-                              if (value === "present" && !player.isPresent) {
-                                handleCheckIn(match.id, player.playerId);
-                              } else if (value === "pending" && player.isPresent) {
-                                handleCheckOut(match.id, player.playerId);
-                              }
-                            }}
+                  {match.players
+                    .filter(p => p.pairId === match.pair2Id)
+                    .map((player) => (
+                      <div
+                        key={player.playerId}
+                        className="flex items-center justify-between py-1.5"
+                        data-testid={`player-status-${player.playerId}`}
+                      >
+                        <span className="text-sm" data-testid={`text-player-name-${player.playerId}`}>
+                          {player.player.name}
+                        </span>
+                        <div className="flex gap-1">
+                          <Button
+                            variant={player.isPresent === true ? "default" : "outline"}
+                            size="sm"
+                            className={`w-8 h-8 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                            onClick={() => handleCheckIn(match.id, player.playerId)}
+                            data-testid={`button-present-${player.playerId}`}
+                            title="Marcar como presente"
                           >
-                            <div className="flex gap-4">
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem 
-                                  value="present" 
-                                  id={`${player.playerId}-present`}
-                                  data-testid={`radio-present-${player.playerId}`}
-                                />
-                                <Label 
-                                  htmlFor={`${player.playerId}-present`}
-                                  className="flex items-center gap-1.5 cursor-pointer font-normal"
-                                >
-                                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                  <span>Presente</span>
-                                </Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem 
-                                  value="pending" 
-                                  id={`${player.playerId}-pending`}
-                                  data-testid={`radio-pending-${player.playerId}`}
-                                />
-                                <Label 
-                                  htmlFor={`${player.playerId}-pending`}
-                                  className="flex items-center gap-1.5 cursor-pointer font-normal"
-                                >
-                                  <Circle className="w-4 h-4 text-muted-foreground" />
-                                  <span>Sin confirmar</span>
-                                </Label>
-                              </div>
-                            </div>
-                          </RadioGroup>
+                            <Check className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant={player.isPresent === false ? "default" : "outline"}
+                            size="sm"
+                            className={`w-8 h-8 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                            onClick={() => handleCheckOut(match.id, player.playerId)}
+                            data-testid={`button-absent-${player.playerId}`}
+                            title="No se presentó"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant={player.isPresent === null ? "default" : "outline"}
+                            size="sm"
+                            className={`w-8 h-8 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
+                            onClick={() => handleResetStatus(match.id, player.playerId)}
+                            data-testid={`button-pending-${player.playerId}`}
+                            title="Sin confirmar"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
                         </div>
-                      ))}
-                  </div>
+                      </div>
+                    ))}
                 </div>
 
                 {/* Court Assignment Controls */}

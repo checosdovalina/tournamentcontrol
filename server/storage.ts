@@ -126,6 +126,7 @@ export interface IStorage {
   getScheduledMatchPlayers(scheduledMatchId: string): Promise<(ScheduledMatchPlayer & { player: Player })[]>;
   checkInPlayer(scheduledMatchId: string, playerId: string, checkedInBy: string): Promise<ScheduledMatchPlayer | undefined>;
   checkOutPlayer(scheduledMatchId: string, playerId: string): Promise<ScheduledMatchPlayer | undefined>;
+  resetPlayerStatus(scheduledMatchId: string, playerId: string): Promise<ScheduledMatchPlayer | undefined>;
   
   // Court Assignment
   autoAssignCourt(scheduledMatchId: string): Promise<ScheduledMatch | undefined>;
@@ -994,6 +995,29 @@ export class MemStorage implements IStorage {
     const updated: ScheduledMatchPlayer = {
       ...matchPlayer,
       isPresent: false,
+      checkInTime: null,
+      checkedInBy: null
+    };
+    this.scheduledMatchPlayers.set(matchPlayer.id, updated);
+
+    if (match && match.status === "ready") {
+      await this.updateScheduledMatch(scheduledMatchId, { status: "scheduled" });
+    }
+
+    return updated;
+  }
+
+  async resetPlayerStatus(scheduledMatchId: string, playerId: string): Promise<ScheduledMatchPlayer | undefined> {
+    const matchPlayer = Array.from(this.scheduledMatchPlayers.values())
+      .find(p => p.scheduledMatchId === scheduledMatchId && p.playerId === playerId);
+
+    if (!matchPlayer) return undefined;
+
+    const match = await this.getScheduledMatch(scheduledMatchId);
+    
+    const updated: ScheduledMatchPlayer = {
+      ...matchPlayer,
+      isPresent: null,
       checkInTime: null,
       checkedInBy: null
     };

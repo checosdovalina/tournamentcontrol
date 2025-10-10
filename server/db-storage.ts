@@ -655,6 +655,29 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  async resetPlayerStatus(scheduledMatchId: string, playerId: string): Promise<ScheduledMatchPlayer | undefined> {
+    const match = await this.getScheduledMatch(scheduledMatchId);
+
+    const result = await db
+      .update(scheduledMatchPlayers)
+      .set({
+        isPresent: null,
+        checkInTime: null,
+        checkedInBy: null,
+      })
+      .where(and(eq(scheduledMatchPlayers.scheduledMatchId, scheduledMatchId), eq(scheduledMatchPlayers.playerId, playerId)))
+      .returning();
+
+    const updated = result[0];
+    if (!updated) return undefined;
+
+    if (match && match.status === "ready") {
+      await this.updateScheduledMatch(scheduledMatchId, { status: "scheduled" });
+    }
+
+    return updated;
+  }
+
   // Court Assignment
   async autoAssignCourt(scheduledMatchId: string): Promise<ScheduledMatch | undefined> {
     const match = await this.getScheduledMatch(scheduledMatchId);
