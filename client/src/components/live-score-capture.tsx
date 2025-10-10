@@ -183,12 +183,12 @@ export default function LiveScoreCapture() {
                   <div className="w-full">
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="font-semibold">{match.pair1Player1} / {match.pair1Player2}</p>
+                        <p className="font-semibold">{match.pair1?.player1?.name || 'Jugador 1'} / {match.pair1?.player2?.name || 'Jugador 2'}</p>
                         <p className="text-xs text-muted-foreground">vs</p>
-                        <p className="font-semibold">{match.pair2Player1} / {match.pair2Player2}</p>
+                        <p className="font-semibold">{match.pair2?.player1?.name || 'Jugador 3'} / {match.pair2?.player2?.name || 'Jugador 4'}</p>
                       </div>
                       <div className="text-right">
-                        <Badge variant="secondary">{match.courtName}</Badge>
+                        <Badge variant="secondary">{match.court?.name || 'Cancha'}</Badge>
                         {match.categoryName && (
                           <p className="text-xs text-muted-foreground mt-1">{match.categoryName}</p>
                         )}
@@ -213,7 +213,7 @@ export default function LiveScoreCapture() {
           <div className="flex justify-between items-center">
             <CardTitle className="flex items-center">
               <Trophy className="mr-2 h-5 w-5" />
-              Captura de Score - {selectedMatch.courtName}
+              Captura de Score - {selectedMatch.court?.name || 'Cancha'}
             </CardTitle>
             <Button
               variant="ghost"
@@ -230,7 +230,7 @@ export default function LiveScoreCapture() {
           <div className="bg-muted/50 p-4 rounded-lg">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="font-semibold">{selectedMatch.pair1Player1} / {selectedMatch.pair1Player2}</p>
+                <p className="font-semibold">{selectedMatch.pair1?.player1?.name || 'Jugador 1'} / {selectedMatch.pair1?.player2?.name || 'Jugador 2'}</p>
               </div>
               <div className="text-right">
                 <Badge variant="secondary">{selectedMatch.categoryName || "Sin categoría"}</Badge>
@@ -238,7 +238,7 @@ export default function LiveScoreCapture() {
             </div>
             <p className="text-center text-xs text-muted-foreground my-2">vs</p>
             <div>
-              <p className="font-semibold">{selectedMatch.pair2Player1} / {selectedMatch.pair2Player2}</p>
+              <p className="font-semibold">{selectedMatch.pair2?.player1?.name || 'Jugador 3'} / {selectedMatch.pair2?.player2?.name || 'Jugador 4'}</p>
             </div>
           </div>
 
