@@ -61,6 +61,42 @@ export default function LiveScoreCapture() {
     },
   });
 
+  const finishMatchMutation = useMutation({
+    mutationFn: async () => {
+      const winner = getWinner();
+      if (winner === null) {
+        throw new Error("No hay un ganador definido");
+      }
+
+      const winnerId = winner === 0 ? selectedMatch.pair1Id : selectedMatch.pair2Id;
+      const loserId = winner === 0 ? selectedMatch.pair2Id : selectedMatch.pair1Id;
+
+      const response = await apiRequest("POST", "/api/results", {
+        matchId: selectedMatchId,
+        winnerId,
+        loserId,
+        score: liveScore.sets,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Partido finalizado",
+        description: "El resultado ha sido guardado correctamente",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/matches/current", tournament?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/results"] });
+      setSelectedMatchId(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al finalizar partido",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const pointMap = [0, 15, 30, 40];
 
   // Check if we're in tiebreak
@@ -138,13 +174,27 @@ export default function LiveScoreCapture() {
 
     // Check if set is won (need 6 games and lead by 2, or tiebreak at 7-6)
     if (games[playerIndex] >= 6 && games[playerIndex] - games[otherIndex] >= 2) {
-      // Set won, start new set
-      newScore.currentSet++;
-      newScore.currentPoints = [0, 0];
+      // Set won, check if match is won (best of 3)
+      const setsWon = getSetsWon(newScore.sets);
+      if (setsWon[playerIndex] + 1 >= 2) {
+        // Match won! Don't increment set
+        newScore.currentPoints = [0, 0];
+      } else {
+        // Start new set
+        newScore.currentSet++;
+        newScore.currentPoints = [0, 0];
+      }
     } else if (games[playerIndex] === 7 && games[otherIndex] === 6) {
-      // Tiebreak won
-      newScore.currentSet++;
-      newScore.currentPoints = [0, 0];
+      // Tiebreak won, check if match is won
+      const setsWon = getSetsWon(newScore.sets);
+      if (setsWon[playerIndex] + 1 >= 2) {
+        // Match won! Don't increment set
+        newScore.currentPoints = [0, 0];
+      } else {
+        // Start new set
+        newScore.currentSet++;
+        newScore.currentPoints = [0, 0];
+      }
     } else {
       // Game won, reset points
       newScore.currentPoints = [0, 0];
@@ -152,6 +202,27 @@ export default function LiveScoreCapture() {
 
     setLiveScore(newScore);
     updateScoreMutation.mutate(newScore);
+  };
+
+  // Calculate sets won by each pair
+  const getSetsWon = (sets: number[][]) => {
+    const setsWon = [0, 0];
+    sets.forEach((set) => {
+      if (set[0] > set[1]) {
+        setsWon[0]++;
+      } else if (set[1] > set[0]) {
+        setsWon[1]++;
+      }
+    });
+    return setsWon;
+  };
+
+  // Check if there's a winner (best of 3 sets)
+  const getWinner = () => {
+    const setsWon = getSetsWon(liveScore.sets);
+    if (setsWon[0] >= 2) return 0;
+    if (setsWon[1] >= 2) return 1;
+    return null;
   };
 
   const removePoint = (playerIndex: 0 | 1) => {
@@ -241,6 +312,8 @@ export default function LiveScoreCapture() {
   }
 
   const currentSetGames = getCurrentSetGames();
+  const winner = getWinner();
+  const isMatchFinished = winner !== null;
 
   return (
     <div className="space-y-4">
@@ -277,6 +350,21 @@ export default function LiveScoreCapture() {
               <p className="font-semibold">{selectedMatch.pair2?.player1?.name || 'Jugador 3'} / {selectedMatch.pair2?.player2?.name || 'Jugador 4'}</p>
             </div>
           </div>
+
+          {/* Winner Message */}
+          {isMatchFinished && (
+            <div className="bg-green-100 dark:bg-green-900/20 border border-green-500 rounded-lg p-4">
+              <div className="flex items-center justify-center gap-2">
+                <Trophy className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <p className="font-semibold text-green-700 dark:text-green-300">
+                  ¡Partido Finalizado! Ganador: {winner === 0 
+                    ? `${selectedMatch.pair1?.player1?.name} / ${selectedMatch.pair1?.player2?.name}`
+                    : `${selectedMatch.pair2?.player1?.name} / ${selectedMatch.pair2?.player2?.name}`
+                  }
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Sets History */}
           {liveScore.sets.length > 0 && (
@@ -340,7 +428,7 @@ export default function LiveScoreCapture() {
                       size="sm"
                       className="h-8 w-8 md:h-9 md:w-9 p-0"
                       onClick={() => removePoint(0)}
-                      disabled={liveScore.currentPoints[0] === 0}
+                      disabled={liveScore.currentPoints[0] === 0 || isMatchFinished}
                       data-testid="button-remove-point-0"
                     >
                       <Minus className="h-3 w-3 md:h-4 md:w-4" />
@@ -349,6 +437,7 @@ export default function LiveScoreCapture() {
                       onClick={() => addPoint(0)}
                       size="sm"
                       className="h-8 md:h-10 px-3 md:px-4"
+                      disabled={isMatchFinished}
                       data-testid="button-add-point-0"
                     >
                       <Plus className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
@@ -365,7 +454,7 @@ export default function LiveScoreCapture() {
                       size="sm"
                       className="h-8 w-8 md:h-9 md:w-9 p-0"
                       onClick={() => removePoint(1)}
-                      disabled={liveScore.currentPoints[1] === 0}
+                      disabled={liveScore.currentPoints[1] === 0 || isMatchFinished}
                       data-testid="button-remove-point-1"
                     >
                       <Minus className="h-3 w-3 md:h-4 md:w-4" />
@@ -374,6 +463,7 @@ export default function LiveScoreCapture() {
                       onClick={() => addPoint(1)}
                       size="sm"
                       className="h-8 md:h-10 px-3 md:px-4"
+                      disabled={isMatchFinished}
                       data-testid="button-add-point-1"
                     >
                       <Plus className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
@@ -385,8 +475,27 @@ export default function LiveScoreCapture() {
             </div>
           </div>
 
+          {/* Finish Match Button */}
+          {isMatchFinished && (
+            <div className="flex justify-center">
+              <Button
+                size="lg"
+                className="w-full md:w-auto"
+                onClick={() => finishMatchMutation.mutate()}
+                disabled={finishMatchMutation.isPending}
+                data-testid="button-finish-match"
+              >
+                <Trophy className="mr-2 h-5 w-5" />
+                {finishMatchMutation.isPending ? "Guardando..." : "Finalizar Partido y Guardar Resultado"}
+              </Button>
+            </div>
+          )}
+
           <div className="text-xs text-muted-foreground text-center">
-            Los cambios se guardan automáticamente y se reflejan en tiempo real
+            {isMatchFinished 
+              ? "Haz clic en 'Finalizar Partido' para guardar el resultado"
+              : "Los cambios se guardan automáticamente y se reflejan en tiempo real"
+            }
           </div>
         </CardContent>
       </Card>
