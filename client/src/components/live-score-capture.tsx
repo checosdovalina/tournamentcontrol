@@ -63,11 +63,40 @@ export default function LiveScoreCapture() {
 
   const pointMap = [0, 15, 30, 40];
 
+  // Check if we're in tiebreak
+  const isInTiebreak = () => {
+    const currentSetIndex = liveScore.currentSet - 1;
+    const games = liveScore.sets[currentSetIndex] || [0, 0];
+    return games[0] === 6 && games[1] === 6;
+  };
+
   const addPoint = (playerIndex: 0 | 1) => {
     const newScore = { ...liveScore };
     const currentPoints = [...newScore.currentPoints];
     const otherIndex = playerIndex === 0 ? 1 : 0;
 
+    // TIEBREAK LOGIC
+    if (isInTiebreak()) {
+      currentPoints[playerIndex]++;
+      
+      // Check if tiebreak is won: first to 7 with 2-point difference
+      const winner = currentPoints[playerIndex];
+      const loser = currentPoints[otherIndex];
+      
+      if (winner >= 7 && (winner - loser) >= 2) {
+        // Tiebreak won! Add game and move to next set
+        addGame(playerIndex);
+        return;
+      }
+      
+      // Tiebreak continues
+      newScore.currentPoints = currentPoints;
+      setLiveScore(newScore);
+      updateScoreMutation.mutate(newScore);
+      return;
+    }
+
+    // NORMAL GAME LOGIC (0-15-30-40-deuce-advantage)
     // Handle deuce and advantage
     if (currentPoints[0] >= 3 && currentPoints[1] >= 3) {
       if (currentPoints[playerIndex] === currentPoints[otherIndex]) {
@@ -144,6 +173,12 @@ export default function LiveScoreCapture() {
   };
 
   const formatPoints = (points: number) => {
+    // In tiebreak, show actual numeric points
+    if (isInTiebreak()) {
+      return points;
+    }
+    
+    // In normal game, use tennis scoring
     if (points === 4) return "AD";
     return pointMap[points] || 0;
   };
@@ -289,7 +324,12 @@ export default function LiveScoreCapture() {
 
             {/* Current Points */}
             <div className="bg-secondary/20 p-6 rounded-lg">
-              <p className="text-xs text-center text-muted-foreground mb-3">Puntos Actuales</p>
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <p className="text-xs text-center text-muted-foreground">Puntos Actuales</p>
+                {isInTiebreak() && (
+                  <Badge variant="destructive" className="text-xs">TIEBREAK</Badge>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="text-center">
                   <p className="text-5xl font-bold mb-3">{formatPoints(liveScore.currentPoints[0])}</p>
