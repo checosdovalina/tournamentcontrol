@@ -75,7 +75,7 @@ export default function LiveScoreCapture() {
         matchId: selectedMatchId,
         winnerId,
         loserId,
-        score: liveScore.sets,
+        score: { sets: liveScore.sets },
       });
       return response.json();
     },
