@@ -1,16 +1,62 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Clock, Pencil, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import EditResultModal from "./modals/edit-result-modal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface RecentResultsProps {
   tournamentId?: string;
+  showActions?: boolean;
 }
 
-export default function RecentResults({ tournamentId }: RecentResultsProps) {
+export default function RecentResults({ tournamentId, showActions = false }: RecentResultsProps) {
+  const [editingResult, setEditingResult] = useState<any>(null);
+  const [deletingResultId, setDeletingResultId] = useState<string | null>(null);
+  const { toast } = useToast();
+
   const { data: results = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/results/recent", tournamentId],
     enabled: !!tournamentId,
     refetchInterval: 30000,
+  });
+
+  const deleteResultMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("DELETE", `/api/results/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/results/recent"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      
+      toast({
+        title: "Resultado eliminado",
+        description: "El resultado ha sido eliminado exitosamente",
+      });
+      
+      setDeletingResultId(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al eliminar resultado",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   const formatTimeAgo = (createdAt: string | Date) => {
@@ -87,9 +133,33 @@ export default function RecentResults({ tournamentId }: RecentResultsProps) {
                       {formatTimeAgo(result.createdAt)}
                     </span>
                   </span>
-                  <span className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded">
-                    {result.match?.court?.name || 'Cancha'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded">
+                      {result.match?.court?.name || 'Cancha'}
+                    </span>
+                    {showActions && (
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => setEditingResult(result)}
+                          data-testid={`button-edit-result-${result.id}`}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                          onClick={() => setDeletingResultId(result.id)}
+                          data-testid={`button-delete-result-${result.id}`}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
@@ -114,6 +184,32 @@ export default function RecentResults({ tournamentId }: RecentResultsProps) {
           </div>
         )}
       </CardContent>
+
+      <EditResultModal
+        open={!!editingResult}
+        onOpenChange={(open) => !open && setEditingResult(null)}
+        result={editingResult}
+      />
+
+      <AlertDialog open={!!deletingResultId} onOpenChange={(open) => !open && setDeletingResultId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar resultado?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. El resultado será eliminado permanentemente y el partido volverá a estar en curso.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingResultId && deleteResultMutation.mutate(deletingResultId)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

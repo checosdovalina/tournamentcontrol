@@ -477,6 +477,16 @@ export class DatabaseStorage implements IStorage {
     return resultData[0];
   }
 
+  async updateResult(id: string, updates: Partial<Result>): Promise<Result | undefined> {
+    const result = await db.update(results).set(updates).where(eq(results.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteResult(id: string): Promise<boolean> {
+    const result = await db.delete(results).where(eq(results.id, id)).returning();
+    return result.length > 0;
+  }
+
   // Scheduled Matches
   async getScheduledMatch(id: string): Promise<ScheduledMatch | undefined> {
     const result = await db.select().from(scheduledMatches).where(eq(scheduledMatches.id, id)).limit(1);

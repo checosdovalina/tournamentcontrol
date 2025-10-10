@@ -89,7 +89,7 @@ export default function RegisterPlayerModal({ open, onOpenChange, tournamentId }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!player1Name || !player2Name || !selectedClub || !tournamentId) {
+    if (!player1Name || !player2Name || !tournamentId) {
       toast({
         title: "Campos incompletos",
         description: "Por favor complete todos los campos requeridos",
@@ -101,7 +101,7 @@ export default function RegisterPlayerModal({ open, onOpenChange, tournamentId }
     registerPairMutation.mutate({
       player1Name,
       player2Name,
-      clubId: selectedClub,
+      clubId: selectedClub || null,
       tournamentId,
       categoryId: selectedCategory,
       markPresent,
@@ -140,26 +140,6 @@ export default function RegisterPlayerModal({ open, onOpenChange, tournamentId }
               onChange={(e) => setPlayer2Name(e.target.value)}
               required
             />
-          </div>
-          
-          <div>
-            <Label htmlFor="club">Club</Label>
-            <Select value={selectedClub} onValueChange={setSelectedClub}>
-              <SelectTrigger data-testid="select-club">
-                <SelectValue placeholder="Seleccionar club" />
-              </SelectTrigger>
-              <SelectContent>
-                {clubs.map((club: any) => (
-                  <SelectItem 
-                    key={club.id} 
-                    value={club.id}
-                    data-testid={`option-club-${club.id}`}
-                  >
-                    {club.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
           
           <div>

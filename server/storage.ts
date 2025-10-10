@@ -111,6 +111,8 @@ export interface IStorage {
   getResults(): Promise<Result[]>;
   getRecentResults(tournamentId: string, limit?: number): Promise<ResultWithDetails[]>;
   createResult(result: InsertResult): Promise<Result>;
+  updateResult(id: string, updates: Partial<Result>): Promise<Result | undefined>;
+  deleteResult(id: string): Promise<boolean>;
   
   // Scheduled Matches
   getScheduledMatch(id: string): Promise<ScheduledMatch | undefined>;
@@ -621,6 +623,18 @@ export class MemStorage implements IStorage {
     };
     this.results.set(id, result);
     return result;
+  }
+
+  async updateResult(id: string, updates: Partial<Result>): Promise<Result | undefined> {
+    const result = this.results.get(id);
+    if (!result) return undefined;
+    const updatedResult = { ...result, ...updates };
+    this.results.set(id, updatedResult);
+    return updatedResult;
+  }
+
+  async deleteResult(id: string): Promise<boolean> {
+    return this.results.delete(id);
   }
 
   // Additional User methods

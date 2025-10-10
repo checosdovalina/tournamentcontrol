@@ -531,6 +531,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/results/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      
+      const result = await storage.getResult(id);
+      if (!result) {
+        return res.status(404).json({ message: "Result not found" });
+      }
+      
+      const updatedResult = await storage.updateResult(id, updateData);
+      
+      // Update match if needed
+      if (updateData.winnerId || updateData.score) {
+        const match = await storage.getMatch(result.matchId);
+        if (match) {
+          await storage.updateMatch(match.id, {
+            winnerId: updateData.winnerId || result.winnerId,
+            score: updateData.score || result.score
+          });
+        }
+      }
+      
+      broadcastUpdate({ type: "result_updated", data: updatedResult });
+      res.json(updatedResult);
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update result", error: error.message });
+    }
+  });
+
+  app.delete("/api/results/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const result = await storage.getResult(id);
+      if (!result) {
+        return res.status(404).json({ message: "Result not found" });
+      }
+      
+      // Update match back to finished without result
+      const match = await storage.getMatch(result.matchId);
+      if (match) {
+        await storage.updateMatch(match.id, {
+          status: "playing",
+          winnerId: null,
+          score: null,
+          endTime: null
+        });
+      }
+      
+      const deleted = await storage.deleteResult(id);
+      
+      if (deleted) {
+        broadcastUpdate({ type: "result_deleted", data: { id } });
+        res.json({ message: "Result deleted successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to delete result" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete result", error: error.message });
+    }
+  });
+
   // Tournament statistics
   app.get("/api/stats/:tournamentId", async (req, res) => {
     try {
