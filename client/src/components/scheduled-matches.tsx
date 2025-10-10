@@ -53,7 +53,8 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   });
 
   const filteredMatches = matches?.filter(match => 
-    selectedCategory === "all" || match.categoryId === selectedCategory
+    (selectedCategory === "all" || match.categoryId === selectedCategory) &&
+    match.status !== "playing"
   ) || [];
 
   const checkInMutation = useMutation({
