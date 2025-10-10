@@ -188,6 +188,72 @@ export default function LiveScoreCapture() {
     return liveScore.sets[currentSetIndex] || [0, 0];
   };
 
+  // Check if a set is complete and who won it
+  const isSetComplete = (set: number[]) => {
+    const [games1, games2] = set;
+    // Valid completed sets: 6-x with difference >= 2, or 7-6 (tiebreak), or 7-5
+    if (games1 >= 6 && games1 - games2 >= 2) return { complete: true, winner: 0 };
+    if (games2 >= 6 && games2 - games1 >= 2) return { complete: true, winner: 1 };
+    if (games1 === 7 && games2 === 6) return { complete: true, winner: 0 };
+    if (games2 === 7 && games1 === 6) return { complete: true, winner: 1 };
+    return { complete: false, winner: null };
+  };
+
+  // Check if there's a match winner (best of 3 sets)
+  const getMatchWinner = () => {
+    if (!liveScore.sets || liveScore.sets.length === 0) return null;
+    
+    let setsWonByPair1 = 0;
+    let setsWonByPair2 = 0;
+    
+    liveScore.sets.forEach((set: number[]) => {
+      const setResult = isSetComplete(set);
+      if (setResult.complete) {
+        if (setResult.winner === 0) setsWonByPair1++;
+        if (setResult.winner === 1) setsWonByPair2++;
+      }
+    });
+    
+    // First to win 2 sets wins the match
+    if (setsWonByPair1 >= 2) return { winnerIndex: 0, winnerPairId: selectedMatch.pair1Id };
+    if (setsWonByPair2 >= 2) return { winnerIndex: 1, winnerPairId: selectedMatch.pair2Id };
+    
+    return null;
+  };
+
+  const matchWinner = getMatchWinner();
+
+  const finishMatchMutation = useMutation({
+    mutationFn: async () => {
+      if (!matchWinner) {
+        throw new Error("No hay ganador determinado");
+      }
+      
+      const response = await apiRequest("POST", `/api/matches/${selectedMatchId}/finish`, {
+        winnerPairId: matchWinner.winnerPairId,
+        sets: liveScore.sets,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Partido finalizado",
+        description: "El resultado ha sido guardado y la cancha liberada",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/matches/current", tournament?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/results"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
+      setSelectedMatchId(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al finalizar partido",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   if (!selectedMatch) {
     return (
       <Card>
@@ -384,6 +450,32 @@ export default function LiveScoreCapture() {
               </div>
             </div>
           </div>
+
+          {/* Match Winner Section */}
+          {matchWinner && (
+            <div className="bg-green-50 dark:bg-green-950 border-2 border-green-500 rounded-lg p-4">
+              <div className="text-center">
+                <Trophy className="h-8 w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
+                <h3 className="text-lg font-bold text-green-700 dark:text-green-300 mb-1">
+                  ¡Partido Ganado!
+                </h3>
+                <p className="text-sm text-green-600 dark:text-green-400 mb-3">
+                  {matchWinner.winnerIndex === 0 
+                    ? `${selectedMatch.pair1?.player1?.name} / ${selectedMatch.pair1?.player2?.name}` 
+                    : `${selectedMatch.pair2?.player1?.name} / ${selectedMatch.pair2?.player2?.name}`}
+                </p>
+                <Button
+                  onClick={() => finishMatchMutation.mutate()}
+                  disabled={finishMatchMutation.isPending}
+                  className="w-full"
+                  size="lg"
+                  data-testid="button-finish-match"
+                >
+                  {finishMatchMutation.isPending ? "Finalizando..." : "Finalizar Partido y Liberar Cancha"}
+                </Button>
+              </div>
+            </div>
+          )}
 
           <div className="text-xs text-muted-foreground text-center">
             Los cambios se guardan automáticamente y se reflejan en tiempo real

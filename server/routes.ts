@@ -493,6 +493,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Finish match and save result (from live score capture)
+  app.post("/api/matches/:id/finish", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { winnerPairId, sets } = req.body;
+      
+      if (!winnerPairId || !sets) {
+        return res.status(400).json({ message: "Winner pair ID and sets are required" });
+      }
+      
+      const match = await storage.getMatch(id);
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+      
+      // Validate that sets are complete and count winners
+      let setsWonByPair1 = 0;
+      let setsWonByPair2 = 0;
+      
+      for (const set of sets) {
+        const [games1, games2] = set;
+        
+        // Check if set is complete
+        let setComplete = false;
+        let setWinner = null;
+        
+        // Valid completed sets: 6-x with difference >= 2, or 7-6 (tiebreak), or 7-5
+        if (games1 >= 6 && games1 - games2 >= 2) {
+          setComplete = true;
+          setWinner = 0;
+        } else if (games2 >= 6 && games2 - games1 >= 2) {
+          setComplete = true;
+          setWinner = 1;
+        } else if (games1 === 7 && games2 === 6) {
+          setComplete = true;
+          setWinner = 0;
+        } else if (games2 === 7 && games1 === 6) {
+          setComplete = true;
+          setWinner = 1;
+        }
+        
+        if (!setComplete) {
+          return res.status(400).json({ 
+            message: `Set incompleto detectado: ${games1}-${games2}. Los sets deben estar completos para finalizar el partido.` 
+          });
+        }
+        
+        if (setWinner === 0) setsWonByPair1++;
+        if (setWinner === 1) setsWonByPair2++;
+      }
+      
+      const isValidWinner = (winnerPairId === match.pair1Id && setsWonByPair1 >= 2) ||
+                           (winnerPairId === match.pair2Id && setsWonByPair2 >= 2);
+      
+      if (!isValidWinner) {
+        return res.status(400).json({ message: "El ganador debe haber ganado al menos 2 de 3 sets completos" });
+      }
+      
+      // Format score string
+      const scoreString = sets.map((set: number[]) => `${set[0]}-${set[1]}`).join(', ');
+      
+      // Determine loser
+      const loserId = winnerPairId === match.pair1Id ? match.pair2Id : match.pair1Id;
+      
+      // Create result
+      const result = await storage.createResult({
+        matchId: id,
+        winnerId: winnerPairId,
+        loserId: loserId,
+        score: scoreString
+      });
+      
+      // Update match status
+      await storage.updateMatch(id, {
+        status: "finished",
+        endTime: new Date(),
+        winnerId: winnerPairId,
+        score: { sets, currentSet: sets.length + 1, currentPoints: [0, 0] }
+      });
+      
+      // Release court
+      if (match.courtId) {
+        await storage.updateCourt(match.courtId, { isAvailable: true });
+      }
+      
+      broadcastUpdate({ type: "match_finished", data: { match, result } });
+      res.json({ result, match });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to finish match", error: error.message });
+    }
+  });
+
   // Results routes
   app.get("/api/results/recent/:tournamentId", async (req, res) => {
     try {
