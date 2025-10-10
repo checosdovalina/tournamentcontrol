@@ -191,41 +191,42 @@ export default function LiveScoreCapture() {
   if (!selectedMatch) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Trophy className="mr-2 h-5 w-5" />
-            Captura de Score en Tiempo Real
+        <CardHeader className="pb-3 md:pb-6">
+          <CardTitle className="flex items-center text-base md:text-lg">
+            <Trophy className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+            <span className="hidden md:inline">Captura de Score en Tiempo Real</span>
+            <span className="md:hidden">Captura de Score</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 md:px-6">
           {currentMatches.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
+            <p className="text-muted-foreground text-center py-6 md:py-8 text-sm">
               No hay partidos en curso para capturar score
             </p>
           ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground mb-4">
+            <div className="space-y-2 md:space-y-3">
+              <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
                 Selecciona un partido para comenzar a capturar el score:
               </p>
               {currentMatches.map((match: any) => (
                 <Button
                   key={match.id}
                   variant="outline"
-                  className="w-full justify-start h-auto py-4"
+                  className="w-full justify-start h-auto py-3 md:py-4 px-3"
                   onClick={() => handleSelectMatch(match)}
                   data-testid={`button-select-match-${match.id}`}
                 >
                   <div className="w-full">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-semibold">{match.pair1?.player1?.name || 'Jugador 1'} / {match.pair1?.player2?.name || 'Jugador 2'}</p>
-                        <p className="text-xs text-muted-foreground">vs</p>
-                        <p className="font-semibold">{match.pair2?.player1?.name || 'Jugador 3'} / {match.pair2?.player2?.name || 'Jugador 4'}</p>
+                    <div className="flex justify-between items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-xs md:text-sm truncate">{match.pair1?.player1?.name || 'Jugador 1'} / {match.pair1?.player2?.name || 'Jugador 2'}</p>
+                        <p className="text-xs text-muted-foreground my-0.5">vs</p>
+                        <p className="font-semibold text-xs md:text-sm truncate">{match.pair2?.player1?.name || 'Jugador 3'} / {match.pair2?.player2?.name || 'Jugador 4'}</p>
                       </div>
-                      <div className="text-right">
-                        <Badge variant="secondary">{match.court?.name || 'Cancha'}</Badge>
+                      <div className="text-right flex-shrink-0">
+                        <Badge variant="secondary" className="text-xs whitespace-nowrap">{match.court?.name || 'Cancha'}</Badge>
                         {match.categoryName && (
-                          <p className="text-xs text-muted-foreground mt-1">{match.categoryName}</p>
+                          <p className="text-xs text-muted-foreground mt-1 hidden md:block">{match.categoryName}</p>
                         )}
                       </div>
                     </div>
