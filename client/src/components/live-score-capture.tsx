@@ -206,14 +206,26 @@ export default function LiveScoreCapture() {
     updateScoreMutation.mutate(newScore);
   };
 
-  // Calculate sets won by each pair
+  // Calculate sets won by each pair (only count completed sets)
   const getSetsWon = (sets: number[][]) => {
     const setsWon = [0, 0];
     sets.forEach((set) => {
-      if (set[0] > set[1]) {
-        setsWon[0]++;
-      } else if (set[1] > set[0]) {
-        setsWon[1]++;
+      // Only count a set as won if it's actually completed
+      // A set is completed when:
+      // - Someone has 6+ games with 2+ game lead, OR
+      // - Score is 7-6 (tiebreak win)
+      const isCompleted = 
+        (set[0] >= 6 && (set[0] - set[1]) >= 2) ||
+        (set[1] >= 6 && (set[1] - set[0]) >= 2) ||
+        (set[0] === 7 && set[1] === 6) ||
+        (set[1] === 7 && set[0] === 6);
+      
+      if (isCompleted) {
+        if (set[0] > set[1]) {
+          setsWon[0]++;
+        } else if (set[1] > set[0]) {
+          setsWon[1]++;
+        }
       }
     });
     return setsWon;
