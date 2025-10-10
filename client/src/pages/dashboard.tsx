@@ -2,13 +2,14 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users } from "lucide-react";
+import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock } from "lucide-react";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
 import RecentResults from "@/components/recent-results";
 import TournamentStats from "@/components/tournament-stats";
 import ScheduledMatches from "@/components/scheduled-matches";
+import ScheduleTimelineView from "@/components/schedule-timeline-view";
 import SuperAdminPanel from "@/components/super-admin-panel";
 import PairsManagement from "@/components/pairs-management";
 import LiveScoreCapture from "@/components/live-score-capture";
@@ -129,6 +130,10 @@ export default function Dashboard() {
               <Calendar className="w-4 h-4 mr-2" />
               Programación
             </TabsTrigger>
+            <TabsTrigger value="timeline" data-testid="tab-timeline">
+              <Clock className="w-4 h-4 mr-2" />
+              Horarios
+            </TabsTrigger>
             {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && (
               <TabsTrigger value="pairs" data-testid="tab-pairs">
                 <Users className="w-4 h-4 mr-2" />
@@ -229,6 +234,10 @@ export default function Dashboard() {
 
           <TabsContent value="schedule">
             <ScheduledMatches tournamentId={tournament?.id} userRole={tournament?.userRole} />
+          </TabsContent>
+
+          <TabsContent value="timeline">
+            <ScheduleTimelineView tournamentId={tournament?.id} />
           </TabsContent>
 
           {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && (
