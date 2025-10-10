@@ -323,56 +323,60 @@ export default function LiveScoreCapture() {
             </div>
 
             {/* Current Points */}
-            <div className="bg-secondary/20 p-6 rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-3">
+            <div className="bg-secondary/20 p-3 md:p-6 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2 md:mb-3">
                 <p className="text-xs text-center text-muted-foreground">Puntos Actuales</p>
                 {isInTiebreak() && (
                   <Badge variant="destructive" className="text-xs">TIEBREAK</Badge>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-3 md:gap-6">
                 <div className="text-center">
-                  <p className="text-5xl font-bold mb-3">{formatPoints(liveScore.currentPoints[0])}</p>
-                  <div className="flex gap-2 justify-center">
+                  <p className="text-3xl md:text-5xl font-bold mb-2 md:mb-3">{formatPoints(liveScore.currentPoints[0])}</p>
+                  <div className="flex gap-1 md:gap-2 justify-center">
                     <Button
                       variant="outline"
                       size="sm"
+                      className="h-8 w-8 md:h-9 md:w-9 p-0"
                       onClick={() => removePoint(0)}
                       disabled={liveScore.currentPoints[0] === 0}
                       data-testid="button-remove-point-0"
                     >
-                      <Minus className="h-4 w-4" />
+                      <Minus className="h-3 w-3 md:h-4 md:w-4" />
                     </Button>
                     <Button
                       onClick={() => addPoint(0)}
-                      size="lg"
+                      size="sm"
+                      className="h-8 md:h-10 px-3 md:px-4"
                       data-testid="button-add-point-0"
                     >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Punto
+                      <Plus className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
+                      <span className="hidden md:inline">Punto</span>
                     </Button>
                   </div>
                 </div>
 
                 <div className="text-center">
-                  <p className="text-5xl font-bold mb-3">{formatPoints(liveScore.currentPoints[1])}</p>
-                  <div className="flex gap-2 justify-center">
+                  <p className="text-3xl md:text-5xl font-bold mb-2 md:mb-3">{formatPoints(liveScore.currentPoints[1])}</p>
+                  <div className="flex gap-1 md:gap-2 justify-center">
                     <Button
                       variant="outline"
                       size="sm"
+                      className="h-8 w-8 md:h-9 md:w-9 p-0"
                       onClick={() => removePoint(1)}
                       disabled={liveScore.currentPoints[1] === 0}
                       data-testid="button-remove-point-1"
                     >
-                      <Minus className="h-4 w-4" />
+                      <Minus className="h-3 w-3 md:h-4 md:w-4" />
                     </Button>
                     <Button
                       onClick={() => addPoint(1)}
-                      size="lg"
+                      size="sm"
+                      className="h-8 md:h-10 px-3 md:px-4"
                       data-testid="button-add-point-1"
                     >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Punto
+                      <Plus className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
+                      <span className="hidden md:inline">Punto</span>
                     </Button>
                   </div>
                 </div>
