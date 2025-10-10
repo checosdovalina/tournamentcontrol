@@ -215,7 +215,7 @@ export default function Dashboard() {
 
               {/* Recent Results */}
               <div className="lg:col-span-1">
-                <RecentResults tournamentId={tournament?.id} />
+                <RecentResults tournamentId={tournament?.id} showActions={true} />
               </div>
             </div>
 
