@@ -1068,6 +1068,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/scheduled-matches", requireTournamentRole('admin'), async (req, res) => {
     try {
       const insertMatch = insertScheduledMatchSchema.parse(req.body);
+      
+      // Check for duplicates if court and time are specified
+      if (insertMatch.courtId && insertMatch.plannedTime) {
+        const existingMatches = await storage.getScheduledMatchesByDay(
+          insertMatch.tournamentId,
+          insertMatch.day
+        );
+        
+        const duplicate = existingMatches.find(m => 
+          m.courtId === insertMatch.courtId && 
+          m.plannedTime === insertMatch.plannedTime &&
+          m.status !== 'cancelled' &&
+          m.status !== 'completed'
+        );
+        
+        if (duplicate) {
+          return res.status(400).json({ 
+            message: "Ya existe un partido programado en esta cancha a la misma hora",
+            duplicate: {
+              court: duplicate.courtId,
+              time: duplicate.plannedTime,
+              day: duplicate.day
+            }
+          });
+        }
+      }
+      
       const scheduledMatch = await storage.createScheduledMatch(insertMatch);
       res.status(201).json(scheduledMatch);
       broadcastUpdate({ type: "scheduled_match_created", data: scheduledMatch });
@@ -1188,10 +1215,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Court ID is required" });
       }
       
+      // Get the current match to check for conflicts
+      const currentMatch = await storage.getScheduledMatch(id);
+      if (!currentMatch) {
+        return res.status(404).json({ message: "Scheduled match not found" });
+      }
+      
+      // Check for conflicts if time is specified
+      if (currentMatch.plannedTime) {
+        const existingMatches = await storage.getScheduledMatchesByDay(
+          currentMatch.tournamentId,
+          currentMatch.day
+        );
+        
+        const duplicate = existingMatches.find(m => 
+          m.id !== id && // Exclude current match
+          m.courtId === courtId && 
+          m.plannedTime === currentMatch.plannedTime &&
+          m.status !== 'cancelled' &&
+          m.status !== 'completed'
+        );
+        
+        if (duplicate) {
+          return res.status(400).json({ 
+            message: "Ya existe un partido programado en esta cancha a la misma hora",
+            duplicate: {
+              court: duplicate.courtId,
+              time: duplicate.plannedTime,
+              day: duplicate.day
+            }
+          });
+        }
+      }
+      
       const match = await storage.manualAssignCourt(id, courtId);
       
       if (!match) {
-        return res.status(404).json({ message: "Scheduled match or court not found" });
+        return res.status(404).json({ message: "Court not found" });
       }
       
       res.json(match);
