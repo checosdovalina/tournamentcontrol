@@ -61,12 +61,38 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     mutationFn: async ({ matchId, playerId }: { matchId: string; playerId: string }) => {
       return apiRequest("POST", `/api/scheduled-matches/${matchId}/check-in`, { playerId });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
-      toast({ title: "Jugador registrado", description: "Check-in realizado correctamente" });
+    onMutate: async ({ matchId, playerId }) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")] });
+      const previousMatches = queryClient.getQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")]);
+      
+      queryClient.setQueryData<ScheduledMatchWithDetails[]>(
+        ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")],
+        (old) => {
+          if (!old) return old;
+          return old.map(match => {
+            if (match.id === matchId) {
+              return {
+                ...match,
+                players: match.players.map(p => 
+                  p.playerId === playerId ? { ...p, isPresent: true } : p
+                )
+              };
+            }
+            return match;
+          });
+        }
+      );
+      
+      return { previousMatches };
     },
-    onError: () => {
+    onError: (err, variables, context) => {
+      if (context?.previousMatches) {
+        queryClient.setQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")], context.previousMatches);
+      }
       toast({ title: "Error", description: "No se pudo registrar el check-in", variant: "destructive" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
     },
   });
 
@@ -74,12 +100,38 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     mutationFn: async ({ matchId, playerId }: { matchId: string; playerId: string }) => {
       return apiRequest("POST", `/api/scheduled-matches/${matchId}/check-out`, { playerId });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
-      toast({ title: "Jugador marcado como ausente", description: "El jugador no se presentó" });
+    onMutate: async ({ matchId, playerId }) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")] });
+      const previousMatches = queryClient.getQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")]);
+      
+      queryClient.setQueryData<ScheduledMatchWithDetails[]>(
+        ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")],
+        (old) => {
+          if (!old) return old;
+          return old.map(match => {
+            if (match.id === matchId) {
+              return {
+                ...match,
+                players: match.players.map(p => 
+                  p.playerId === playerId ? { ...p, isPresent: false } : p
+                )
+              };
+            }
+            return match;
+          });
+        }
+      );
+      
+      return { previousMatches };
     },
-    onError: () => {
+    onError: (err, variables, context) => {
+      if (context?.previousMatches) {
+        queryClient.setQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")], context.previousMatches);
+      }
       toast({ title: "Error", description: "No se pudo marcar como ausente", variant: "destructive" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
     },
   });
 
@@ -87,12 +139,38 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     mutationFn: async ({ matchId, playerId }: { matchId: string; playerId: string }) => {
       return apiRequest("POST", `/api/scheduled-matches/${matchId}/reset-status`, { playerId });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
-      toast({ title: "Estado reseteado", description: "El jugador está sin confirmar" });
+    onMutate: async ({ matchId, playerId }) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")] });
+      const previousMatches = queryClient.getQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")]);
+      
+      queryClient.setQueryData<ScheduledMatchWithDetails[]>(
+        ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")],
+        (old) => {
+          if (!old) return old;
+          return old.map(match => {
+            if (match.id === matchId) {
+              return {
+                ...match,
+                players: match.players.map(p => 
+                  p.playerId === playerId ? { ...p, isPresent: null } : p
+                )
+              };
+            }
+            return match;
+          });
+        }
+      );
+      
+      return { previousMatches };
     },
-    onError: () => {
+    onError: (err, variables, context) => {
+      if (context?.previousMatches) {
+        queryClient.setQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")], context.previousMatches);
+      }
       toast({ title: "Error", description: "No se pudo resetear el estado", variant: "destructive" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
     },
   });
 
