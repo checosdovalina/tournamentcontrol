@@ -217,15 +217,15 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "scheduled":
-        return <Badge variant="secondary" data-testid={`badge-status-scheduled`}>Programado</Badge>;
+        return <Badge variant="secondary" className="text-sm" data-testid={`badge-status-scheduled`}>Programado</Badge>;
       case "ready":
-        return <Badge className="bg-green-600 hover:bg-green-700" data-testid={`badge-status-ready`}>Listos</Badge>;
+        return <Badge className="bg-green-600 hover:bg-green-700 text-sm" data-testid={`badge-status-ready`}>Listos</Badge>;
       case "assigned":
-        return <Badge className="bg-blue-600 hover:bg-blue-700" data-testid={`badge-status-assigned`}>Cancha Asignada</Badge>;
+        return <Badge className="bg-blue-600 hover:bg-blue-700 text-sm" data-testid={`badge-status-assigned`}>Cancha Asignada</Badge>;
       case "playing":
-        return <Badge className="bg-orange-600 hover:bg-orange-700" data-testid={`badge-status-playing`}>En Juego</Badge>;
+        return <Badge className="bg-orange-600 hover:bg-orange-700 text-sm" data-testid={`badge-status-playing`}>En Juego</Badge>;
       default:
-        return <Badge variant="outline" data-testid={`badge-status-${status}`}>{status}</Badge>;
+        return <Badge variant="outline" className="text-sm" data-testid={`badge-status-${status}`}>{status}</Badge>;
     }
   };
 
@@ -326,19 +326,19 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredMatches.map((match) => (
             <Card key={match.id} data-testid={`card-scheduled-match-${match.id}`}>
-              <CardHeader>
+              <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <Clock className="w-4 h-4" />
+                  <div className="space-y-0.5">
+                    <CardTitle className="text-base flex items-center space-x-2">
+                      <Clock className="w-3.5 h-3.5" />
                       <span data-testid={`text-match-time-${match.id}`}>
                         {match.plannedTime || "Sin hora"}
                       </span>
                       {match.category && (
-                        <Badge variant="outline" data-testid={`badge-category-${match.id}`}>
+                        <Badge variant="outline" className="text-sm" data-testid={`badge-category-${match.id}`}>
                           {match.category.name}
                         </Badge>
                       )}
@@ -346,8 +346,8 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                     <div className="flex items-center space-x-2">
                       {getStatusBadge(match.status || "scheduled")}
                       {match.court && (
-                        <Badge variant="secondary" data-testid={`badge-court-${match.id}`}>
-                          <MapPin className="w-3 h-3 mr-1" />
+                        <Badge variant="secondary" className="text-sm" data-testid={`badge-court-${match.id}`}>
+                          <MapPin className="w-3.5 h-3.5 mr-1" />
                           {match.court.name}
                         </Badge>
                       )}
@@ -356,11 +356,11 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2 pt-2">
                 {/* Pair 1 */}
-                <div className="border rounded-md p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
+                <div className="border rounded-md p-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-1.5">
                       <Users className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm font-medium">Pareja 1</span>
                     </div>
@@ -373,7 +373,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                     .map((player) => (
                       <div
                         key={player.playerId}
-                        className="flex items-center justify-between py-1.5"
+                        className="flex items-center justify-between py-1"
                         data-testid={`player-status-${player.playerId}`}
                       >
                         <span className="text-sm" data-testid={`text-player-name-${player.playerId}`}>
@@ -383,7 +383,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                           <Button
                             variant={player.isPresent === true ? "default" : "outline"}
                             size="sm"
-                            className={`w-8 h-8 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                            className={`w-9 h-9 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
                             onClick={() => handleCheckIn(match.id, player.playerId)}
                             data-testid={`button-present-${player.playerId}`}
                             title="Marcar como presente"
@@ -393,7 +393,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                           <Button
                             variant={player.isPresent === false ? "default" : "outline"}
                             size="sm"
-                            className={`w-8 h-8 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                            className={`w-9 h-9 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
                             onClick={() => handleCheckOut(match.id, player.playerId)}
                             data-testid={`button-absent-${player.playerId}`}
                             title="No se presentó"
@@ -403,7 +403,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                           <Button
                             variant={player.isPresent === null ? "default" : "outline"}
                             size="sm"
-                            className={`w-8 h-8 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
+                            className={`w-9 h-9 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
                             onClick={() => handleResetStatus(match.id, player.playerId)}
                             data-testid={`button-pending-${player.playerId}`}
                             title="Sin confirmar"
@@ -416,9 +416,9 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                 </div>
 
                 {/* Pair 2 */}
-                <div className="border rounded-md p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
+                <div className="border rounded-md p-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-1.5">
                       <Users className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm font-medium">Pareja 2</span>
                     </div>
@@ -431,7 +431,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                     .map((player) => (
                       <div
                         key={player.playerId}
-                        className="flex items-center justify-between py-1.5"
+                        className="flex items-center justify-between py-1"
                         data-testid={`player-status-${player.playerId}`}
                       >
                         <span className="text-sm" data-testid={`text-player-name-${player.playerId}`}>
@@ -441,7 +441,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                           <Button
                             variant={player.isPresent === true ? "default" : "outline"}
                             size="sm"
-                            className={`w-8 h-8 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                            className={`w-9 h-9 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
                             onClick={() => handleCheckIn(match.id, player.playerId)}
                             data-testid={`button-present-${player.playerId}`}
                             title="Marcar como presente"
@@ -451,7 +451,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                           <Button
                             variant={player.isPresent === false ? "default" : "outline"}
                             size="sm"
-                            className={`w-8 h-8 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                            className={`w-9 h-9 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
                             onClick={() => handleCheckOut(match.id, player.playerId)}
                             data-testid={`button-absent-${player.playerId}`}
                             title="No se presentó"
@@ -461,7 +461,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                           <Button
                             variant={player.isPresent === null ? "default" : "outline"}
                             size="sm"
-                            className={`w-8 h-8 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
+                            className={`w-9 h-9 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
                             onClick={() => handleResetStatus(match.id, player.playerId)}
                             data-testid={`button-pending-${player.playerId}`}
                             title="Sin confirmar"
