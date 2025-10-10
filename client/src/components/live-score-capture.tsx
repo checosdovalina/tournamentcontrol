@@ -201,7 +201,7 @@ export default function LiveScoreCapture() {
 
   // Check if there's a match winner (best of 3 sets)
   const getMatchWinner = () => {
-    if (!liveScore.sets || liveScore.sets.length === 0) return null;
+    if (!selectedMatch || !liveScore.sets || liveScore.sets.length === 0) return null;
     
     let setsWonByPair1 = 0;
     let setsWonByPair2 = 0;
@@ -221,7 +221,7 @@ export default function LiveScoreCapture() {
     return null;
   };
 
-  const matchWinner = getMatchWinner();
+  const matchWinner = selectedMatch ? getMatchWinner() : null;
 
   const finishMatchMutation = useMutation({
     mutationFn: async () => {
