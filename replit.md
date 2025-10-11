@@ -12,7 +12,7 @@ Built as a full-stack web application, it provides:
 - **Public Display**: Real-time tournament information for participants and spectators with live score updates and advertisement rotation
 - **Advertisement Module**: Commercial content management with time-based scheduling, automatic rotation, and multi-format support (images/videos)
 
-Last Updated: October 11, 2025 - Completed advertisement/commercialization module with full CRUD functionality, time-based scheduling (day and time filters), automatic rotation on public displays, and schema alignment fixes (durationSeconds, contentType, contentUrl)
+Last Updated: October 11, 2025 - Enhanced advertisement module with fullscreen display, custom text overlays, six animation types (fade-in/out, slide-in, zoom-in/out, typewriter), configurable display duration and rotation intervals, GIF support, and stable rotation logic using time-keyed memoization to prevent timer resets
 
 ## User Preferences
 
@@ -66,7 +66,7 @@ Preferred communication style: Simple, everyday language.
 - Tournament Users (join table linking users to tournaments with specific roles)
 - Categories (tournament categories like "Masculino A", "Femenino B", "Mixto")
 - Sponsor Banners (sponsor logos and promotional banners per tournament)
-- Advertisements (commercial content with scheduling: contentType, contentUrl, durationSeconds, activeDays array, startTime/endTime)
+- Advertisements (commercial content with scheduling: contentType [image/video/gif], contentUrl, text overlay, animationType [fade-in/fade-out/slide-in/zoom-in/zoom-out/typewriter], displayDuration, displayInterval, activeDays array, startTime/endTime)
 - Clubs (venue information)
 - Courts (playing surfaces with availability tracking)
 - Players (individual participants)
@@ -84,10 +84,13 @@ Preferred communication style: Simple, everyday language.
 - Pair-category assignment via nullable categoryId foreign key
 
 **Advertisement System**:
-- Content types: image and video support via contentType field
-- Scheduling: activeDays array (0=Sunday to 6=Saturday), startTime/endTime for time range filtering
-- Display rotation: durationSeconds determines how long each ad shows before rotating
-- Automatic filtering: only ads matching current day and time are shown on public displays
+- Content types: image, video, and GIF support via contentType field
+- Custom text overlays: Optional text field for promotional messages displayed over media
+- Animation types: fade-in, fade-out, slide-in, zoom-in, zoom-out, typewriter (text-only)
+- Display timing: displayDuration (seconds to show ad), displayInterval (total rotation cycle time)
+- Scheduling: activeDays array (Dom-Sáb), startTime/endTime for time range filtering
+- Smart rotation: Fullscreen overlay shows ads during displayDuration, then returns to dashboard for (displayInterval - displayDuration) seconds
+- Performance optimization: Time-keyed memoization prevents timer resets, stable activeAds reference for reliable rotation
 
 **Data Access Layer**: Storage interface abstraction (`IStorage`) in `server/storage.ts` provides clean separation between business logic and data persistence, enabling potential future database swapping.
 
