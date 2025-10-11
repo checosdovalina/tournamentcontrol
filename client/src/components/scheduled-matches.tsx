@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -24,6 +25,8 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [timeFilter, setTimeFilter] = useState<string>("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const { toast } = useToast();
@@ -95,10 +98,46 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     return grouped;
   }, [allMatches]);
 
-  // Filter day matches by category
-  const filteredDayMatches = dayMatches?.filter(match => 
-    (selectedCategory === "all" || match.categoryId === selectedCategory)
-  ) || [];
+  // Helper function to get time range from match
+  const getMatchTimeRange = (match: ScheduledMatchWithDetails) => {
+    if (!match.time) return "all";
+    const hour = parseInt(match.time.split(":")[0]);
+    if (hour < 12) return "morning"; // 00:00 - 11:59
+    if (hour < 18) return "afternoon"; // 12:00 - 17:59
+    return "evening"; // 18:00 - 23:59
+  };
+
+  // Helper function to get match status
+  const getMatchStatus = (match: ScheduledMatchWithDetails) => {
+    if (match.status === 'completed') return 'completed';
+    if (match.status === 'in_progress') return 'in_progress';
+    // Check if all players have checked in (ready status)
+    const allPlayersPresent = match.players.every(p => p.isPresent === true);
+    if (allPlayersPresent) return 'ready';
+    return 'pending'; // Waiting for check-in
+  };
+
+  // Filter day matches by category, status, and time
+  const filteredDayMatches = dayMatches?.filter(match => {
+    const categoryMatch = selectedCategory === "all" || match.categoryId === selectedCategory;
+    const statusMatch = statusFilter === "all" || getMatchStatus(match) === statusFilter;
+    const timeMatch = timeFilter === "all" || getMatchTimeRange(match) === timeFilter;
+    return categoryMatch && statusMatch && timeMatch;
+  }) || [];
+
+  // Count matches by status for badges
+  const statusCounts = useMemo(() => {
+    const counts = { all: 0, pending: 0, ready: 0, in_progress: 0, completed: 0 };
+    dayMatches.forEach(match => {
+      counts.all++;
+      const status = getMatchStatus(match);
+      if (status === 'pending') counts.pending++;
+      else if (status === 'ready') counts.ready++;
+      else if (status === 'in_progress') counts.in_progress++;
+      else if (status === 'completed') counts.completed++;
+    });
+    return counts;
+  }, [dayMatches]);
 
   // Generate calendar days
   const calendarDays = useMemo(() => {
@@ -440,23 +479,81 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
             </SheetDescription>
           </SheetHeader>
 
-          {/* Category Filter */}
-          <div className="mt-4">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full" data-testid="select-category-filter">
-                <SelectValue placeholder="Todas las categorías" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" data-testid="option-category-all">
-                  Todas las categorías
-                </SelectItem>
-                {categories?.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id} data-testid={`option-category-${cat.id}`}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Filters */}
+          <div className="mt-4 space-y-4">
+            {/* Status Filter */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">Estado del Partido</label>
+              <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="all" className="text-xs" data-testid="tab-status-all">
+                    Todos
+                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.all}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="pending" className="text-xs" data-testid="tab-status-pending">
+                    Pendiente
+                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.pending}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="ready" className="text-xs" data-testid="tab-status-ready">
+                    Listos
+                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.ready}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="in_progress" className="text-xs" data-testid="tab-status-in-progress">
+                    En Curso
+                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.in_progress}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="completed" className="text-xs" data-testid="tab-status-completed">
+                    Terminados
+                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.completed}</Badge>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* Time Filter */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Categoría</label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-full" data-testid="select-category-filter">
+                    <SelectValue placeholder="Todas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" data-testid="option-category-all">
+                      Todas
+                    </SelectItem>
+                    {categories?.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id} data-testid={`option-category-${cat.id}`}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Horario</label>
+                <Select value={timeFilter} onValueChange={setTimeFilter}>
+                  <SelectTrigger className="w-full" data-testid="select-time-filter">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" data-testid="option-time-all">
+                      Todos
+                    </SelectItem>
+                    <SelectItem value="morning" data-testid="option-time-morning">
+                      Mañana (00:00 - 11:59)
+                    </SelectItem>
+                    <SelectItem value="afternoon" data-testid="option-time-afternoon">
+                      Tarde (12:00 - 17:59)
+                    </SelectItem>
+                    <SelectItem value="evening" data-testid="option-time-evening">
+                      Noche (18:00 - 23:59)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
 
           {/* Matches List */}
@@ -464,9 +561,12 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
             <div className="py-12 text-center text-muted-foreground">
               <CalendarDays className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium">
-                {selectedCategory === "all" 
+                {dayMatches.length === 0 
                   ? "No hay partidos programados" 
-                  : "No hay partidos de esta categoría"}
+                  : "No hay partidos con los filtros seleccionados"}
+              </p>
+              <p className="text-sm mt-2">
+                Intenta cambiar los filtros para ver más resultados
               </p>
               {userRole === 'admin' && (
                 <Button 
