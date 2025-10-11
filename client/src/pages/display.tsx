@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { X, Volleyball } from "lucide-react";
@@ -10,6 +10,7 @@ export default function Display() {
   const [, setLocation] = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [showAd, setShowAd] = useState(false);
 
   const { data: tournament } = useQuery<{ 
     id: string; 
@@ -67,11 +68,17 @@ export default function Display() {
 
   useWebSocket();
 
-  // Filter active advertisements based on day and time
-  const getActiveAdvertisements = () => {
-    const now = new Date();
+  // Create a time key that changes only when day or minute changes (not every second)
+  const timeKey = useMemo(() => {
+    const now = currentTime;
+    return `${now.getDay()}-${now.getHours()}-${now.getMinutes()}`;
+  }, [currentTime]);
+
+  // Filter active advertisements based on day and time - Updates only when advertisements or time (day/minute) changes
+  const activeAds = useMemo(() => {
+    const now = new Date(); // Get fresh time for filtering
     const currentDay = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][now.getDay()];
-    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
     return advertisements.filter((ad: any) => {
       if (!ad.isActive) return false;
@@ -88,16 +95,14 @@ export default function Display() {
         const startMinutes = startHour * 60 + startMin;
         const endMinutes = endHour * 60 + endMin;
 
-        if (currentTime < startMinutes || currentTime > endMinutes) {
+        if (currentMinutes < startMinutes || currentMinutes > endMinutes) {
           return false;
         }
       }
 
       return true;
     });
-  };
-
-  const activeAds = getActiveAdvertisements();
+  }, [advertisements, timeKey]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -107,18 +112,50 @@ export default function Display() {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-rotate advertisements based on duration
+  // Reset index if it's out of bounds when ads change
   useEffect(() => {
-    if (activeAds.length === 0) return;
+    if (activeAds.length > 0 && currentAdIndex >= activeAds.length) {
+      setCurrentAdIndex(0);
+    }
+  }, [activeAds, currentAdIndex]);
+
+  // Auto-rotate advertisements based on displayDuration and displayInterval
+  useEffect(() => {
+    if (activeAds.length === 0) {
+      setShowAd(false);
+      setCurrentAdIndex(0);
+      return;
+    }
 
     const currentAd = activeAds[currentAdIndex];
-    if (!currentAd) return;
+    if (!currentAd) {
+      setShowAd(false);
+      setCurrentAdIndex(0);
+      return;
+    }
 
-    const timer = setTimeout(() => {
-      setCurrentAdIndex((prev) => (prev + 1) % activeAds.length);
-    }, (currentAd.durationSeconds || 10) * 1000);
+    let intervalTimer: NodeJS.Timeout | null = null;
 
-    return () => clearTimeout(timer);
+    // Show ad for displayDuration
+    setShowAd(true);
+    const showTimer = setTimeout(() => {
+      setShowAd(false);
+      
+      // Wait for remaining interval time before showing next ad
+      const waitTime = Math.max((currentAd.displayInterval - currentAd.displayDuration) * 1000, 1000);
+      intervalTimer = setTimeout(() => {
+        setCurrentAdIndex((prev) => {
+          // Guard against zero-length array
+          if (activeAds.length === 0) return 0;
+          return (prev + 1) % activeAds.length;
+        });
+      }, waitTime);
+    }, (currentAd.displayDuration || 10) * 1000);
+
+    return () => {
+      clearTimeout(showTimer);
+      if (intervalTimer) clearTimeout(intervalTimer);
+    };
   }, [currentAdIndex, activeAds]);
 
   const formatTime = (date: Date) => {
@@ -340,38 +377,9 @@ export default function Display() {
           </div>
         </div>
 
-        {/* Advertisement Display */}
-        {activeAds.length > 0 && (
-          <div className="px-8 py-4 border-t border-white/20 bg-white/5">
-            <div className="h-32 flex items-center justify-center">
-              {activeAds[currentAdIndex]?.contentType === 'image' && (
-                <img 
-                  src={activeAds[currentAdIndex].contentUrl} 
-                  alt="Publicidad" 
-                  className="max-h-full w-auto object-contain"
-                  data-testid="ad-display-image"
-                />
-              )}
-              {activeAds[currentAdIndex]?.contentType === 'video' && (
-                <video 
-                  src={activeAds[currentAdIndex].contentUrl} 
-                  className="max-h-full w-auto object-contain"
-                  autoPlay
-                  muted
-                  loop
-                  data-testid="ad-display-video"
-                />
-              )}
-              {activeAds[currentAdIndex]?.contentType === 'animation' && (
-                <img 
-                  src={activeAds[currentAdIndex].contentUrl} 
-                  alt="Publicidad" 
-                  className="max-h-full w-auto object-contain"
-                  data-testid="ad-display-animation"
-                />
-              )}
-            </div>
-          </div>
+        {/* Fullscreen Advertisement Display */}
+        {showAd && activeAds.length > 0 && activeAds[currentAdIndex] && (
+          <FullscreenAdDisplay ad={activeAds[currentAdIndex]} />
         )}
 
         {/* Footer with Sponsors - Auto Scrolling Marquee */}
@@ -410,6 +418,90 @@ export default function Display() {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Fullscreen Advertisement Display Component
+function FullscreenAdDisplay({ ad }: { ad: any }) {
+  const getContentAnimationClass = () => {
+    // Typewriter is only for text, use fade-in for content when typewriter is selected
+    if (ad.animationType === 'typewriter') {
+      return 'animate-fade-in';
+    }
+    
+    switch (ad.animationType) {
+      case 'fade-in':
+        return 'animate-fade-in';
+      case 'fade-out':
+        return 'animate-fade-out';
+      case 'slide-in':
+        return 'animate-slide-in';
+      case 'zoom-in':
+        return 'animate-zoom-in';
+      case 'zoom-out':
+        return 'animate-zoom-out';
+      default:
+        return 'animate-fade-in';
+    }
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+      data-testid="fullscreen-ad"
+    >
+      {/* Content */}
+      <div className={`relative w-full h-full flex items-center justify-center ${getContentAnimationClass()}`}>
+        {ad.contentType === 'image' && (
+          <img 
+            src={ad.contentUrl} 
+            alt="Publicidad" 
+            className="max-w-full max-h-full object-contain"
+            data-testid="fullscreen-ad-image"
+          />
+        )}
+        {ad.contentType === 'video' && (
+          <video 
+            src={ad.contentUrl} 
+            className="max-w-full max-h-full object-contain"
+            autoPlay
+            muted
+            loop
+            data-testid="fullscreen-ad-video"
+          />
+        )}
+        {ad.contentType === 'gif' && (
+          <img 
+            src={ad.contentUrl} 
+            alt="Publicidad" 
+            className="max-w-full max-h-full object-contain"
+            data-testid="fullscreen-ad-gif"
+          />
+        )}
+        
+        {/* Text Overlay */}
+        {ad.text && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-black/60 backdrop-blur-sm px-12 py-8 rounded-2xl">
+              <h1 className={`text-white text-6xl font-bold text-center ${ad.animationType === 'typewriter' ? 'animate-typewriter overflow-hidden whitespace-nowrap border-r-4 border-white' : ''}`}>
+                {ad.text}
+              </h1>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Progress Bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-2 bg-white/20">
+        <div 
+          className="h-full bg-white/80 transition-all duration-1000 ease-linear"
+          style={{ 
+            animation: `progress ${ad.displayDuration}s linear forwards` 
+          }}
+          data-testid="ad-progress-bar"
+        />
       </div>
     </div>
   );
