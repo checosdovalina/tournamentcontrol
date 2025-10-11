@@ -610,7 +610,9 @@ export class DatabaseStorage implements IStorage {
     });
 
     // Batch fetch all related data
-    const pairsData = await db.select().from(pairs).where(inArray(pairs.id, Array.from(pairIds)));
+    const pairsData = pairIds.size > 0
+      ? await db.select().from(pairs).where(inArray(pairs.id, Array.from(pairIds)))
+      : [];
     const playerIds = new Set<string>();
     pairsData.forEach(p => {
       playerIds.add(p.player1Id);
@@ -628,8 +630,9 @@ export class DatabaseStorage implements IStorage {
       : [];
 
     // Fetch all match players for all matches
-    const matchPlayersData = await db.select().from(scheduledMatchPlayers)
-      .where(inArray(scheduledMatchPlayers.scheduledMatchId, matches.map(m => m.id)));
+    const matchPlayersData = matches.length > 0
+      ? await db.select().from(scheduledMatchPlayers).where(inArray(scheduledMatchPlayers.scheduledMatchId, matches.map(m => m.id)))
+      : [];
 
     // Create lookup maps
     const pairsMap = new Map(pairsData.map(p => [p.id, p]));
@@ -706,7 +709,9 @@ export class DatabaseStorage implements IStorage {
     });
 
     // Batch fetch all related data
-    const pairsData = await db.select().from(pairs).where(inArray(pairs.id, Array.from(pairIds)));
+    const pairsData = pairIds.size > 0
+      ? await db.select().from(pairs).where(inArray(pairs.id, Array.from(pairIds)))
+      : [];
     const playerIds = new Set<string>();
     pairsData.forEach(p => {
       playerIds.add(p.player1Id);
@@ -724,8 +729,9 @@ export class DatabaseStorage implements IStorage {
       : [];
 
     // Fetch all match players for all matches
-    const matchPlayersData = await db.select().from(scheduledMatchPlayers)
-      .where(inArray(scheduledMatchPlayers.scheduledMatchId, matches.map(m => m.id)));
+    const matchPlayersData = matches.length > 0
+      ? await db.select().from(scheduledMatchPlayers).where(inArray(scheduledMatchPlayers.scheduledMatchId, matches.map(m => m.id)))
+      : [];
 
     // Create lookup maps
     const pairsMap = new Map(pairsData.map(p => [p.id, p]));
