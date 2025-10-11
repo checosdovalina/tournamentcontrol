@@ -216,7 +216,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(advertisements)
       .where(eq(advertisements.tournamentId, tournamentId))
-      .orderBy(advertisements.displayOrder);
+      .orderBy(advertisements.createdAt);
   }
 
   async getActiveAdvertisements(tournamentId: string): Promise<Advertisement[]> {
@@ -224,7 +224,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(advertisements)
       .where(and(eq(advertisements.tournamentId, tournamentId), eq(advertisements.isActive, true)))
-      .orderBy(advertisements.displayOrder);
+      .orderBy(advertisements.createdAt);
   }
 
   async createAdvertisement(advertisement: InsertAdvertisement): Promise<Advertisement> {
