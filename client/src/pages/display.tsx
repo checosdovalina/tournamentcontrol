@@ -30,7 +30,8 @@ export default function Display() {
     queryKey: ["/api/scheduled-matches/today", tournament?.id],
     queryFn: async () => {
       if (!tournament?.id) return [];
-      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const response = await fetch(`/api/scheduled-matches/day/${tournament.id}?day=${today}`);
       return response.json();
     },
