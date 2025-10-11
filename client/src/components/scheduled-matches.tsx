@@ -561,122 +561,77 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-2 pt-2">
-                {/* Pair 1 */}
-                <div className="border rounded-md p-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Pareja 1</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground" data-testid={`text-pair1-name-${match.id}`}>
-                      {match.pair1.player1.name} / {match.pair1.player2.name}
-                    </span>
-                  </div>
-                  {match.players
-                    .filter(p => p.pairId === match.pair1Id)
-                    .map((player) => (
-                      <div
-                        key={player.playerId}
-                        className="flex items-center justify-between py-1"
-                        data-testid={`player-status-${player.playerId}`}
-                      >
-                        <span className="text-sm" data-testid={`text-player-name-${player.playerId}`}>
-                          {player.player.name}
-                        </span>
+              <CardContent className="space-y-3 pt-2">
+                {/* Compact Pair View */}
+                {[
+                  { pairId: match.pair1Id, pair: match.pair1, label: "Pareja 1" },
+                  { pairId: match.pair2Id, pair: match.pair2, label: "Pareja 2" }
+                ].map(({ pairId, pair, label }) => {
+                  const pairPlayers = match.players.filter(p => p.pairId === pairId);
+                  const allPresent = pairPlayers.every(p => p.isPresent === true);
+                  const anyAbsent = pairPlayers.some(p => p.isPresent === false);
+                  
+                  return (
+                    <div key={pairId} className="border rounded-md p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm font-medium text-muted-foreground">{label}:</span>
+                          <span className="font-medium" data-testid={`text-${label.toLowerCase().replace(' ', '')}-name-${match.id}`}>
+                            {pair.player1.name} / {pair.player2.name}
+                          </span>
+                          {allPresent && (
+                            <Badge variant="default" className="bg-green-600 text-xs ml-2">
+                              ✓ Confirmados
+                            </Badge>
+                          )}
+                          {anyAbsent && (
+                            <Badge variant="destructive" className="text-xs ml-2">
+                              Ausente
+                            </Badge>
+                          )}
+                        </div>
+                        
                         <div className="flex gap-1">
-                          <Button
-                            variant={player.isPresent === true ? "default" : "outline"}
-                            size="sm"
-                            className={`w-9 h-9 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
-                            onClick={() => handleCheckIn(match.id, player.playerId)}
-                            data-testid={`button-present-${player.playerId}`}
-                            title="Marcar como presente"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant={player.isPresent === false ? "default" : "outline"}
-                            size="sm"
-                            className={`w-9 h-9 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
-                            onClick={() => handleCheckOut(match.id, player.playerId)}
-                            data-testid={`button-absent-${player.playerId}`}
-                            title="No se presentó"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant={player.isPresent === null ? "default" : "outline"}
-                            size="sm"
-                            className={`w-9 h-9 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
-                            onClick={() => handleResetStatus(match.id, player.playerId)}
-                            data-testid={`button-pending-${player.playerId}`}
-                            title="Sin confirmar"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
+                          {pairPlayers.map((player) => (
+                            <div key={player.playerId} className="flex gap-1" data-testid={`player-controls-${player.playerId}`}>
+                              <Button
+                                variant={player.isPresent === true ? "default" : "ghost"}
+                                size="sm"
+                                className={`w-8 h-8 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                                onClick={() => handleCheckIn(match.id, player.playerId)}
+                                data-testid={`button-present-${player.playerId}`}
+                                title={`${player.player.name}: Marcar como presente`}
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant={player.isPresent === false ? "default" : "ghost"}
+                                size="sm"
+                                className={`w-8 h-8 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                                onClick={() => handleCheckOut(match.id, player.playerId)}
+                                data-testid={`button-absent-${player.playerId}`}
+                                title={`${player.player.name}: No se presentó`}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant={player.isPresent === null ? "default" : "ghost"}
+                                size="sm"
+                                className={`w-8 h-8 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
+                                onClick={() => handleResetStatus(match.id, player.playerId)}
+                                data-testid={`button-pending-${player.playerId}`}
+                                title={`${player.player.name}: Sin confirmar`}
+                              >
+                                <Minus className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    ))}
-                </div>
-
-                {/* Pair 2 */}
-                <div className="border rounded-md p-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Pareja 2</span>
                     </div>
-                    <span className="text-sm text-muted-foreground" data-testid={`text-pair2-name-${match.id}`}>
-                      {match.pair2.player1.name} / {match.pair2.player2.name}
-                    </span>
-                  </div>
-                  {match.players
-                    .filter(p => p.pairId === match.pair2Id)
-                    .map((player) => (
-                      <div
-                        key={player.playerId}
-                        className="flex items-center justify-between py-1"
-                        data-testid={`player-status-${player.playerId}`}
-                      >
-                        <span className="text-sm" data-testid={`text-player-name-${player.playerId}`}>
-                          {player.player.name}
-                        </span>
-                        <div className="flex gap-1">
-                          <Button
-                            variant={player.isPresent === true ? "default" : "outline"}
-                            size="sm"
-                            className={`w-9 h-9 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
-                            onClick={() => handleCheckIn(match.id, player.playerId)}
-                            data-testid={`button-present-${player.playerId}`}
-                            title="Marcar como presente"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant={player.isPresent === false ? "default" : "outline"}
-                            size="sm"
-                            className={`w-9 h-9 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
-                            onClick={() => handleCheckOut(match.id, player.playerId)}
-                            data-testid={`button-absent-${player.playerId}`}
-                            title="No se presentó"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant={player.isPresent === null ? "default" : "outline"}
-                            size="sm"
-                            className={`w-9 h-9 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
-                            onClick={() => handleResetStatus(match.id, player.playerId)}
-                            data-testid={`button-pending-${player.playerId}`}
-                            title="Sin confirmar"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                </div>
+                  );
+                })}
 
                 {/* Court Assignment Controls */}
                 {match.status === 'ready' && (userRole === 'admin' || userRole === 'scorekeeper') && (
