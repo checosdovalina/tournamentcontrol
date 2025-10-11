@@ -10,9 +10,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Calendar as CalendarIcon, Plus, Zap, MapPin, Clock, Users, Check, X, Minus } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2 } from "lucide-react";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
 import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/schema";
 
@@ -25,6 +26,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const { toast } = useToast();
 
   const { data: matches, isLoading } = useQuery<ScheduledMatchWithDetails[]>({
@@ -214,6 +216,21 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     },
   });
 
+  const deleteMatchMutation = useMutation({
+    mutationFn: async (matchId: string) => {
+      return apiRequest("DELETE", `/api/scheduled-matches/${matchId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      toast({ title: "Partido eliminado", description: "El partido programado ha sido eliminado" });
+      setDeleteDialogOpen(null);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "No se pudo eliminar el partido", variant: "destructive" });
+      setDeleteDialogOpen(null);
+    },
+  });
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "scheduled":
@@ -353,6 +370,49 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                       )}
                     </div>
                   </div>
+                  
+                  {userRole === 'admin' && (
+                    <AlertDialog 
+                      open={deleteDialogOpen === match.id} 
+                      onOpenChange={(open) => {
+                        if (!deleteMatchMutation.isPending) {
+                          setDeleteDialogOpen(open ? match.id : null);
+                        }
+                      }}
+                    >
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                          data-testid={`button-delete-match-${match.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Eliminar partido programado?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Se eliminará el partido programado para{" "}
+                            {match.pair1.player1.name}/{match.pair1.player2.name} vs{" "}
+                            {match.pair2.player1.name}/{match.pair2.player2.name}.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel disabled={deleteMatchMutation.isPending}>Cancelar</AlertDialogCancel>
+                          <Button
+                            onClick={() => deleteMatchMutation.mutate(match.id)}
+                            className="bg-destructive hover:bg-destructive/90"
+                            disabled={deleteMatchMutation.isPending}
+                            data-testid={`button-confirm-delete-${match.id}`}
+                          >
+                            {deleteMatchMutation.isPending ? "Eliminando..." : "Eliminar"}
+                          </Button>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </CardHeader>
 
