@@ -359,6 +359,11 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                           {match.category.name}
                         </Badge>
                       )}
+                      {match.format && (
+                        <Badge variant="secondary" className="text-sm" data-testid={`badge-format-${match.id}`}>
+                          {match.format}
+                        </Badge>
+                      )}
                     </CardTitle>
                     <div className="flex items-center space-x-2">
                       {getStatusBadge(match.status || "scheduled")}

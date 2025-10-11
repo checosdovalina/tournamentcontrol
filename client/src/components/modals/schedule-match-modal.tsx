@@ -22,6 +22,7 @@ interface ScheduleMatchModalProps {
 const formSchema = insertScheduledMatchSchema.extend({
   plannedTime: z.string().min(1, "La hora es requerida"),
   categoryId: z.string().min(1, "La categoría es requerida"),
+  format: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -38,6 +39,7 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
       pair1Id: "",
       pair2Id: "",
       categoryId: "",
+      format: "",
       status: "scheduled",
       courtId: undefined,
     },
@@ -62,6 +64,7 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
         pair1Id: data.pair1Id,
         pair2Id: data.pair2Id,
         categoryId: data.categoryId,
+        format: data.format,
         status: "scheduled" as const,
         courtId: undefined,
       };
@@ -154,6 +157,31 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
                           {category.name}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="format"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Formato (opcional)</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-format">
+                        <SelectValue placeholder="Seleccionar formato..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Round Robin" data-testid="option-format-roundrobin">Round Robin</SelectItem>
+                      <SelectItem value="8vos" data-testid="option-format-8vos">8vos de Final</SelectItem>
+                      <SelectItem value="4tos" data-testid="option-format-4tos">4tos de Final</SelectItem>
+                      <SelectItem value="Semifinal" data-testid="option-format-semifinal">Semifinal</SelectItem>
+                      <SelectItem value="Final" data-testid="option-format-final">Final</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
