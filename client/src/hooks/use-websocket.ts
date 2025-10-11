@@ -36,12 +36,15 @@ export function useWebSocket(userId?: string) {
               queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
               queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting"] });
               break;
+            case "match_finished":
             case "result_recorded":
               queryClient.invalidateQueries({ queryKey: ["/api/results/recent"] });
               queryClient.invalidateQueries({ queryKey: ["/api/results/today"] });
               queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
               queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
               queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/today"] });
               break;
             case "pair_registered":
             case "pair_updated":

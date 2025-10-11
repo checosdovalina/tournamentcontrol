@@ -643,11 +643,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         // Make court available
-        await storage.updateCourt(match.courtId, { isAvailable: true });
+        const updatedCourt = await storage.updateCourt(match.courtId, { isAvailable: true });
         
         // Broadcast match updated
         if (updatedMatch) {
           broadcastUpdate({ type: "match_finished", data: { match: updatedMatch, result: newResult } });
+        }
+        
+        // Broadcast court updated
+        if (updatedCourt) {
+          broadcastUpdate({ type: "court_updated", data: updatedCourt });
         }
         
         // Update scheduled match to completed if it exists
@@ -1815,11 +1820,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Update court and pairs
-      await storage.updateCourt(scheduledMatch.courtId, { isAvailable: false });
+      const updatedCourt = await storage.updateCourt(scheduledMatch.courtId, { isAvailable: false });
       await storage.updatePair(scheduledMatch.pair1Id, { isWaiting: false });
       await storage.updatePair(scheduledMatch.pair2Id, { isWaiting: false });
       
       broadcastUpdate({ type: "match_started", data: match });
+      if (updatedCourt) {
+        broadcastUpdate({ type: "court_updated", data: updatedCourt });
+      }
       res.json(match);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to start match", error: error.message });
@@ -1869,11 +1877,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Update court and pairs
-      await storage.updateCourt(courtId, { isAvailable: false });
+      const updatedCourt = await storage.updateCourt(courtId, { isAvailable: false });
       await storage.updatePair(scheduledMatch.pair1Id, { isWaiting: false });
       await storage.updatePair(scheduledMatch.pair2Id, { isWaiting: false });
       
       broadcastUpdate({ type: "match_started", data: match });
+      if (updatedCourt) {
+        broadcastUpdate({ type: "court_updated", data: updatedCourt });
+      }
       res.json({ match, message: `Partido iniciado en cancha ${court.name}` });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to assign and start match", error: error.message });
