@@ -787,11 +787,46 @@ export class DatabaseStorage implements IStorage {
     const updated = result[0];
     if (!updated) return undefined;
 
-    const allPlayers = await this.getScheduledMatchPlayers(scheduledMatchId);
-    const allPresent = allPlayers.every((p) => p.isPresent);
+    // Get the scheduled match to find pair IDs
+    const match = await this.getScheduledMatch(scheduledMatchId);
+    if (match) {
+      // Check if both players of pair1 or pair2 are present
+      const allPlayers = await this.getScheduledMatchPlayers(scheduledMatchId);
+      
+      // Get pair1 and pair2 details
+      const pair1 = await this.getPair(match.pair1Id);
+      const pair2 = await this.getPair(match.pair2Id);
+      
+      if (pair1) {
+        const pair1Players = allPlayers.filter(p => 
+          p.playerId === pair1.player1Id || p.playerId === pair1.player2Id
+        );
+        if (pair1Players.length === 2 && pair1Players.every(p => p.isPresent)) {
+          await this.updatePair(pair1.id, { 
+            isPresent: true,
+            isWaiting: true, 
+            waitingSince: new Date() 
+          });
+        }
+      }
+      
+      if (pair2) {
+        const pair2Players = allPlayers.filter(p => 
+          p.playerId === pair2.player1Id || p.playerId === pair2.player2Id
+        );
+        if (pair2Players.length === 2 && pair2Players.every(p => p.isPresent)) {
+          await this.updatePair(pair2.id, { 
+            isPresent: true,
+            isWaiting: true, 
+            waitingSince: new Date() 
+          });
+        }
+      }
 
-    if (allPresent) {
-      await this.updateScheduledMatch(scheduledMatchId, { status: "ready" });
+      const allPresent = allPlayers.every((p) => p.isPresent);
+      if (allPresent) {
+        await this.updateScheduledMatch(scheduledMatchId, { status: "ready" });
+      }
     }
 
     return updated;
@@ -813,8 +848,44 @@ export class DatabaseStorage implements IStorage {
     const updated = result[0];
     if (!updated) return undefined;
 
-    if (match && match.status === "ready") {
-      await this.updateScheduledMatch(scheduledMatchId, { status: "scheduled" });
+    if (match) {
+      // Remove pairs from waiting list if their players are not all present
+      const allPlayers = await this.getScheduledMatchPlayers(scheduledMatchId);
+      
+      const pair1 = await this.getPair(match.pair1Id);
+      const pair2 = await this.getPair(match.pair2Id);
+      
+      if (pair1) {
+        const pair1Players = allPlayers.filter(p => 
+          p.playerId === pair1.player1Id || p.playerId === pair1.player2Id
+        );
+        const pair1AllPresent = pair1Players.length === 2 && pair1Players.every(p => p.isPresent);
+        if (!pair1AllPresent) {
+          await this.updatePair(pair1.id, { 
+            isPresent: false,
+            isWaiting: false, 
+            waitingSince: null 
+          });
+        }
+      }
+      
+      if (pair2) {
+        const pair2Players = allPlayers.filter(p => 
+          p.playerId === pair2.player1Id || p.playerId === pair2.player2Id
+        );
+        const pair2AllPresent = pair2Players.length === 2 && pair2Players.every(p => p.isPresent);
+        if (!pair2AllPresent) {
+          await this.updatePair(pair2.id, { 
+            isPresent: false,
+            isWaiting: false, 
+            waitingSince: null 
+          });
+        }
+      }
+
+      if (match.status === "ready") {
+        await this.updateScheduledMatch(scheduledMatchId, { status: "scheduled" });
+      }
     }
 
     return updated;
@@ -836,8 +907,44 @@ export class DatabaseStorage implements IStorage {
     const updated = result[0];
     if (!updated) return undefined;
 
-    if (match && match.status === "ready") {
-      await this.updateScheduledMatch(scheduledMatchId, { status: "scheduled" });
+    if (match) {
+      // Remove pairs from waiting list if their players are reset
+      const allPlayers = await this.getScheduledMatchPlayers(scheduledMatchId);
+      
+      const pair1 = await this.getPair(match.pair1Id);
+      const pair2 = await this.getPair(match.pair2Id);
+      
+      if (pair1) {
+        const pair1Players = allPlayers.filter(p => 
+          p.playerId === pair1.player1Id || p.playerId === pair1.player2Id
+        );
+        const pair1AllPresent = pair1Players.length === 2 && pair1Players.every(p => p.isPresent);
+        if (!pair1AllPresent) {
+          await this.updatePair(pair1.id, { 
+            isPresent: false,
+            isWaiting: false, 
+            waitingSince: null 
+          });
+        }
+      }
+      
+      if (pair2) {
+        const pair2Players = allPlayers.filter(p => 
+          p.playerId === pair2.player1Id || p.playerId === pair2.player2Id
+        );
+        const pair2AllPresent = pair2Players.length === 2 && pair2Players.every(p => p.isPresent);
+        if (!pair2AllPresent) {
+          await this.updatePair(pair2.id, { 
+            isPresent: false,
+            isWaiting: false, 
+            waitingSince: null 
+          });
+        }
+      }
+
+      if (match.status === "ready") {
+        await this.updateScheduledMatch(scheduledMatchId, { status: "scheduled" });
+      }
     }
 
     return updated;

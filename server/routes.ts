@@ -1569,6 +1569,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const match = await storage.getScheduledMatch(id);
       res.json({ player, match });
       broadcastUpdate({ type: "player_checked_in", data: { scheduledMatchId: id, playerId, match } });
+      // Trigger waiting list update
+      broadcastUpdate({ type: "pair_registered", data: { matchId: id } });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to check-in player", error: error.message });
     }
@@ -1593,6 +1595,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const match = await storage.getScheduledMatch(id);
       res.json({ player, match });
       broadcastUpdate({ type: "player_checked_out", data: { scheduledMatchId: id, playerId, match } });
+      // Trigger waiting list update
+      broadcastUpdate({ type: "pair_registered", data: { matchId: id } });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to check-out player", error: error.message });
     }
@@ -1617,6 +1621,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const match = await storage.getScheduledMatch(id);
       res.json({ player, match });
       broadcastUpdate({ type: "player_status_reset", data: { scheduledMatchId: id, playerId, match } });
+      // Trigger waiting list update
+      broadcastUpdate({ type: "pair_registered", data: { matchId: id } });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to reset player status", error: error.message });
     }
