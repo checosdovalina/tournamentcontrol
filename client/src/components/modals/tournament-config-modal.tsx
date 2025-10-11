@@ -84,7 +84,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   const [newAdInterval, setNewAdInterval] = useState("60");
   const [newAdStartTime, setNewAdStartTime] = useState("");
   const [newAdEndTime, setNewAdEndTime] = useState("");
-  const [newAdActiveDays, setNewAdActiveDays] = useState<string[]>([]);
+  const [newAdActiveDays, setNewAdActiveDays] = useState<string[]>(['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']);
   const [editingAd, setEditingAd] = useState<string | null>(null);
   const [editAdType, setEditAdType] = useState<'image' | 'video' | 'gif'>('image');
   const [editAdUrl, setEditAdUrl] = useState("");
@@ -284,7 +284,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
       setNewAdInterval("60");
       setNewAdStartTime("");
       setNewAdEndTime("");
-      setNewAdActiveDays([]);
+      setNewAdActiveDays(['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']);
       toast({
         title: "Publicidad agregada",
         description: "El contenido publicitario ha sido creado",
