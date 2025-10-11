@@ -11,7 +11,7 @@ Built as a full-stack web application, it provides:
 - **Live Score Capture**: Real-time point-by-point score tracking with automatic game/set calculation
 - **Public Display**: Real-time tournament information for participants and spectators with live score updates
 
-Last Updated: October 10, 2025 - Added live score capture module allowing scorekeepers to track match scores in real-time with point-by-point updates that display immediately on screens via WebSocket
+Last Updated: October 11, 2025 - Fixed scheduled match deletion authorization issue, added "Repechaje" match format option, optimized scheduled matches loading with batch queries (160+ queries → 6 queries), and fixed display real-time updates for scheduled matches and same-day results
 
 ## User Preferences
 
