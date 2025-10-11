@@ -12,7 +12,7 @@ Built as a full-stack web application, it provides:
 - **Public Display**: Real-time tournament information for participants and spectators with live score updates and advertisement rotation
 - **Advertisement Module**: Commercial content management with time-based scheduling, automatic rotation, and multi-format support (images/videos)
 
-Last Updated: October 11, 2025 - Integrated Replit Object Storage for local file uploads (images/videos) from user's computer. Administrators can now upload advertisement content directly instead of requiring external URLs. Added ObjectUploader component with Uppy file upload UI, backend routes for presigned URL generation and file serving, automatic ACL policy management for public advertisement access, and seamless URL normalization in POST/PATCH endpoints
+Last Updated: October 11, 2025 - Added monthly calendar view for scheduled matches with visual grid (7x6), day indicators showing match counts via badges, responsive navigation (previous/next month, today button), Sheet drawer for day details with all matches and controls, and timezone-safe date filtering using ISO strings to prevent boundary date omissions in negative offset zones
 
 ## User Preferences
 
@@ -134,6 +134,10 @@ Preferred communication style: Simple, everyday language.
 **Query Strategy**: Aggressive staleTime (Infinity) with manual invalidation via WebSocket events rather than automatic refetching.
 
 **Rationale**: Reduces unnecessary network requests while ensuring data freshness through event-driven updates. Better performance for real-time tournament scenarios.
+
+**Scheduled Matches Calendar Optimization**: Monthly calendar view fetches all tournament matches with a single API call (`/api/scheduled-matches/:tournamentId`), then filters client-side by month using ISO string comparison (`match.day.toString().slice(0, 10)`) to avoid timezone-induced date shifts that would omit boundary matches (1st/31st).
+
+**Rationale**: Single HTTP request with memoized client-side filtering provides optimal performance while timezone-safe string comparison ensures accurate match display regardless of user's local timezone offset.
 
 **Auto-Assignment Logic**: Server-side automatic court assignment algorithm that matches waiting pairs to available courts based on FIFO queue.
 
