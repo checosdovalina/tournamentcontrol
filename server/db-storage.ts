@@ -473,6 +473,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getResultsByDateRange(tournamentId: string, startDate: Date, endDate: Date): Promise<ResultWithDetails[]> {
+    // Extract just the date part (YYYY-MM-DD) from startDate for comparison
+    const dateStr = startDate.toISOString().split('T')[0];
+    
     const dateResults = await db
       .select({
         result: results,
@@ -483,8 +486,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(matches.tournamentId, tournamentId),
-          gte(results.createdAt, startDate),
-          lt(results.createdAt, endDate)
+          sql`DATE(${results.createdAt}::timestamp) = ${dateStr}`
         )
       )
       .orderBy(desc(results.createdAt));

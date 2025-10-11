@@ -600,8 +600,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/results/today/:tournamentId", async (req, res) => {
     try {
       const { tournamentId } = req.params;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const dayParam = req.query.day as string;
+      
+      let today: Date;
+      if (dayParam) {
+        // Use the date provided by the client (YYYY-MM-DD format)
+        today = new Date(dayParam + 'T00:00:00');
+      } else {
+        // Fallback to server date
+        today = new Date();
+        today.setHours(0, 0, 0, 0);
+      }
+      
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
       
