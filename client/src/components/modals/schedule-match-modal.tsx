@@ -181,6 +181,7 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
                       <SelectItem value="8vos" data-testid="option-format-8vos">8vos de Final</SelectItem>
                       <SelectItem value="4tos" data-testid="option-format-4tos">4tos de Final</SelectItem>
                       <SelectItem value="Semifinal" data-testid="option-format-semifinal">Semifinal</SelectItem>
+                      <SelectItem value="Repechaje" data-testid="option-format-repechaje">Repechaje</SelectItem>
                       <SelectItem value="Final" data-testid="option-format-final">Final</SelectItem>
                     </SelectContent>
                   </Select>
