@@ -1855,6 +1855,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Court is not available" });
       }
       
+      // Check if court is already assigned to another active scheduled match
+      const allScheduledMatches = await storage.getScheduledMatchesByTournament(scheduledMatch.tournamentId);
+      const courtConflict = allScheduledMatches.find(m => 
+        m.id !== id && // Exclude current match
+        m.courtId === courtId && 
+        m.status !== 'cancelled' &&
+        m.status !== 'completed'
+      );
+      
+      if (courtConflict) {
+        return res.status(400).json({ 
+          message: "Esta cancha ya está asignada a otro partido activo",
+        });
+      }
+      
       // Assign court
       await storage.manualAssignCourt(id, courtId);
       

@@ -109,15 +109,22 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   // Helper function to get match status
   const getMatchStatus = (match: ScheduledMatchWithDetails) => {
-    // Map backend status values
+    // Map backend status values directly
     if (match.status === 'completed') return 'completed';
-    if (match.status === 'in_progress' || match.status === 'playing') return 'in_progress';
-    if (match.status === 'ready' || match.status === 'assigned') return 'ready';
+    if (match.status === 'playing') return 'in_progress';
+    
+    // For assigned/ready status
+    if (match.status === 'assigned' || match.status === 'ready') return 'ready';
     
     // For scheduled status, check if all players have checked in
-    const allPlayersPresent = match.players.every(p => p.isPresent === true);
-    if (allPlayersPresent) return 'ready';
-    return 'pending'; // Waiting for check-in
+    if (match.status === 'scheduled') {
+      const allPlayersPresent = match.players?.every(p => p.isPresent === true);
+      if (allPlayersPresent) return 'ready';
+      return 'pending'; // Waiting for check-in
+    }
+    
+    // Default
+    return 'pending';
   };
 
   // Filter day matches by category, status, and time
@@ -470,7 +477,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
       {/* Day Details Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+        <SheetContent className="w-full max-w-full h-full overflow-y-auto p-6 sm:p-8">
           <SheetHeader>
             <SheetTitle>
               {selectedDate && format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es })}
