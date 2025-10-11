@@ -798,6 +798,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Manual assign pair to specific court
+  app.post("/api/manual-assign", requireAuth, async (req, res) => {
+    try {
+      const { pairId, courtId, tournamentId } = req.body;
+      
+      if (!pairId || !courtId || !tournamentId) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Get the court
+      const court = await storage.getCourt(courtId);
+      if (!court) {
+        return res.status(404).json({ message: "Court not found" });
+      }
+      
+      if (!court.isAvailable) {
+        return res.status(400).json({ message: "Court is not available" });
+      }
+
+      // Get the first pair
+      const pair1 = await storage.getPair(pairId);
+      if (!pair1) {
+        return res.status(404).json({ message: "Pair not found" });
+      }
+
+      if (!pair1.isWaiting) {
+        return res.status(400).json({ message: "Pair is not waiting" });
+      }
+
+      // Get other waiting pairs (excluding the selected one)
+      const waitingPairs = await storage.getWaitingPairs(tournamentId);
+      const otherPairs = waitingPairs.filter(p => p.id !== pairId);
+
+      if (otherPairs.length === 0) {
+        return res.status(400).json({ message: "Need at least one more pair to create a match" });
+      }
+
+      // Take the next waiting pair
+      const pair2 = otherPairs[0];
+
+      // Create match
+      const match = await storage.createMatch({
+        tournamentId,
+        courtId: court.id,
+        pair1Id: pair1.id,
+        pair2Id: pair2.id,
+        status: "playing"
+      });
+
+      // Update court and pairs
+      await storage.updateCourt(court.id, { isAvailable: false });
+      await storage.updatePair(pair1.id, { isWaiting: false });
+      await storage.updatePair(pair2.id, { isWaiting: false });
+
+      broadcastUpdate({ type: "match_started", data: match });
+
+      res.json({ 
+        message: `Match created on court ${court.name}`,
+        match 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to assign court", error: error.message });
+    }
+  });
+
   // ========== SUPERADMIN ROUTES ==========
   
   // User Management

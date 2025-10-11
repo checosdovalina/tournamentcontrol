@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Clock } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -11,12 +13,21 @@ interface WaitingListProps {
 
 export default function WaitingList({ tournamentId }: WaitingListProps) {
   const { toast } = useToast();
+  const [selectedPairId, setSelectedPairId] = useState<string | null>(null);
+  const [courtSelectionOpen, setCourtSelectionOpen] = useState(false);
 
   const { data: waitingPairs = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/pairs/waiting", tournamentId],
     enabled: !!tournamentId,
     refetchInterval: 30000,
   });
+
+  const { data: courts = [] } = useQuery<any[]>({
+    queryKey: ["/api/courts"],
+    enabled: !!tournamentId,
+  });
+
+  const availableCourts = courts.filter(c => c.isAvailable);
 
   const autoAssignMutation = useMutation({
     mutationFn: async () => {
@@ -25,7 +36,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting", tournamentId] });
       queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
       
       toast({
@@ -41,6 +52,60 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
       });
     },
   });
+
+  const manualAssignMutation = useMutation({
+    mutationFn: async ({ pairId, courtId }: { pairId: string; courtId: string }) => {
+      const response = await apiRequest("POST", "/api/manual-assign", {
+        pairId,
+        courtId,
+        tournamentId,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting", tournamentId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
+      
+      setCourtSelectionOpen(false);
+      setSelectedPairId(null);
+      
+      toast({
+        title: "Asignación completada",
+        description: data.message,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error en asignación",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAssignCourt = (pairId: string) => {
+    if (availableCourts.length === 0) {
+      toast({
+        title: "No hay canchas disponibles",
+        description: "Todas las canchas están ocupadas",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (waitingPairs.length < 2) {
+      toast({
+        title: "Se necesitan al menos 2 parejas",
+        description: "Debe haber al menos otra pareja en espera para crear un partido",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedPairId(pairId);
+    setCourtSelectionOpen(true);
+  };
 
   const formatWaitTime = (waitingSince: string | Date | null) => {
     if (!waitingSince) return "0 min";
@@ -143,6 +208,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
                       variant="ghost"
                       size="sm"
                       className="text-primary hover:text-primary/80 font-medium"
+                      onClick={() => handleAssignCourt(pair.id)}
                       data-testid={`button-assign-court-${index + 1}`}
                     >
                       Asignar Cancha
@@ -154,6 +220,49 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
           </table>
         )}
       </CardContent>
+
+      <Dialog open={courtSelectionOpen} onOpenChange={setCourtSelectionOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Seleccionar Cancha</DialogTitle>
+            <DialogDescription>
+              Elige una cancha disponible para asignar la pareja seleccionada
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 mt-4">
+            {availableCourts.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">
+                No hay canchas disponibles
+              </p>
+            ) : (
+              availableCourts.map((court) => (
+                <Button
+                  key={court.id}
+                  variant="outline"
+                  className="w-full justify-start text-left h-auto py-3"
+                  onClick={() => {
+                    if (selectedPairId) {
+                      manualAssignMutation.mutate({
+                        pairId: selectedPairId,
+                        courtId: court.id,
+                      });
+                    }
+                  }}
+                  disabled={manualAssignMutation.isPending}
+                  data-testid={`button-select-court-${court.name}`}
+                >
+                  <div>
+                    <div className="font-semibold">{court.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {court.surface} - Disponible
+                    </div>
+                  </div>
+                </Button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
