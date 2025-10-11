@@ -14,6 +14,7 @@ import {
   insertTournamentUserSchema,
   insertCategorySchema,
   insertSponsorBannerSchema,
+  insertAdvertisementSchema,
   insertScheduledMatchSchema
 } from "@shared/schema";
 import { z } from "zod";
@@ -1148,6 +1149,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
       broadcastUpdate({ type: "banner_deleted", data: { id } });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to delete banner", error: error.message });
+    }
+  });
+
+  // ============ Advertisement Management ============
+  
+  app.get("/api/advertisements/:tournamentId", async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const advertisements = await storage.getAdvertisementsByTournament(tournamentId);
+      res.json(advertisements);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get advertisements", error: error.message });
+    }
+  });
+
+  app.get("/api/advertisements/active/:tournamentId", async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const advertisements = await storage.getActiveAdvertisements(tournamentId);
+      res.json(advertisements);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get active advertisements", error: error.message });
+    }
+  });
+
+  app.post("/api/advertisements", requireTournamentRole('admin'), async (req, res) => {
+    try {
+      const adData = insertAdvertisementSchema.parse(req.body);
+      const advertisement = await storage.createAdvertisement(adData);
+      res.json(advertisement);
+      broadcastUpdate({ type: "advertisement_created", data: advertisement });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to create advertisement", error: error.message });
+    }
+  });
+
+  app.patch("/api/advertisements/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      // Fetch advertisement to get tournamentId for authorization
+      const existingAd = await storage.getAdvertisement(id);
+      if (!existingAd) {
+        return res.status(404).json({ message: "Advertisement not found" });
+      }
+      
+      // Check authorization
+      let isAuthorized = false;
+      
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          existingAd.tournamentId
+        );
+        
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+      
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Admin access required for this tournament" });
+      }
+      
+      // Authorization passed - proceed with update
+      const advertisement = await storage.updateAdvertisement(id, updates);
+      if (!advertisement) {
+        return res.status(404).json({ message: "Advertisement not found" });
+      }
+      res.json(advertisement);
+      broadcastUpdate({ type: "advertisement_updated", data: advertisement });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update advertisement", error: error.message });
+    }
+  });
+
+  app.delete("/api/advertisements/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Fetch advertisement to get tournamentId for authorization
+      const existingAd = await storage.getAdvertisement(id);
+      if (!existingAd) {
+        return res.status(404).json({ message: "Advertisement not found" });
+      }
+      
+      // Check authorization
+      let isAuthorized = false;
+      
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          existingAd.tournamentId
+        );
+        
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+      
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Admin access required for this tournament" });
+      }
+      
+      // Authorization passed - proceed with delete
+      const success = await storage.deleteAdvertisement(id);
+      if (!success) {
+        return res.status(404).json({ message: "Advertisement not found" });
+      }
+      res.json({ message: "Advertisement deleted" });
+      broadcastUpdate({ type: "advertisement_deleted", data: { id } });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete advertisement", error: error.message });
     }
   });
 
