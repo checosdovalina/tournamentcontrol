@@ -38,6 +38,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
       queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting", tournamentId] });
       queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
       
       toast({
         title: "Asignación automática completada",
@@ -66,6 +67,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
       queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting", tournamentId] });
       queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
       
       setCourtSelectionOpen(false);
       setSelectedPairId(null);
