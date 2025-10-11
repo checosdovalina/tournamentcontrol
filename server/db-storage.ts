@@ -44,7 +44,7 @@ import {
   type InsertScheduledMatchPlayer,
   type ScheduledMatchWithDetails,
 } from "@shared/schema";
-import { eq, and, desc, sql, gte, lt } from "drizzle-orm";
+import { eq, and, desc, sql, gte, lt, inArray } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -581,12 +581,81 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(scheduledMatches.plannedTime);
 
+    if (matches.length === 0) return [];
+
+    // Extract all unique IDs
+    const pairIds = new Set<string>();
+    const categoryIds = new Set<string>();
+    const courtIds = new Set<string>();
+    matches.forEach(m => {
+      pairIds.add(m.pair1Id);
+      pairIds.add(m.pair2Id);
+      if (m.categoryId) categoryIds.add(m.categoryId);
+      if (m.courtId) courtIds.add(m.courtId);
+    });
+
+    // Batch fetch all related data
+    const pairsData = await db.select().from(pairs).where(inArray(pairs.id, Array.from(pairIds)));
+    const playerIds = new Set<string>();
+    pairsData.forEach(p => {
+      playerIds.add(p.player1Id);
+      playerIds.add(p.player2Id);
+    });
+
+    const playersData = playerIds.size > 0 
+      ? await db.select().from(players).where(inArray(players.id, Array.from(playerIds)))
+      : [];
+    const categoriesData = categoryIds.size > 0
+      ? await db.select().from(categories).where(inArray(categories.id, Array.from(categoryIds)))
+      : [];
+    const courtsData = courtIds.size > 0
+      ? await db.select().from(courts).where(inArray(courts.id, Array.from(courtIds)))
+      : [];
+
+    // Fetch all match players for all matches
+    const matchPlayersData = await db.select().from(scheduledMatchPlayers)
+      .where(inArray(scheduledMatchPlayers.scheduledMatchId, matches.map(m => m.id)));
+
+    // Create lookup maps
+    const pairsMap = new Map(pairsData.map(p => [p.id, p]));
+    const playersMap = new Map(playersData.map(p => [p.id, p]));
+    const categoriesMap = new Map(categoriesData.map(c => [c.id, c]));
+    const courtsMap = new Map(courtsData.map(c => [c.id, c]));
+    const matchPlayersMap = new Map<string, typeof matchPlayersData>();
+    matchPlayersData.forEach(mp => {
+      if (!matchPlayersMap.has(mp.scheduledMatchId)) {
+        matchPlayersMap.set(mp.scheduledMatchId, []);
+      }
+      matchPlayersMap.get(mp.scheduledMatchId)!.push(mp);
+    });
+
+    // Build results using in-memory data
     const matchesWithDetails: ScheduledMatchWithDetails[] = [];
     for (const match of matches) {
-      const details = await this.buildScheduledMatchWithDetails(match);
-      if (details) {
-        matchesWithDetails.push(details);
-      }
+      const pair1 = pairsMap.get(match.pair1Id);
+      const pair2 = pairsMap.get(match.pair2Id);
+      
+      if (!pair1 || !pair2) continue;
+
+      const player1_1 = playersMap.get(pair1.player1Id);
+      const player1_2 = playersMap.get(pair1.player2Id);
+      const player2_1 = playersMap.get(pair2.player1Id);
+      const player2_2 = playersMap.get(pair2.player2Id);
+
+      if (!player1_1 || !player1_2 || !player2_1 || !player2_2) continue;
+
+      const category = match.categoryId ? categoriesMap.get(match.categoryId) : undefined;
+      const court = match.courtId ? courtsMap.get(match.courtId) : undefined;
+      const matchPlayers = matchPlayersMap.get(match.id) || [];
+
+      matchesWithDetails.push({
+        ...match,
+        pair1: { ...pair1, player1: player1_1, player2: player1_2 },
+        pair2: { ...pair2, player1: player2_1, player2: player2_2 },
+        category,
+        court,
+        players: matchPlayers.map(mp => ({ ...mp, player: playersMap.get(mp.playerId)! })),
+      });
     }
     return matchesWithDetails;
   }
