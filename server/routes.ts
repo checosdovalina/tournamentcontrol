@@ -1413,6 +1413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pair1Id: scheduledMatch.pair1Id,
         pair2Id: scheduledMatch.pair2Id,
         categoryId: scheduledMatch.categoryId,
+        format: scheduledMatch.format,
         status: "playing",
       });
       
