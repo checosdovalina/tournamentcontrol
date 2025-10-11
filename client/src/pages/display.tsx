@@ -322,53 +322,6 @@ export default function Display() {
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-33.333%);
-          }
-        }
-
-        @keyframes scroll-vertical {
-          0% {
-            transform: translateY(0);
-          }
-          100% {
-            transform: translateY(-50%);
-          }
-        }
-
-        .animate-marquee {
-          animation: marquee 30s linear infinite;
-          will-change: transform;
-        }
-
-        .animate-marquee:hover {
-          animation-play-state: paused;
-        }
-
-        .animate-scroll-vertical {
-          animation: scroll-vertical 20s linear infinite;
-          will-change: transform;
-        }
-
-        .animate-scroll-vertical:hover {
-          animation-play-state: paused;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .animate-marquee {
-            animation: none;
-          }
-          .animate-scroll-vertical {
-            animation: none;
-          }
-        }
-      `}</style>
     </div>
   );
 }
