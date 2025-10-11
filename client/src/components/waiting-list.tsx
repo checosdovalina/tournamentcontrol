@@ -3,9 +3,11 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Clock } from "lucide-react";
+import { Clock, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import type { ScheduledMatchWithDetails } from "@shared/schema";
 
 interface WaitingListProps {
   tournamentId?: string;
@@ -13,11 +15,16 @@ interface WaitingListProps {
 
 export default function WaitingList({ tournamentId }: WaitingListProps) {
   const { toast } = useToast();
-  const [selectedPairId, setSelectedPairId] = useState<string | null>(null);
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [courtSelectionOpen, setCourtSelectionOpen] = useState(false);
 
-  const { data: waitingPairs = [], isLoading } = useQuery<any[]>({
-    queryKey: ["/api/pairs/waiting", tournamentId],
+  const { data: readyMatches = [], isLoading } = useQuery<ScheduledMatchWithDetails[]>({
+    queryKey: ["/api/scheduled-matches/ready", tournamentId],
+    queryFn: async () => {
+      if (!tournamentId) return [];
+      const response = await fetch(`/api/scheduled-matches/ready/${tournamentId}`);
+      return response.json();
+    },
     enabled: !!tournamentId,
     refetchInterval: 30000,
   });
@@ -29,64 +36,36 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
 
   const availableCourts = courts.filter(c => c.isAvailable);
 
-  const autoAssignMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", `/api/auto-assign/${tournamentId}`, {});
-      return response.json();
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting", tournamentId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
-      
-      toast({
-        title: "Asignación automática completada",
-        description: data.message,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error en asignación automática",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const manualAssignMutation = useMutation({
-    mutationFn: async ({ pairId, courtId }: { pairId: string; courtId: string }) => {
-      const response = await apiRequest("POST", "/api/manual-assign", {
-        pairId,
+  const assignAndStartMutation = useMutation({
+    mutationFn: async ({ matchId, courtId }: { matchId: string; courtId: string }) => {
+      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/assign-and-start`, {
         courtId,
-        tournamentId,
       });
       return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting", tournamentId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
       
       setCourtSelectionOpen(false);
-      setSelectedPairId(null);
+      setSelectedMatchId(null);
       
       toast({
-        title: "Asignación completada",
-        description: data.message,
+        title: "Partido iniciado",
+        description: data.message || "El partido ha comenzado exitosamente",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error en asignación",
+        title: "Error al iniciar partido",
         description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  const handleAssignCourt = (pairId: string) => {
+  const handleAssignCourt = (matchId: string) => {
     if (availableCourts.length === 0) {
       toast({
         title: "No hay canchas disponibles",
@@ -95,25 +74,21 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
       });
       return;
     }
-    
-    if (waitingPairs.length < 2) {
-      toast({
-        title: "Se necesitan al menos 2 parejas",
-        description: "Debe haber al menos otra pareja en espera para crear un partido",
-        variant: "destructive",
-      });
-      return;
-    }
 
-    setSelectedPairId(pairId);
+    setSelectedMatchId(matchId);
     setCourtSelectionOpen(true);
   };
 
-  const formatWaitTime = (waitingSince: string | Date | null) => {
-    if (!waitingSince) return "0 min";
-    const start = new Date(waitingSince);
-    const now = new Date();
-    const diffMinutes = Math.floor((now.getTime() - start.getTime()) / (1000 * 60));
+  const formatWaitTime = (players: any[]) => {
+    const checkInTimes = players
+      .filter(p => p.checkInTime)
+      .map(p => new Date(p.checkInTime).getTime());
+    
+    if (checkInTimes.length === 0) return "0 min";
+    
+    const earliestCheckIn = Math.min(...checkInTimes);
+    const now = new Date().getTime();
+    const diffMinutes = Math.floor((now - earliestCheckIn) / (1000 * 60));
     return `${diffMinutes} min`;
   };
 
@@ -148,25 +123,15 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
           <div className="flex items-center space-x-4">
             <span className="text-sm text-muted-foreground">
               <span className="status-indicator status-waiting"></span>
-              <span data-testid="text-waiting-pairs-count">{waitingPairs.length}</span> parejas
+              <span data-testid="text-waiting-matches-count">{readyMatches.length}</span> {readyMatches.length === 1 ? 'partido' : 'partidos'}
             </span>
-            {waitingPairs.length > 1 && (
-              <Button
-                size="sm"
-                onClick={() => autoAssignMutation.mutate()}
-                disabled={autoAssignMutation.isPending}
-                data-testid="button-auto-assign"
-              >
-                {autoAssignMutation.isPending ? "Asignando..." : "Asignar Automático"}
-              </Button>
-            )}
           </div>
         </div>
       </CardHeader>
       <CardContent className="overflow-x-auto">
-        {waitingPairs.length === 0 ? (
+        {readyMatches.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            No hay parejas en lista de espera
+            No hay partidos listos en lista de espera
           </div>
         ) : (
           <table className="w-full">
@@ -176,7 +141,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
                   Posición
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Pareja
+                  Partido
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Tiempo Espera
@@ -187,22 +152,46 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border" data-testid="waiting-list-body">
-              {waitingPairs.map((pair: any, index: number) => (
-                <tr key={pair.id} className="hover:bg-muted/50 transition-colors" data-testid={`waiting-pair-${index + 1}`}>
+              {readyMatches.map((match: ScheduledMatchWithDetails, index: number) => (
+                <tr key={match.id} className="hover:bg-muted/50 transition-colors" data-testid={`waiting-match-${index + 1}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="inline-flex items-center justify-center w-8 h-8 bg-warning/20 text-warning rounded-full font-semibold">
                       {index + 1}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="font-medium" data-testid={`pair-names-${index + 1}`}>
-                      {pair.player1.name} / {pair.player2.name}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium text-muted-foreground">Pareja 1:</span>
+                        <span className="font-medium" data-testid={`match-pair1-${index + 1}`}>
+                          {match.pair1.player1.name} / {match.pair1.player2.name}
+                        </span>
+                        <Badge variant="default" className="bg-green-600 text-xs">
+                          ✓ Listos
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium text-muted-foreground">Pareja 2:</span>
+                        <span className="font-medium" data-testid={`match-pair2-${index + 1}`}>
+                          {match.pair2.player1.name} / {match.pair2.player2.name}
+                        </span>
+                        <Badge variant="default" className="bg-green-600 text-xs">
+                          ✓ Listos
+                        </Badge>
+                      </div>
+                      {match.category && (
+                        <Badge variant="outline" className="text-xs">
+                          {match.category.name}
+                        </Badge>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                     <Clock className="w-4 h-4 mr-1 inline" />
                     <span data-testid={`wait-time-${index + 1}`}>
-                      {formatWaitTime(pair.waitingSince)}
+                      {formatWaitTime(match.players)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -210,7 +199,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
                       variant="ghost"
                       size="sm"
                       className="text-primary hover:text-primary/80 font-medium"
-                      onClick={() => handleAssignCourt(pair.id)}
+                      onClick={() => handleAssignCourt(match.id)}
                       data-testid={`button-assign-court-${index + 1}`}
                     >
                       Asignar Cancha
@@ -226,9 +215,9 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
       <Dialog open={courtSelectionOpen} onOpenChange={setCourtSelectionOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Seleccionar Cancha</DialogTitle>
+            <DialogTitle>Seleccionar Cancha e Iniciar Partido</DialogTitle>
             <DialogDescription>
-              Elige una cancha disponible para asignar la pareja seleccionada
+              Elige una cancha disponible para asignar e iniciar el partido inmediatamente
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 mt-4">
@@ -243,14 +232,14 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
                   variant="outline"
                   className="w-full justify-start text-left h-auto py-3"
                   onClick={() => {
-                    if (selectedPairId) {
-                      manualAssignMutation.mutate({
-                        pairId: selectedPairId,
+                    if (selectedMatchId) {
+                      assignAndStartMutation.mutate({
+                        matchId: selectedMatchId,
                         courtId: court.id,
                       });
                     }
                   }}
-                  disabled={manualAssignMutation.isPending}
+                  disabled={assignAndStartMutation.isPending}
                   data-testid={`button-select-court-${court.name}`}
                 >
                   <div>

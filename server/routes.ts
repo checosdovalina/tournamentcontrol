@@ -1412,6 +1412,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get ready matches (all players present, waiting for court assignment)
+  app.get("/api/scheduled-matches/ready/:tournamentId", requireTournamentAccess(), async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const allMatches = await storage.getScheduledMatchesByTournament(tournamentId);
+      
+      // Filter for matches where all players are present and no court assigned yet
+      const readyMatches = allMatches.filter(match => {
+        const allPlayersPresent = match.players.every(p => p.isPresent === true);
+        return allPlayersPresent && !match.courtId && (match.status === 'scheduled' || match.status === 'ready');
+      });
+      
+      // Sort by waiting time (oldest first)
+      readyMatches.sort((a, b) => {
+        const aTime = Math.min(...a.players.map(p => p.checkInTime ? new Date(p.checkInTime).getTime() : Infinity));
+        const bTime = Math.min(...b.players.map(p => p.checkInTime ? new Date(p.checkInTime).getTime() : Infinity));
+        return aTime - bTime;
+      });
+      
+      res.json(readyMatches);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch ready matches", error: error.message });
+    }
+  });
+
   // Get scheduled matches for a specific day (public endpoint for display)
   app.get("/api/scheduled-matches/day/:tournamentId", async (req, res) => {
     try {
@@ -1756,6 +1781,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(match);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to start match", error: error.message });
+    }
+  });
+
+  // Assign court and start match in one step (for waiting list)
+  app.post("/api/scheduled-matches/:id/assign-and-start", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { courtId } = req.body;
+      
+      if (!courtId) {
+        return res.status(400).json({ message: "Court ID is required" });
+      }
+      
+      const scheduledMatch = await storage.getScheduledMatch(id);
+      if (!scheduledMatch) {
+        return res.status(404).json({ message: "Scheduled match not found" });
+      }
+      
+      // Verify court is available
+      const court = await storage.getCourt(courtId);
+      if (!court || !court.isAvailable) {
+        return res.status(400).json({ message: "Court is not available" });
+      }
+      
+      // Assign court
+      await storage.manualAssignCourt(id, courtId);
+      
+      // Create playing match
+      const match = await storage.createMatch({
+        tournamentId: scheduledMatch.tournamentId,
+        courtId: courtId,
+        pair1Id: scheduledMatch.pair1Id,
+        pair2Id: scheduledMatch.pair2Id,
+        categoryId: scheduledMatch.categoryId,
+        format: scheduledMatch.format,
+        status: "playing",
+      });
+      
+      // Update scheduled match status
+      await storage.updateScheduledMatch(id, { 
+        status: "playing",
+        matchId: match.id,
+        courtId: courtId
+      });
+      
+      // Update court and pairs
+      await storage.updateCourt(courtId, { isAvailable: false });
+      await storage.updatePair(scheduledMatch.pair1Id, { isWaiting: false });
+      await storage.updatePair(scheduledMatch.pair2Id, { isWaiting: false });
+      
+      broadcastUpdate({ type: "match_started", data: match });
+      res.json({ match, message: `Partido iniciado en cancha ${court.name}` });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to assign and start match", error: error.message });
     }
   });
 
