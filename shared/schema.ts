@@ -118,6 +118,21 @@ export const sponsorBanners = pgTable("sponsor_banners", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const advertisements = pgTable("advertisements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tournamentId: varchar("tournament_id").notNull(),
+  title: text("title").notNull(),
+  contentType: text("content_type").notNull(), // image, video, animation
+  contentUrl: text("content_url").notNull(),
+  duration: integer("duration").default(5), // Duration in seconds to display
+  startTime: text("start_time"), // Time in HH:MM format (e.g., "09:00")
+  endTime: text("end_time"), // Time in HH:MM format (e.g., "18:00")
+  activeDays: text("active_days").array(), // Array of active days: ["monday", "tuesday", etc.]
+  displayOrder: integer("display_order").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const scheduledMatches = pgTable("scheduled_matches", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tournamentId: varchar("tournament_id").notNull(),
@@ -210,6 +225,11 @@ export const insertSponsorBannerSchema = createInsertSchema(sponsorBanners).omit
   createdAt: true,
 });
 
+export const insertAdvertisementSchema = createInsertSchema(advertisements).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertScheduledMatchSchema = createInsertSchema(scheduledMatches).omit({
   id: true,
   createdAt: true,
@@ -237,6 +257,7 @@ export type Result = typeof results.$inferSelect;
 export type TournamentUser = typeof tournamentUsers.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type SponsorBanner = typeof sponsorBanners.$inferSelect;
+export type Advertisement = typeof advertisements.$inferSelect;
 export type ScheduledMatch = typeof scheduledMatches.$inferSelect;
 export type ScheduledMatchPlayer = typeof scheduledMatchPlayers.$inferSelect;
 
@@ -251,6 +272,7 @@ export type InsertResult = z.infer<typeof insertResultSchema>;
 export type InsertTournamentUser = z.infer<typeof insertTournamentUserSchema>;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertSponsorBanner = z.infer<typeof insertSponsorBannerSchema>;
+export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;
 export type InsertScheduledMatch = z.infer<typeof insertScheduledMatchSchema>;
 export type InsertScheduledMatchPlayer = z.infer<typeof insertScheduledMatchPlayerSchema>;
 
