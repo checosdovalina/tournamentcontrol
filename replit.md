@@ -12,7 +12,7 @@ Built as a full-stack web application, it provides:
 - **Public Display**: Real-time tournament information for participants and spectators with live score updates and advertisement rotation
 - **Advertisement Module**: Commercial content management with time-based scheduling, automatic rotation, and multi-format support (images/videos)
 
-Last Updated: October 11, 2025 - Enhanced advertisement module with fullscreen display, custom text overlays, six animation types (fade-in/out, slide-in, zoom-in/out, typewriter), configurable display duration and rotation intervals, GIF support, and stable rotation logic using time-keyed memoization to prevent timer resets
+Last Updated: October 11, 2025 - Integrated Replit Object Storage for local file uploads (images/videos) from user's computer. Administrators can now upload advertisement content directly instead of requiring external URLs. Added ObjectUploader component with Uppy file upload UI, backend routes for presigned URL generation and file serving, automatic ACL policy management for public advertisement access, and seamless URL normalization in POST/PATCH endpoints
 
 ## User Preferences
 
@@ -53,6 +53,7 @@ Preferred communication style: Simple, everyday language.
 - Results: `/api/results/*`
 - Stats: `/api/stats/*`
 - Advertisements: `/api/advertisements/*` (CRUD with time-based filtering)
+- Object Storage: `/api/objects/upload` (presigned URL generation), `/objects/*` (file serving)
 
 **Data Validation**: Zod schemas for runtime type validation integrated with Drizzle ORM schema definitions through drizzle-zod.
 
@@ -186,6 +187,13 @@ Preferred communication style: Simple, everyday language.
 - **embla-carousel-react** - Carousel functionality
 - **wouter** - Lightweight routing library
 
+### File Upload & Storage
+- **@uppy/core** - Core file upload functionality
+- **@uppy/react** - React components for Uppy
+- **@uppy/dashboard** - Dashboard UI for file uploads
+- **@uppy/aws-s3** - S3-compatible upload adapter
+- **@google-cloud/storage** - Google Cloud Storage client
+
 ### External Services
 - **Neon Database** - Serverless PostgreSQL hosting (requires DATABASE_URL environment variable)
 - **Session Secret** - Configured via SESSION_SECRET environment variable (defaults to 'default-secret-key' in development)
@@ -196,3 +204,6 @@ Preferred communication style: Simple, everyday language.
   - `DATABASE_URL` - PostgreSQL connection string (required)
   - `SESSION_SECRET` - Session encryption key (optional, has default)
   - `NODE_ENV` - Environment mode (development/production)
+  - `DEFAULT_OBJECT_STORAGE_BUCKET_ID` - Replit Object Storage bucket ID
+  - `PUBLIC_OBJECT_SEARCH_PATHS` - Comma-separated paths for public object search
+  - `PRIVATE_OBJECT_DIR` - Directory for private uploaded files
