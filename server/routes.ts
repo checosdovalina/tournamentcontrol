@@ -367,8 +367,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/pairs", requireAuth, async (req, res) => {
     try {
+      console.log("Creating pair with data:", JSON.stringify(req.body, null, 2));
       const pairData = insertPairSchema.parse(req.body);
+      console.log("Parsed pair data:", JSON.stringify(pairData, null, 2));
       const newPair = await storage.createPair(pairData);
+      console.log("Created pair:", JSON.stringify(newPair, null, 2));
       broadcastUpdate({ type: "pair_registered", data: newPair });
       res.status(201).json(newPair);
     } catch (error: any) {
