@@ -9,6 +9,7 @@ import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
 export default function Display() {
   const [, setLocation] = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
 
   const { data: tournament } = useQuery<{ 
     id: string; 
@@ -58,7 +59,45 @@ export default function Display() {
     refetchInterval: 60000,
   });
 
+  const { data: advertisements = [] } = useQuery<any[]>({
+    queryKey: ["/api/advertisements/active", tournament?.id],
+    enabled: !!tournament?.id,
+    refetchInterval: 60000,
+  });
+
   useWebSocket();
+
+  // Filter active advertisements based on day and time
+  const getActiveAdvertisements = () => {
+    const now = new Date();
+    const currentDay = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][now.getDay()];
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+
+    return advertisements.filter((ad: any) => {
+      if (!ad.isActive) return false;
+
+      // Check day filter
+      if (ad.activeDays.length > 0 && !ad.activeDays.includes(currentDay)) {
+        return false;
+      }
+
+      // Check time filter
+      if (ad.startTime || ad.endTime) {
+        const [startHour, startMin] = (ad.startTime || '00:00').split(':').map(Number);
+        const [endHour, endMin] = (ad.endTime || '23:59').split(':').map(Number);
+        const startMinutes = startHour * 60 + startMin;
+        const endMinutes = endHour * 60 + endMin;
+
+        if (currentTime < startMinutes || currentTime > endMinutes) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  };
+
+  const activeAds = getActiveAdvertisements();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -67,6 +106,20 @@ export default function Display() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-rotate advertisements based on duration
+  useEffect(() => {
+    if (activeAds.length === 0) return;
+
+    const currentAd = activeAds[currentAdIndex];
+    if (!currentAd) return;
+
+    const timer = setTimeout(() => {
+      setCurrentAdIndex((prev) => (prev + 1) % activeAds.length);
+    }, (currentAd.durationSeconds || 10) * 1000);
+
+    return () => clearTimeout(timer);
+  }, [currentAdIndex, activeAds]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('es-ES', { 
@@ -286,6 +339,40 @@ export default function Display() {
             </div>
           </div>
         </div>
+
+        {/* Advertisement Display */}
+        {activeAds.length > 0 && (
+          <div className="px-8 py-4 border-t border-white/20 bg-white/5">
+            <div className="h-32 flex items-center justify-center">
+              {activeAds[currentAdIndex]?.contentType === 'image' && (
+                <img 
+                  src={activeAds[currentAdIndex].contentUrl} 
+                  alt="Publicidad" 
+                  className="max-h-full w-auto object-contain"
+                  data-testid="ad-display-image"
+                />
+              )}
+              {activeAds[currentAdIndex]?.contentType === 'video' && (
+                <video 
+                  src={activeAds[currentAdIndex].contentUrl} 
+                  className="max-h-full w-auto object-contain"
+                  autoPlay
+                  muted
+                  loop
+                  data-testid="ad-display-video"
+                />
+              )}
+              {activeAds[currentAdIndex]?.contentType === 'animation' && (
+                <img 
+                  src={activeAds[currentAdIndex].contentUrl} 
+                  alt="Publicidad" 
+                  className="max-h-full w-auto object-contain"
+                  data-testid="ad-display-animation"
+                />
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Footer with Sponsors - Auto Scrolling Marquee */}
         <div className="px-8 py-3 border-t border-white/20 bg-white/5 overflow-hidden">

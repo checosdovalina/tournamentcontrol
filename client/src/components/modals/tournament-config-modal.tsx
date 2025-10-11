@@ -34,6 +34,18 @@ interface SponsorBanner {
   tournamentId: string;
 }
 
+interface Advertisement {
+  id: string;
+  tournamentId: string;
+  contentType: 'image' | 'video' | 'animation';
+  contentUrl: string;
+  durationSeconds: number;
+  startTime: string | null;
+  endTime: string | null;
+  activeDays: string[];
+  isActive: boolean;
+}
+
 export default function TournamentConfigModal({ open, onOpenChange, tournament }: TournamentConfigModalProps) {
   const [tournamentName, setTournamentName] = useState("");
   const [selectedClub, setSelectedClub] = useState("");
@@ -60,6 +72,21 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   const [editBannerUrl, setEditBannerUrl] = useState("");
   const [editBannerLink, setEditBannerLink] = useState("");
 
+  // Advertisement state
+  const [newAdType, setNewAdType] = useState<'image' | 'video' | 'animation'>('image');
+  const [newAdUrl, setNewAdUrl] = useState("");
+  const [newAdDuration, setNewAdDuration] = useState("10");
+  const [newAdStartTime, setNewAdStartTime] = useState("");
+  const [newAdEndTime, setNewAdEndTime] = useState("");
+  const [newAdActiveDays, setNewAdActiveDays] = useState<string[]>([]);
+  const [editingAd, setEditingAd] = useState<string | null>(null);
+  const [editAdType, setEditAdType] = useState<'image' | 'video' | 'animation'>('image');
+  const [editAdUrl, setEditAdUrl] = useState("");
+  const [editAdDuration, setEditAdDuration] = useState("10");
+  const [editAdStartTime, setEditAdStartTime] = useState("");
+  const [editAdEndTime, setEditAdEndTime] = useState("");
+  const [editAdActiveDays, setEditAdActiveDays] = useState<string[]>([]);
+
   const { data: clubs = [] } = useQuery<any[]>({
     queryKey: ["/api/clubs"],
     enabled: open,
@@ -72,6 +99,11 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
 
   const { data: banners = [], isLoading: bannersLoading } = useQuery<SponsorBanner[]>({
     queryKey: [`/api/banners/${tournament?.id}`],
+    enabled: open && !!tournament?.id,
+  });
+
+  const { data: advertisements = [], isLoading: advertisementsLoading } = useQuery<Advertisement[]>({
+    queryKey: [`/api/advertisements/${tournament?.id}`],
     enabled: open && !!tournament?.id,
   });
 
@@ -228,6 +260,74 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
     },
   });
 
+  const createAdvertisementMutation = useMutation({
+    mutationFn: async (data: { tournamentId: string; contentType: string; contentUrl: string; durationSeconds: number; startTime: string | null; endTime: string | null; activeDays: string[] }) => {
+      const response = await apiRequest("POST", "/api/advertisements", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/advertisements/${tournament?.id}`] });
+      setNewAdType('image');
+      setNewAdUrl("");
+      setNewAdDuration("10");
+      setNewAdStartTime("");
+      setNewAdEndTime("");
+      setNewAdActiveDays([]);
+      toast({
+        title: "Publicidad agregada",
+        description: "El contenido publicitario ha sido creado",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al crear publicidad",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateAdvertisementMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiRequest("PATCH", `/api/advertisements/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/advertisements/${tournament?.id}`] });
+      toast({
+        title: "Publicidad actualizada",
+        description: "El contenido publicitario ha sido modificado",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al actualizar",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteAdvertisementMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/advertisements/${id}`, null);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/advertisements/${tournament?.id}`] });
+      toast({
+        title: "Publicidad eliminada",
+        description: "El contenido ha sido removido",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al eliminar",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   useEffect(() => {
     if (tournament && open) {
       setTournamentName(tournament.name || "");
@@ -350,6 +450,75 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
     }
   };
 
+  const handleAddAdvertisement = () => {
+    if (!newAdUrl || !tournament?.id) return;
+    
+    createAdvertisementMutation.mutate({
+      tournamentId: tournament.id,
+      contentType: newAdType,
+      contentUrl: newAdUrl,
+      durationSeconds: parseInt(newAdDuration),
+      startTime: newAdStartTime || null,
+      endTime: newAdEndTime || null,
+      activeDays: newAdActiveDays,
+    });
+  };
+
+  const handleStartEditAdvertisement = (ad: Advertisement) => {
+    setEditingAd(ad.id);
+    setEditAdType(ad.contentType);
+    setEditAdUrl(ad.contentUrl);
+    setEditAdDuration(ad.durationSeconds.toString());
+    setEditAdStartTime(ad.startTime || "");
+    setEditAdEndTime(ad.endTime || "");
+    setEditAdActiveDays(ad.activeDays);
+  };
+
+  const handleSaveAdvertisement = () => {
+    if (!editingAd) return;
+    
+    updateAdvertisementMutation.mutate({
+      id: editingAd,
+      data: {
+        contentType: editAdType,
+        contentUrl: editAdUrl,
+        durationSeconds: parseInt(editAdDuration),
+        startTime: editAdStartTime || null,
+        endTime: editAdEndTime || null,
+        activeDays: editAdActiveDays,
+      },
+    });
+    setEditingAd(null);
+  };
+
+  const handleCancelEditAdvertisement = () => {
+    setEditingAd(null);
+    setEditAdType('image');
+    setEditAdUrl("");
+    setEditAdDuration("10");
+    setEditAdStartTime("");
+    setEditAdEndTime("");
+    setEditAdActiveDays([]);
+  };
+
+  const handleDeleteAdvertisement = (id: string) => {
+    if (confirm("¿Está seguro de eliminar esta publicidad?")) {
+      deleteAdvertisementMutation.mutate(id);
+    }
+  };
+
+  const handleToggleDay = (day: string, isEditing: boolean = false) => {
+    if (isEditing) {
+      setEditAdActiveDays(prev => 
+        prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+      );
+    } else {
+      setNewAdActiveDays(prev => 
+        prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+      );
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
@@ -361,11 +530,12 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
         </DialogHeader>
         
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="general" data-testid="tab-general">General</TabsTrigger>
             <TabsTrigger value="categories" data-testid="tab-categories">Categorías</TabsTrigger>
             <TabsTrigger value="logos" data-testid="tab-logos">Logos</TabsTrigger>
             <TabsTrigger value="sponsors" data-testid="tab-sponsors">Patrocinadores</TabsTrigger>
+            <TabsTrigger value="ads" data-testid="tab-ads">Publicidad</TabsTrigger>
           </TabsList>
 
           {/* General Settings Tab */}
@@ -854,6 +1024,266 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Agregar Banner
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Advertisements Tab */}
+          <TabsContent value="ads" className="space-y-4 mt-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold">Contenido Publicitario</h4>
+                <span className="text-sm text-muted-foreground">{advertisements.length} anuncios</span>
+              </div>
+              
+              {advertisementsLoading ? (
+                <p className="text-sm text-muted-foreground">Cargando publicidad...</p>
+              ) : advertisements.length === 0 ? (
+                <Card className="border-dashed">
+                  <CardContent className="p-6 text-center text-muted-foreground">
+                    <Image className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No hay contenido publicitario</p>
+                    <p className="text-xs mt-1">Agrega el primer anuncio abajo</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                advertisements.map((ad) => (
+                  <Card key={ad.id} data-testid={`ad-${ad.id}`}>
+                    <CardContent className="p-4">
+                      {editingAd === ad.id ? (
+                        <div className="space-y-3">
+                          <div>
+                            <Label htmlFor="editAdType">Tipo de Contenido</Label>
+                            <Select value={editAdType} onValueChange={(value: any) => setEditAdType(value)}>
+                              <SelectTrigger data-testid="select-edit-ad-type">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="image">Imagen</SelectItem>
+                                <SelectItem value="video">Video</SelectItem>
+                                <SelectItem value="animation">Animación</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="editAdUrl">URL del Contenido</Label>
+                            <Input
+                              id="editAdUrl"
+                              type="url"
+                              value={editAdUrl}
+                              onChange={(e) => setEditAdUrl(e.target.value)}
+                              data-testid="input-edit-ad-url"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="editAdDuration">Duración (segundos)</Label>
+                            <Input
+                              id="editAdDuration"
+                              type="number"
+                              min="1"
+                              value={editAdDuration}
+                              onChange={(e) => setEditAdDuration(e.target.value)}
+                              data-testid="input-edit-ad-duration"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="editAdStartTime">Hora Inicio (opcional)</Label>
+                              <Input
+                                id="editAdStartTime"
+                                type="time"
+                                value={editAdStartTime}
+                                onChange={(e) => setEditAdStartTime(e.target.value)}
+                                data-testid="input-edit-ad-start-time"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="editAdEndTime">Hora Fin (opcional)</Label>
+                              <Input
+                                id="editAdEndTime"
+                                type="time"
+                                value={editAdEndTime}
+                                onChange={(e) => setEditAdEndTime(e.target.value)}
+                                data-testid="input-edit-ad-end-time"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label>Días Activos</Label>
+                            <div className="grid grid-cols-7 gap-2 mt-2">
+                              {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day, idx) => (
+                                <Button
+                                  key={day}
+                                  type="button"
+                                  variant={editAdActiveDays.includes(day) ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => handleToggleDay(day, true)}
+                                  data-testid={`button-edit-day-${day}`}
+                                  className="h-9"
+                                >
+                                  {day}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleCancelEditAdvertisement}
+                              data-testid="button-cancel-edit-ad"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Cancelar
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={handleSaveAdvertisement}
+                              disabled={updateAdvertisementMutation.isPending}
+                              data-testid="button-save-ad"
+                            >
+                              <Save className="w-4 h-4 mr-1" />
+                              Guardar
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary font-medium">
+                                {ad.contentType}
+                              </span>
+                              <span className="text-xs text-muted-foreground">{ad.durationSeconds}s</span>
+                            </div>
+                            <p className="text-sm font-medium truncate max-w-md" data-testid={`ad-url-${ad.id}`}>
+                              {ad.contentUrl}
+                            </p>
+                            {(ad.startTime || ad.endTime) && (
+                              <p className="text-xs text-muted-foreground">
+                                Horario: {ad.startTime || '00:00'} - {ad.endTime || '23:59'}
+                              </p>
+                            )}
+                            {ad.activeDays.length > 0 && (
+                              <p className="text-xs text-muted-foreground">
+                                Días: {ad.activeDays.join(', ')}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStartEditAdvertisement(ad)}
+                              data-testid={`button-edit-ad-${ad.id}`}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteAdvertisement(ad.id)}
+                              className="text-destructive hover:text-destructive/80"
+                              data-testid={`button-delete-ad-${ad.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+              
+              <Separator />
+              
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold">Agregar Nueva Publicidad</h4>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="newAdType">Tipo de Contenido</Label>
+                    <Select value={newAdType} onValueChange={(value: any) => setNewAdType(value)}>
+                      <SelectTrigger data-testid="select-new-ad-type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="image">Imagen</SelectItem>
+                        <SelectItem value="video">Video</SelectItem>
+                        <SelectItem value="animation">Animación</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Input
+                    type="url"
+                    placeholder="URL del contenido"
+                    value={newAdUrl}
+                    onChange={(e) => setNewAdUrl(e.target.value)}
+                    data-testid="input-new-ad-url"
+                  />
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="Duración en segundos"
+                    value={newAdDuration}
+                    onChange={(e) => setNewAdDuration(e.target.value)}
+                    data-testid="input-new-ad-duration"
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="newAdStartTime">Hora Inicio (opcional)</Label>
+                      <Input
+                        id="newAdStartTime"
+                        type="time"
+                        value={newAdStartTime}
+                        onChange={(e) => setNewAdStartTime(e.target.value)}
+                        data-testid="input-new-ad-start-time"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="newAdEndTime">Hora Fin (opcional)</Label>
+                      <Input
+                        id="newAdEndTime"
+                        type="time"
+                        value={newAdEndTime}
+                        onChange={(e) => setNewAdEndTime(e.target.value)}
+                        data-testid="input-new-ad-end-time"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Días Activos (opcional)</Label>
+                    <div className="grid grid-cols-7 gap-2 mt-2">
+                      {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
+                        <Button
+                          key={day}
+                          type="button"
+                          variant={newAdActiveDays.includes(day) ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handleToggleDay(day, false)}
+                          data-testid={`button-new-day-${day}`}
+                          className="h-9"
+                        >
+                          {day}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleAddAdvertisement}
+                    disabled={!newAdUrl || createAdvertisementMutation.isPending}
+                    className="w-full"
+                    data-testid="button-add-ad"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Agregar Publicidad
                   </Button>
                 </div>
               </div>

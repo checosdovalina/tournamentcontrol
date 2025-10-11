@@ -121,14 +121,12 @@ export const sponsorBanners = pgTable("sponsor_banners", {
 export const advertisements = pgTable("advertisements", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tournamentId: varchar("tournament_id").notNull(),
-  title: text("title").notNull(),
   contentType: text("content_type").notNull(), // image, video, animation
   contentUrl: text("content_url").notNull(),
-  duration: integer("duration").default(5), // Duration in seconds to display
+  durationSeconds: integer("duration_seconds").default(10), // Duration in seconds to display
   startTime: text("start_time"), // Time in HH:MM format (e.g., "09:00")
   endTime: text("end_time"), // Time in HH:MM format (e.g., "18:00")
-  activeDays: text("active_days").array(), // Array of active days: ["monday", "tuesday", etc.]
-  displayOrder: integer("display_order").default(0),
+  activeDays: text("active_days").array(), // Array of active days: ["Lun", "Mar", "Mié", etc.]
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
