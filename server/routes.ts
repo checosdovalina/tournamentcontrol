@@ -597,6 +597,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/results/today/:tournamentId", async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const results = await storage.getResultsByDateRange(tournamentId, today, tomorrow);
+      res.json(results);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get today's results", error: error.message });
+    }
+  });
+
   app.post("/api/results", requireAuth, async (req, res) => {
     try {
       const resultData = insertResultSchema.parse(req.body);

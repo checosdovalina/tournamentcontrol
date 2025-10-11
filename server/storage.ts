@@ -110,6 +110,7 @@ export interface IStorage {
   getResult(id: string): Promise<Result | undefined>;
   getResults(): Promise<Result[]>;
   getRecentResults(tournamentId: string, limit?: number): Promise<ResultWithDetails[]>;
+  getResultsByDateRange(tournamentId: string, startDate: Date, endDate: Date): Promise<ResultWithDetails[]>;
   createResult(result: InsertResult): Promise<Result>;
   updateResult(id: string, updates: Partial<Result>): Promise<Result | undefined>;
   deleteResult(id: string): Promise<boolean>;
@@ -520,6 +521,7 @@ export class MemStorage implements IStorage {
     const match: Match = {
       ...insertMatch,
       categoryId: insertMatch.categoryId ?? null,
+      format: insertMatch.format ?? null,
       status: insertMatch.status ?? "playing",
       startTime: insertMatch.startTime ?? new Date(),
       endTime: insertMatch.endTime ?? null,
@@ -571,6 +573,69 @@ export class MemStorage implements IStorage {
       .slice(0, limit);
 
     for (const result of recentResults) {
+      const match = await this.getMatch(result.matchId);
+      if (match) {
+        const court = await this.getCourt(match.courtId);
+        const pair1 = await this.getPair(match.pair1Id);
+        const pair2 = await this.getPair(match.pair2Id);
+        
+        if (!court || !pair1 || !pair2) continue;
+
+        const pair1_p1 = await this.getPlayer(pair1.player1Id);
+        const pair1_p2 = await this.getPlayer(pair1.player2Id);
+        const pair2_p1 = await this.getPlayer(pair2.player1Id);
+        const pair2_p2 = await this.getPlayer(pair2.player2Id);
+        
+        if (!pair1_p1 || !pair1_p2 || !pair2_p1 || !pair2_p2) continue;
+
+        const winner = await this.getPair(result.winnerId);
+        const loser = await this.getPair(result.loserId);
+        
+        if (winner && loser) {
+          const winner_p1 = await this.getPlayer(winner.player1Id);
+          const winner_p2 = await this.getPlayer(winner.player2Id);
+          const loser_p1 = await this.getPlayer(loser.player1Id);
+          const loser_p2 = await this.getPlayer(loser.player2Id);
+          
+          if (winner_p1 && winner_p2 && loser_p1 && loser_p2) {
+            resultsWithDetails.push({
+              ...result,
+              match: {
+                ...match,
+                court,
+                pair1: { ...pair1, player1: pair1_p1, player2: pair1_p2 },
+                pair2: { ...pair2, player1: pair2_p1, player2: pair2_p2 }
+              },
+              winner: { ...winner, player1: winner_p1, player2: winner_p2 },
+              loser: { ...loser, player1: loser_p1, player2: loser_p2 }
+            });
+          }
+        }
+      }
+    }
+    return resultsWithDetails;
+  }
+
+  async getResultsByDateRange(tournamentId: string, startDate: Date, endDate: Date): Promise<ResultWithDetails[]> {
+    const resultsWithDetails: ResultWithDetails[] = [];
+    
+    const allResults = Array.from(this.results.values());
+    const tournamentResults: Result[] = [];
+    
+    for (const result of allResults) {
+      const match = await this.getMatch(result.matchId);
+      if (match && match.tournamentId === tournamentId) {
+        const resultDate = result.createdAt || new Date();
+        if (resultDate >= startDate && resultDate < endDate) {
+          tournamentResults.push(result);
+        }
+      }
+    }
+    
+    const sortedResults = tournamentResults
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+
+    for (const result of sortedResults) {
       const match = await this.getMatch(result.matchId);
       if (match) {
         const court = await this.getCourt(match.courtId);
@@ -858,6 +923,7 @@ export class MemStorage implements IStorage {
     const scheduledMatch: ScheduledMatch = {
       ...insertScheduledMatch,
       categoryId: insertScheduledMatch.categoryId ?? null,
+      format: insertScheduledMatch.format ?? null,
       plannedTime: insertScheduledMatch.plannedTime ?? null,
       status: insertScheduledMatch.status ?? "scheduled",
       courtId: insertScheduledMatch.courtId ?? null,

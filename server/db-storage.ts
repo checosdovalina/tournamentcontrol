@@ -44,7 +44,7 @@ import {
   type InsertScheduledMatchPlayer,
   type ScheduledMatchWithDetails,
 } from "@shared/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, gte, lt } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -437,6 +437,60 @@ export class DatabaseStorage implements IStorage {
 
     const resultDetails: ResultWithDetails[] = [];
     for (const row of recentResults) {
+      const court = await this.getCourt(row.match.courtId);
+      const pair1 = await this.getPair(row.match.pair1Id);
+      const pair2 = await this.getPair(row.match.pair2Id);
+      const winner = await this.getPair(row.result.winnerId);
+      const loser = await this.getPair(row.result.loserId);
+
+      if (!court || !pair1 || !pair2 || !winner || !loser) continue;
+
+      const pair1_p1 = await this.getPlayer(pair1.player1Id);
+      const pair1_p2 = await this.getPlayer(pair1.player2Id);
+      const pair2_p1 = await this.getPlayer(pair2.player1Id);
+      const pair2_p2 = await this.getPlayer(pair2.player2Id);
+      const winner_p1 = await this.getPlayer(winner.player1Id);
+      const winner_p2 = await this.getPlayer(winner.player2Id);
+      const loser_p1 = await this.getPlayer(loser.player1Id);
+      const loser_p2 = await this.getPlayer(loser.player2Id);
+
+      if (!pair1_p1 || !pair1_p2 || !pair2_p1 || !pair2_p2 || !winner_p1 || !winner_p2 || !loser_p1 || !loser_p2)
+        continue;
+
+      resultDetails.push({
+        ...row.result,
+        match: {
+          ...row.match,
+          court,
+          pair1: { ...pair1, player1: pair1_p1, player2: pair1_p2 },
+          pair2: { ...pair2, player1: pair2_p1, player2: pair2_p2 },
+        },
+        winner: { ...winner, player1: winner_p1, player2: winner_p2 },
+        loser: { ...loser, player1: loser_p1, player2: loser_p2 },
+      });
+    }
+    return resultDetails;
+  }
+
+  async getResultsByDateRange(tournamentId: string, startDate: Date, endDate: Date): Promise<ResultWithDetails[]> {
+    const dateResults = await db
+      .select({
+        result: results,
+        match: matches,
+      })
+      .from(results)
+      .innerJoin(matches, eq(results.matchId, matches.id))
+      .where(
+        and(
+          eq(matches.tournamentId, tournamentId),
+          gte(results.createdAt, startDate),
+          lt(results.createdAt, endDate)
+        )
+      )
+      .orderBy(desc(results.createdAt));
+
+    const resultDetails: ResultWithDetails[] = [];
+    for (const row of dateResults) {
       const court = await this.getCourt(row.match.courtId);
       const pair1 = await this.getPair(row.match.pair1Id);
       const pair2 = await this.getPair(row.match.pair2Id);

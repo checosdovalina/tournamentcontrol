@@ -39,7 +39,12 @@ export default function Display() {
   });
 
   const { data: recentResults = [] } = useQuery<any[]>({
-    queryKey: ["/api/results/recent", tournament?.id],
+    queryKey: ["/api/results/today", tournament?.id],
+    queryFn: async () => {
+      if (!tournament?.id) return [];
+      const response = await fetch(`/api/results/today/${tournament.id}`);
+      return response.json();
+    },
     enabled: !!tournament?.id,
     refetchInterval: 30000,
   });
@@ -247,7 +252,7 @@ export default function Display() {
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 flex flex-col h-full">
                 <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
                   <Volleyball className="mr-3" />
-                  Últimos Resultados
+                  Resultados del Día
                 </h2>
                 
                 <div className="flex-1 overflow-hidden relative" data-testid="recent-results-list">
