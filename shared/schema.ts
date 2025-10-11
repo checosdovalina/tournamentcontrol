@@ -69,6 +69,7 @@ export const matches = pgTable("matches", {
   pair1Id: varchar("pair1_id").notNull(),
   pair2Id: varchar("pair2_id").notNull(),
   categoryId: varchar("category_id"),
+  format: text("format"), // e.g., "Round Robin", "8vos", "4tos", "Semifinal", "Final"
   startTime: timestamp("start_time").defaultNow(),
   endTime: timestamp("end_time"),
   status: text("status").default("playing"), // playing, finished
@@ -125,6 +126,7 @@ export const scheduledMatches = pgTable("scheduled_matches", {
   pair1Id: varchar("pair1_id").notNull(),
   pair2Id: varchar("pair2_id").notNull(),
   categoryId: varchar("category_id"),
+  format: text("format"), // e.g., "Round Robin", "8vos", "4tos", "Semifinal", "Final"
   status: text("status").default("scheduled"), // scheduled, ready, assigned, playing, completed, cancelled
   courtId: varchar("court_id"), // Assigned court (nullable until assigned)
   matchId: varchar("match_id"), // Link to active match when playing (nullable)
