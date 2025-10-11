@@ -223,6 +223,33 @@ export default function LiveScoreCapture() {
 
   const matchWinner = selectedMatch ? getMatchWinner() : null;
 
+  // Check if current game is complete (waiting for next game to start)
+  const isGameComplete = () => {
+    const [p1Points, p2Points] = liveScore.currentPoints;
+    
+    // In tiebreak
+    if (isInTiebreak()) {
+      // Tiebreak is won when someone reaches 7+ with 2-point lead
+      if (p1Points >= 7 && (p1Points - p2Points) >= 2) return true;
+      if (p2Points >= 7 && (p2Points - p1Points) >= 2) return true;
+      return false;
+    }
+    
+    // Normal game - check if someone won
+    if (p1Points >= 3 && p2Points >= 3) {
+      // In deuce/advantage situation, game is won when someone has advantage and scores
+      if (p1Points === 4 && p2Points === 3) return true; // P1 has advantage
+      if (p2Points === 4 && p1Points === 3) return true; // P2 has advantage
+      return false;
+    }
+    
+    // Game is won at 40 (index 3)
+    if (p1Points === 3 && p1Points > p2Points) return true;
+    if (p2Points === 3 && p2Points > p1Points) return true;
+    
+    return false;
+  };
+
   const finishMatchMutation = useMutation({
     mutationFn: async () => {
       if (!matchWinner) {
@@ -415,6 +442,7 @@ export default function LiveScoreCapture() {
                       onClick={() => addPoint(0)}
                       size="sm"
                       className="h-8 md:h-10 px-3 md:px-4"
+                      disabled={!!matchWinner}
                       data-testid="button-add-point-0"
                     >
                       <Plus className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
@@ -440,6 +468,7 @@ export default function LiveScoreCapture() {
                       onClick={() => addPoint(1)}
                       size="sm"
                       className="h-8 md:h-10 px-3 md:px-4"
+                      disabled={!!matchWinner}
                       data-testid="button-add-point-1"
                     >
                       <Plus className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />

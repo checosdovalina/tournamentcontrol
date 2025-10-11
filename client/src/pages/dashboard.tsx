@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock } from "lucide-react";
+import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock, FileSpreadsheet } from "lucide-react";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
@@ -17,6 +17,7 @@ import RegisterPlayerModal from "@/components/modals/register-player-modal";
 import RecordResultModal from "@/components/modals/record-result-modal";
 import ManageCourtsModal from "@/components/modals/manage-courts-modal";
 import TournamentConfigModal from "@/components/modals/tournament-config-modal";
+import ImportPairsModal from "@/components/modals/import-pairs-modal";
 import { useLocation } from "wouter";
 import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
 
@@ -26,6 +27,7 @@ export default function Dashboard() {
   const [resultModalOpen, setResultModalOpen] = useState(false);
   const [courtsModalOpen, setCourtsModalOpen] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [importPairsModalOpen, setImportPairsModalOpen] = useState(false);
 
   const { data: user } = useQuery<{ user: { id: string; username: string; name: string; role: string } }>({
     queryKey: ["/api/auth/me"],
@@ -159,6 +161,17 @@ export default function Dashboard() {
                 <UserPlus className="w-4 h-4 mr-2" />
                 Registrar Pareja
               </Button>
+              {user?.user?.role === 'admin' && (
+                <Button 
+                  onClick={() => setImportPairsModalOpen(true)}
+                  variant="secondary"
+                  className="inline-flex items-center"
+                  data-testid="button-import-pairs"
+                >
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Importar Excel
+                </Button>
+              )}
               <Button 
                 onClick={() => setResultModalOpen(true)}
                 variant="secondary"
@@ -270,6 +283,13 @@ export default function Dashboard() {
           open={configModalOpen}
           onOpenChange={setConfigModalOpen}
           tournament={tournament}
+        />
+      )}
+      {user?.user?.role === 'admin' && (
+        <ImportPairsModal 
+          open={importPairsModalOpen}
+          onOpenChange={setImportPairsModalOpen}
+          tournamentId={tournament?.id}
         />
       )}
     </div>
