@@ -6,12 +6,13 @@ This is a real-time **multi-tenant** tournament management system for padel (pad
 
 Built as a full-stack web application, it provides:
 - **Superadmin Panel**: Create tournaments, manage users, assign roles
-- **Admin Dashboard**: Configure tournaments, manage categories/banners, register players
+- **Admin Dashboard**: Configure tournaments, manage categories/banners, register players, manage advertisements
 - **Scorekeeper Dashboard**: Register players, record results, capture live scores
 - **Live Score Capture**: Real-time point-by-point score tracking with automatic game/set calculation
-- **Public Display**: Real-time tournament information for participants and spectators with live score updates
+- **Public Display**: Real-time tournament information for participants and spectators with live score updates and advertisement rotation
+- **Advertisement Module**: Commercial content management with time-based scheduling, automatic rotation, and multi-format support (images/videos)
 
-Last Updated: October 11, 2025 - Fixed scheduled match deletion authorization issue, added "Repechaje" match format option, optimized scheduled matches loading with batch queries (160+ queries → 6 queries), and fixed display real-time updates for scheduled matches and same-day results
+Last Updated: October 11, 2025 - Completed advertisement/commercialization module with full CRUD functionality, time-based scheduling (day and time filters), automatic rotation on public displays, and schema alignment fixes (durationSeconds, contentType, contentUrl)
 
 ## User Preferences
 
@@ -51,6 +52,7 @@ Preferred communication style: Simple, everyday language.
 - Matches: `/api/matches/*`
 - Results: `/api/results/*`
 - Stats: `/api/stats/*`
+- Advertisements: `/api/advertisements/*` (CRUD with time-based filtering)
 
 **Data Validation**: Zod schemas for runtime type validation integrated with Drizzle ORM schema definitions through drizzle-zod.
 
@@ -64,6 +66,7 @@ Preferred communication style: Simple, everyday language.
 - Tournament Users (join table linking users to tournaments with specific roles)
 - Categories (tournament categories like "Masculino A", "Femenino B", "Mixto")
 - Sponsor Banners (sponsor logos and promotional banners per tournament)
+- Advertisements (commercial content with scheduling: contentType, contentUrl, durationSeconds, activeDays array, startTime/endTime)
 - Clubs (venue information)
 - Courts (playing surfaces with availability tracking)
 - Players (individual participants)
@@ -76,8 +79,15 @@ Preferred communication style: Simple, everyday language.
 **Multi-Tenant Features**:
 - Tournament-scoped categories (e.g., "Masculino A", "Femenino B") stored in categories table
 - Sponsor banners per tournament with displayOrder for carousel display
+- Advertisement content per tournament with time-based scheduling (day filters and time range)
 - Logo URLs (tournament, club, system) stored directly in tournaments table
 - Pair-category assignment via nullable categoryId foreign key
+
+**Advertisement System**:
+- Content types: image and video support via contentType field
+- Scheduling: activeDays array (0=Sunday to 6=Saturday), startTime/endTime for time range filtering
+- Display rotation: durationSeconds determines how long each ad shows before rotating
+- Automatic filtering: only ads matching current day and time are shown on public displays
 
 **Data Access Layer**: Storage interface abstraction (`IStorage`) in `server/storage.ts` provides clean separation between business logic and data persistence, enabling potential future database swapping.
 
