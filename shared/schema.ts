@@ -121,9 +121,12 @@ export const sponsorBanners = pgTable("sponsor_banners", {
 export const advertisements = pgTable("advertisements", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tournamentId: varchar("tournament_id").notNull(),
-  contentType: text("content_type").notNull(), // image, video, animation
+  contentType: text("content_type").notNull(), // image, video, gif
   contentUrl: text("content_url").notNull(),
-  durationSeconds: integer("duration_seconds").default(10), // Duration in seconds to display
+  text: text("text"), // Optional text overlay
+  animationType: text("animation_type").default("fade-in"), // fade-in, fade-out, slide-in, zoom-in, zoom-out, typewriter
+  displayDuration: integer("display_duration").default(10), // Duration in seconds to display the ad
+  displayInterval: integer("display_interval").default(60), // Interval in seconds between ad appearances
   startTime: text("start_time"), // Time in HH:MM format (e.g., "09:00")
   endTime: text("end_time"), // Time in HH:MM format (e.g., "18:00")
   activeDays: text("active_days").array(), // Array of active days: ["Lun", "Mar", "Mié", etc.]
