@@ -1,19 +1,16 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Calendar as CalendarIcon, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays } from "lucide-react";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
 import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/schema";
 
@@ -23,21 +20,51 @@ interface ScheduledMatchesProps {
 }
 
 export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMatchesProps) {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const { toast } = useToast();
 
-  const { data: matches, isLoading } = useQuery<ScheduledMatchWithDetails[]>({
-    queryKey: ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")],
+  // Query for all scheduled matches in the tournament
+  const { data: allTournamentMatches = [], isLoading } = useQuery<ScheduledMatchWithDetails[]>({
+    queryKey: ["/api/scheduled-matches", tournamentId],
     queryFn: async () => {
       if (!tournamentId) return [];
-      const response = await fetch(`/api/scheduled-matches/day/${tournamentId}?day=${format(selectedDate, "yyyy-MM-dd")}`);
+      const response = await fetch(`/api/scheduled-matches/${tournamentId}`);
       return response.json();
     },
     enabled: !!tournamentId,
+    staleTime: 30000, // Cache for 30 seconds
   });
+
+  // Filter matches for the current month
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  
+  const allMatches = useMemo(() => {
+    const monthStartStr = format(monthStart, "yyyy-MM-dd");
+    const monthEndStr = format(monthEnd, "yyyy-MM-dd");
+    
+    return allTournamentMatches.filter(match => {
+      // Use ISO string directly to avoid timezone issues
+      const matchDateStr = match.day.toString().slice(0, 10);
+      return matchDateStr >= monthStartStr && matchDateStr <= monthEndStr;
+    });
+  }, [allTournamentMatches, monthStart, monthEnd]);
+
+  // Get matches for the selected date
+  const dayMatches = useMemo(() => {
+    if (!selectedDate) return [];
+    const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+    return allMatches.filter(match => {
+      // Use ISO string directly to avoid timezone issues
+      const matchDateStr = match.day.toString().slice(0, 10);
+      return matchDateStr === selectedDateStr;
+    });
+  }, [allMatches, selectedDate]);
 
   const { data: categories } = useQuery<any[]>({
     queryKey: ["/api/categories", tournamentId],
@@ -54,21 +81,43 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     enabled: !!tournamentId,
   });
 
-  const filteredMatches = matches?.filter(match => 
-    (selectedCategory === "all" || match.categoryId === selectedCategory) &&
-    match.status !== "playing"
+  // Group matches by date
+  const matchesByDate = useMemo(() => {
+    const grouped = new Map<string, ScheduledMatchWithDetails[]>();
+    allMatches.forEach(match => {
+      // Use ISO string directly to avoid timezone issues
+      const dateKey = match.day.toString().slice(0, 10);
+      if (!grouped.has(dateKey)) {
+        grouped.set(dateKey, []);
+      }
+      grouped.get(dateKey)!.push(match);
+    });
+    return grouped;
+  }, [allMatches]);
+
+  // Filter day matches by category
+  const filteredDayMatches = dayMatches?.filter(match => 
+    (selectedCategory === "all" || match.categoryId === selectedCategory)
   ) || [];
+
+  // Generate calendar days
+  const calendarDays = useMemo(() => {
+    const start = startOfWeek(monthStart, { locale: es });
+    const end = endOfWeek(monthEnd, { locale: es });
+    return eachDayOfInterval({ start, end });
+  }, [monthStart, monthEnd]);
 
   const checkInMutation = useMutation({
     mutationFn: async ({ matchId, playerId }: { matchId: string; playerId: string }) => {
       return apiRequest("POST", `/api/scheduled-matches/${matchId}/check-in`, { playerId });
     },
     onMutate: async ({ matchId, playerId }) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")] });
-      const previousMatches = queryClient.getQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")]);
+      const queryKey = ["/api/scheduled-matches", tournamentId];
+      await queryClient.cancelQueries({ queryKey });
+      const previousMatches = queryClient.getQueryData(queryKey);
       
       queryClient.setQueryData<ScheduledMatchWithDetails[]>(
-        ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")],
+        queryKey,
         (old) => {
           if (!old) return old;
           return old.map(match => {
@@ -89,12 +138,13 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     },
     onError: (err, variables, context) => {
       if (context?.previousMatches) {
-        queryClient.setQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")], context.previousMatches);
+        const queryKey = ["/api/scheduled-matches", tournamentId];
+        queryClient.setQueryData(queryKey, context.previousMatches);
       }
       toast({ title: "Error", description: "No se pudo registrar el check-in", variant: "destructive" });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
     },
   });
 
@@ -103,11 +153,12 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
       return apiRequest("POST", `/api/scheduled-matches/${matchId}/check-out`, { playerId });
     },
     onMutate: async ({ matchId, playerId }) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")] });
-      const previousMatches = queryClient.getQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")]);
+      const queryKey = ["/api/scheduled-matches", tournamentId];
+      await queryClient.cancelQueries({ queryKey });
+      const previousMatches = queryClient.getQueryData(queryKey);
       
       queryClient.setQueryData<ScheduledMatchWithDetails[]>(
-        ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")],
+        queryKey,
         (old) => {
           if (!old) return old;
           return old.map(match => {
@@ -128,12 +179,13 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     },
     onError: (err, variables, context) => {
       if (context?.previousMatches) {
-        queryClient.setQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")], context.previousMatches);
+        const queryKey = ["/api/scheduled-matches", tournamentId];
+        queryClient.setQueryData(queryKey, context.previousMatches);
       }
       toast({ title: "Error", description: "No se pudo marcar como ausente", variant: "destructive" });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
     },
   });
 
@@ -142,11 +194,12 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
       return apiRequest("POST", `/api/scheduled-matches/${matchId}/reset-status`, { playerId });
     },
     onMutate: async ({ matchId, playerId }) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")] });
-      const previousMatches = queryClient.getQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")]);
+      const queryKey = ["/api/scheduled-matches", tournamentId];
+      await queryClient.cancelQueries({ queryKey });
+      const previousMatches = queryClient.getQueryData(queryKey);
       
       queryClient.setQueryData<ScheduledMatchWithDetails[]>(
-        ["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")],
+        queryKey,
         (old) => {
           if (!old) return old;
           return old.map(match => {
@@ -167,12 +220,13 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     },
     onError: (err, variables, context) => {
       if (context?.previousMatches) {
-        queryClient.setQueryData(["/api/scheduled-matches/day", tournamentId, format(selectedDate, "yyyy-MM-dd")], context.previousMatches);
+        const queryKey = ["/api/scheduled-matches", tournamentId];
+        queryClient.setQueryData(queryKey, context.previousMatches);
       }
       toast({ title: "Error", description: "No se pudo resetear el estado", variant: "destructive" });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
     },
   });
 
@@ -181,7 +235,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
       return apiRequest("POST", `/api/scheduled-matches/${matchId}/auto-assign`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
       toast({ title: "Cancha asignada", description: "Se asignó automáticamente una cancha disponible" });
     },
     onError: () => {
@@ -194,7 +248,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
       return apiRequest("POST", `/api/scheduled-matches/${matchId}/assign-court`, { courtId });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
       toast({ title: "Cancha asignada", description: "Cancha asignada manualmente" });
     },
     onError: () => {
@@ -207,7 +261,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
       return apiRequest("POST", `/api/scheduled-matches/${matchId}/start`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
       queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
       toast({ title: "Partido iniciado", description: "El partido está ahora en curso" });
     },
@@ -221,7 +275,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
       return apiRequest("DELETE", `/api/scheduled-matches/${matchId}`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
       toast({ title: "Partido eliminado", description: "El partido programado ha sido eliminado" });
       setDeleteDialogOpen(null);
     },
@@ -266,53 +320,49 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     manualAssignMutation.mutate({ matchId, courtId });
   };
 
+  const handleDayClick = (day: Date) => {
+    const dayKey = format(day, "yyyy-MM-dd");
+    const matches = matchesByDate.get(dayKey) || [];
+    if (matches.length > 0 || userRole === 'admin') {
+      setSelectedDate(day);
+      setSheetOpen(true);
+    }
+  };
+
+  const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const handleToday = () => {
+    setCurrentMonth(new Date());
+    setSelectedDate(new Date());
+    setSheetOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="h-10 bg-muted animate-pulse rounded" />
-        <div className="h-64 bg-muted animate-pulse rounded" />
+        <div className="h-[500px] bg-muted animate-pulse rounded" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header with Date Selector, Category Filter and Schedule Button */}
+      {/* Header with Month Navigation and Actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-1">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" data-testid="button-select-date">
-                <CalendarIcon className="w-4 h-4 mr-2" />
-                {format(selectedDate, "dd 'de' MMMM, yyyy", { locale: es })}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                locale={es}
-                data-testid="calendar-date-picker"
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-[200px]" data-testid="select-category-filter">
-              <SelectValue placeholder="Todas las categorías" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" data-testid="option-category-all">
-                Todas las categorías
-              </SelectItem>
-              {categories?.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id} data-testid={`option-category-${cat.id}`}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="icon" onClick={handlePrevMonth} data-testid="button-prev-month">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-2xl font-semibold min-w-[200px] text-center">
+            {format(currentMonth, "MMMM yyyy", { locale: es })}
+          </h2>
+          <Button variant="outline" size="icon" onClick={handleNextMonth} data-testid="button-next-month">
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" onClick={handleToday} data-testid="button-today">
+            Hoy
+          </Button>
         </div>
 
         {userRole === 'admin' && (
@@ -323,28 +373,118 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
         )}
       </div>
 
-      {/* Scheduled Matches List */}
-      {!filteredMatches || filteredMatches.length === 0 ? (
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center text-muted-foreground">
-              <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+      {/* Monthly Calendar Grid */}
+      <Card>
+        <CardContent className="p-6">
+          {/* Weekday Headers */}
+          <div className="grid grid-cols-7 gap-2 mb-2">
+            {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
+              <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar Days */}
+          <div className="grid grid-cols-7 gap-2">
+            {calendarDays.map((day, idx) => {
+              const dayKey = format(day, "yyyy-MM-dd");
+              const dayMatches = matchesByDate.get(dayKey) || [];
+              const matchCount = dayMatches.length;
+              const isCurrentMonth = isSameMonth(day, currentMonth);
+              const isDayToday = isToday(day);
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleDayClick(day)}
+                  disabled={!isCurrentMonth}
+                  className={`
+                    relative min-h-[80px] p-2 rounded-lg border-2 transition-all text-left
+                    ${!isCurrentMonth ? 'bg-muted/30 text-muted-foreground/30 cursor-not-allowed border-transparent' : 'hover:border-primary/50 hover:shadow-md cursor-pointer'}
+                    ${isDayToday ? 'border-primary bg-primary/10' : 'border-border'}
+                    ${matchCount > 0 && isCurrentMonth ? 'bg-accent/20' : ''}
+                  `}
+                  data-testid={`calendar-day-${dayKey}`}
+                >
+                  <div className="flex flex-col h-full">
+                    <span className={`text-sm font-medium ${isDayToday ? 'text-primary' : ''}`}>
+                      {format(day, 'd')}
+                    </span>
+                    {matchCount > 0 && isCurrentMonth && (
+                      <div className="mt-auto">
+                        <Badge variant="secondary" className="text-xs px-1 py-0">
+                          {matchCount} {matchCount === 1 ? 'partido' : 'partidos'}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Day Details Sheet */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>
+              {selectedDate && format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es })}
+            </SheetTitle>
+            <SheetDescription>
+              {filteredDayMatches.length > 0 
+                ? `${filteredDayMatches.length} ${filteredDayMatches.length === 1 ? 'partido programado' : 'partidos programados'}`
+                : 'No hay partidos programados'}
+            </SheetDescription>
+          </SheetHeader>
+
+          {/* Category Filter */}
+          <div className="mt-4">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full" data-testid="select-category-filter">
+                <SelectValue placeholder="Todas las categorías" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" data-testid="option-category-all">
+                  Todas las categorías
+                </SelectItem>
+                {categories?.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id} data-testid={`option-category-${cat.id}`}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Matches List */}
+          {filteredDayMatches.length === 0 ? (
+            <div className="py-12 text-center text-muted-foreground">
+              <CalendarDays className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium">
                 {selectedCategory === "all" 
-                  ? "No hay partidos programados para este día" 
-                  : "No hay partidos de esta categoría para este día"}
+                  ? "No hay partidos programados" 
+                  : "No hay partidos de esta categoría"}
               </p>
-              <p className="text-sm mt-2">
-                {userRole === 'admin' 
-                  ? "Haz clic en 'Programar Partido' para agregar uno" 
-                  : "El administrador aún no ha programado partidos para esta fecha"}
-              </p>
+              {userRole === 'admin' && (
+                <Button 
+                  onClick={() => {
+                    setScheduleModalOpen(true);
+                    setSheetOpen(false);
+                  }} 
+                  className="mt-4"
+                  data-testid="button-schedule-from-empty"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Programar Partido
+                </Button>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {filteredMatches.map((match) => (
+          ) : (
+            <div className="space-y-3 mt-6">
+              {filteredDayMatches.map((match) => (
             <Card key={match.id} data-testid={`card-scheduled-match-${match.id}`}>
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
@@ -587,9 +727,11 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                 )}
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+              ))}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* Schedule Match Modal */}
       {userRole === 'admin' && (
@@ -597,7 +739,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
           open={scheduleModalOpen}
           onOpenChange={setScheduleModalOpen}
           tournamentId={tournamentId}
-          selectedDate={selectedDate}
+          selectedDate={selectedDate || new Date()}
         />
       )}
     </div>
