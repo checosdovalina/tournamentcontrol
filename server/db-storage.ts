@@ -47,7 +47,7 @@ import {
   type InsertScheduledMatchPlayer,
   type ScheduledMatchWithDetails,
 } from "@shared/schema";
-import { eq, and, desc, sql, gte, lt, inArray } from "drizzle-orm";
+import { eq, and, desc, sql, gte, lt, inArray, isNotNull, notInArray } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -1033,13 +1033,33 @@ export class DatabaseStorage implements IStorage {
     const tournament = await this.getTournament(match.tournamentId);
     if (!tournament) return undefined;
 
-    const availableCourts = await db
+    // Get all available courts for this club
+    const clubCourts = await db
       .select()
       .from(courts)
-      .where(and(eq(courts.clubId, tournament.clubId), eq(courts.isAvailable, true)))
-      .limit(1);
+      .where(and(eq(courts.clubId, tournament.clubId), eq(courts.isAvailable, true)));
 
-    const availableCourt = availableCourts[0];
+    // Get all scheduled matches with assigned courts that are not completed/cancelled
+    const activeScheduledMatches = await db
+      .select()
+      .from(scheduledMatches)
+      .where(
+        and(
+          eq(scheduledMatches.tournamentId, match.tournamentId),
+          isNotNull(scheduledMatches.courtId),
+          notInArray(scheduledMatches.status, ['completed', 'cancelled'])
+        )
+      );
+
+    // Find courts that are not assigned to any active scheduled match
+    const occupiedCourtIds = new Set(
+      activeScheduledMatches
+        .filter(sm => sm.id !== scheduledMatchId) // Exclude current match
+        .map(sm => sm.courtId)
+        .filter((id): id is string => id !== null)
+    );
+
+    const availableCourt = clubCourts.find(court => !occupiedCourtIds.has(court.id));
     if (!availableCourt) return undefined;
 
     return await this.updateScheduledMatch(scheduledMatchId, {
