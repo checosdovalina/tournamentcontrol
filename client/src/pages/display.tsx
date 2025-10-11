@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { X, Volleyball } from "lucide-react";
@@ -11,6 +11,7 @@ export default function Display() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [showAd, setShowAd] = useState(false);
+  const activeAdsRef = useRef<any[]>([]);
 
   const { data: tournament } = useQuery<{ 
     id: string; 
@@ -104,6 +105,11 @@ export default function Display() {
     });
   }, [advertisements, timeKey]);
 
+  // Keep ref updated with latest activeAds
+  useEffect(() => {
+    activeAdsRef.current = activeAds;
+  }, [activeAds]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
@@ -121,13 +127,15 @@ export default function Display() {
 
   // Auto-rotate advertisements based on displayDuration and displayInterval
   useEffect(() => {
-    if (activeAds.length === 0) {
+    const ads = activeAdsRef.current;
+    
+    if (ads.length === 0) {
       setShowAd(false);
       setCurrentAdIndex(0);
       return;
     }
 
-    const currentAd = activeAds[currentAdIndex];
+    const currentAd = ads[currentAdIndex];
     if (!currentAd) {
       setShowAd(false);
       setCurrentAdIndex(0);
@@ -145,9 +153,10 @@ export default function Display() {
       const waitTime = Math.max((currentAd.displayInterval - currentAd.displayDuration) * 1000, 1000);
       intervalTimer = setTimeout(() => {
         setCurrentAdIndex((prev) => {
-          // Guard against zero-length array
-          if (activeAds.length === 0) return 0;
-          return (prev + 1) % activeAds.length;
+          // Access latest activeAds length from ref
+          const adsCount = activeAdsRef.current.length;
+          if (adsCount === 0) return 0;
+          return (prev + 1) % adsCount;
         });
       }, waitTime);
     }, (currentAd.displayDuration || 10) * 1000);
@@ -156,7 +165,7 @@ export default function Display() {
       clearTimeout(showTimer);
       if (intervalTimer) clearTimeout(intervalTimer);
     };
-  }, [currentAdIndex, activeAds]);
+  }, [currentAdIndex, activeAds.length]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('es-ES', { 
