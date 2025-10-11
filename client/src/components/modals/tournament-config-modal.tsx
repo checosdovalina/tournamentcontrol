@@ -10,7 +10,9 @@ import { Separator } from "@/components/ui/separator";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit2, Save, X, Image, Zap, MoveRight, ZoomIn, Type, Sparkles } from "lucide-react";
+import { Plus, Trash2, Edit2, Save, X, Image, Zap, MoveRight, ZoomIn, Type, Sparkles, Upload } from "lucide-react";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import type { UploadResult } from "@uppy/core";
 
 interface TournamentConfigModalProps {
   open: boolean;
@@ -1341,13 +1343,48 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                       </SelectContent>
                     </Select>
                   </div>
-                  <Input
-                    type="url"
-                    placeholder="URL del contenido (imagen/video/GIF)"
-                    value={newAdUrl}
-                    onChange={(e) => setNewAdUrl(e.target.value)}
-                    data-testid="input-new-ad-url"
-                  />
+                  <div className="space-y-2">
+                    <Label>Contenido (URL o archivo)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="url"
+                        placeholder="URL del contenido o subir archivo..."
+                        value={newAdUrl}
+                        onChange={(e) => setNewAdUrl(e.target.value)}
+                        data-testid="input-new-ad-url"
+                        className="flex-1"
+                      />
+                      <ObjectUploader
+                        maxNumberOfFiles={1}
+                        maxFileSize={104857600}
+                        onGetUploadParameters={async () => {
+                          const response = await apiRequest("POST", "/api/objects/upload");
+                          const data = await response.json();
+                          return {
+                            method: 'PUT' as const,
+                            url: data.uploadURL,
+                          };
+                        }}
+                        onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                          if (result.successful && result.successful.length > 0) {
+                            const uploadURL = result.successful[0].uploadURL;
+                            // Simply set the upload URL - it will be normalized when creating the ad
+                            if (uploadURL) {
+                              setNewAdUrl(uploadURL);
+                              toast({
+                                title: "Archivo subido",
+                                description: "El archivo se ha subido correctamente. Ahora completa la información del anuncio.",
+                              });
+                            }
+                          }
+                        }}
+                        buttonClassName="shrink-0"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Subir
+                      </ObjectUploader>
+                    </div>
+                  </div>
                   <Input
                     placeholder="Texto opcional (mostrar sobre el contenido)"
                     value={newAdText}

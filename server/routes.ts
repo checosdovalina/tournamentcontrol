@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { 
   insertPlayerSchema, 
   insertPairSchema, 
@@ -1152,6 +1153,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============ Object Storage (File Upload) ============
+  // Reference: blueprint:javascript_object_storage
+  
+  // Get upload URL for file upload - requires authentication
+  app.post("/api/objects/upload", requireAuth, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error: any) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ message: "Failed to get upload URL", error: error.message });
+    }
+  });
+
+  // Serve uploaded objects (public access for advertisements)
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving object:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
   // ============ Advertisement Management ============
   
   app.get("/api/advertisements/:tournamentId", async (req, res) => {
@@ -1177,6 +1208,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/advertisements", requireTournamentRole('admin'), async (req, res) => {
     try {
       const adData = insertAdvertisementSchema.parse(req.body);
+      
+      // If contentUrl is a Google Cloud Storage URL, normalize it and set ACL policy
+      if (adData.contentUrl.startsWith("https://storage.googleapis.com/")) {
+        const objectStorageService = new ObjectStorageService();
+        const normalizedPath = await objectStorageService.trySetObjectEntityAclPolicy(
+          adData.contentUrl,
+          {
+            owner: req.session.userId!,
+            visibility: "public", // Advertisements are publicly visible
+          }
+        );
+        adData.contentUrl = normalizedPath;
+      }
+      
       const advertisement = await storage.createAdvertisement(adData);
       res.json(advertisement);
       broadcastUpdate({ type: "advertisement_created", data: advertisement });
@@ -1214,6 +1259,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!isAuthorized) {
         return res.status(403).json({ message: "Admin access required for this tournament" });
+      }
+      
+      // If contentUrl is being updated, normalize Google Cloud Storage URLs and set ACL policy
+      // Skip if already normalized (starts with /objects/)
+      if (updates.contentUrl && 
+          !updates.contentUrl.startsWith("/objects/") && 
+          updates.contentUrl.startsWith("https://storage.googleapis.com/")) {
+        const objectStorageService = new ObjectStorageService();
+        const normalizedPath = await objectStorageService.trySetObjectEntityAclPolicy(
+          updates.contentUrl,
+          {
+            owner: req.session.userId!,
+            visibility: "public", // Advertisements are publicly visible
+          }
+        );
+        updates.contentUrl = normalizedPath;
       }
       
       // Authorization passed - proceed with update
