@@ -100,8 +100,8 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   // Helper function to get time range from match
   const getMatchTimeRange = (match: ScheduledMatchWithDetails) => {
-    if (!match.time) return "all";
-    const hour = parseInt(match.time.split(":")[0]);
+    if (!match.plannedTime) return "all";
+    const hour = parseInt(match.plannedTime.split(":")[0]);
     if (hour < 12) return "morning"; // 00:00 - 11:59
     if (hour < 18) return "afternoon"; // 12:00 - 17:59
     return "evening"; // 18:00 - 23:59
@@ -109,9 +109,12 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   // Helper function to get match status
   const getMatchStatus = (match: ScheduledMatchWithDetails) => {
+    // Map backend status values
     if (match.status === 'completed') return 'completed';
-    if (match.status === 'in_progress') return 'in_progress';
-    // Check if all players have checked in (ready status)
+    if (match.status === 'in_progress' || match.status === 'playing') return 'in_progress';
+    if (match.status === 'ready' || match.status === 'assigned') return 'ready';
+    
+    // For scheduled status, check if all players have checked in
     const allPlayersPresent = match.players.every(p => p.isPresent === true);
     if (allPlayersPresent) return 'ready';
     return 'pending'; // Waiting for check-in
