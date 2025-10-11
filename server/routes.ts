@@ -1154,8 +1154,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get scheduled matches for a specific day
-  app.get("/api/scheduled-matches/day/:tournamentId", requireTournamentAccess(), async (req, res) => {
+  // Get scheduled matches for a specific day (public endpoint for display)
+  app.get("/api/scheduled-matches/day/:tournamentId", async (req, res) => {
     try {
       const { tournamentId } = req.params;
       const { day } = req.query;
