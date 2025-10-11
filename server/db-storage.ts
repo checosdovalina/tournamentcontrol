@@ -5,6 +5,7 @@ import {
   tournamentUsers,
   categories,
   sponsorBanners,
+  advertisements,
   clubs,
   courts,
   players,
@@ -23,6 +24,8 @@ import {
   type InsertCategory,
   type SponsorBanner,
   type InsertSponsorBanner,
+  type Advertisement,
+  type InsertAdvertisement,
   type Club,
   type InsertClub,
   type Court,
@@ -199,6 +202,43 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSponsorBanner(id: string): Promise<boolean> {
     const result = await db.delete(sponsorBanners).where(eq(sponsorBanners.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Advertisements
+  async getAdvertisement(id: string): Promise<Advertisement | undefined> {
+    const result = await db.select().from(advertisements).where(eq(advertisements.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getAdvertisementsByTournament(tournamentId: string): Promise<Advertisement[]> {
+    return await db
+      .select()
+      .from(advertisements)
+      .where(eq(advertisements.tournamentId, tournamentId))
+      .orderBy(advertisements.displayOrder);
+  }
+
+  async getActiveAdvertisements(tournamentId: string): Promise<Advertisement[]> {
+    return await db
+      .select()
+      .from(advertisements)
+      .where(and(eq(advertisements.tournamentId, tournamentId), eq(advertisements.isActive, true)))
+      .orderBy(advertisements.displayOrder);
+  }
+
+  async createAdvertisement(advertisement: InsertAdvertisement): Promise<Advertisement> {
+    const result = await db.insert(advertisements).values(advertisement).returning();
+    return result[0];
+  }
+
+  async updateAdvertisement(id: string, updates: Partial<Advertisement>): Promise<Advertisement | undefined> {
+    const result = await db.update(advertisements).set(updates).where(eq(advertisements.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteAdvertisement(id: string): Promise<boolean> {
+    const result = await db.delete(advertisements).where(eq(advertisements.id, id)).returning();
     return result.length > 0;
   }
 

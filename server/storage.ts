@@ -9,6 +9,8 @@ import {
   type InsertCategory,
   type SponsorBanner,
   type InsertSponsorBanner,
+  type Advertisement,
+  type InsertAdvertisement,
   type Club,
   type InsertClub,
   type Court,
@@ -70,6 +72,14 @@ export interface IStorage {
   createSponsorBanner(banner: InsertSponsorBanner): Promise<SponsorBanner>;
   updateSponsorBanner(id: string, updates: Partial<SponsorBanner>): Promise<SponsorBanner | undefined>;
   deleteSponsorBanner(id: string): Promise<boolean>;
+  
+  // Advertisements
+  getAdvertisement(id: string): Promise<Advertisement | undefined>;
+  getAdvertisementsByTournament(tournamentId: string): Promise<Advertisement[]>;
+  getActiveAdvertisements(tournamentId: string): Promise<Advertisement[]>;
+  createAdvertisement(advertisement: InsertAdvertisement): Promise<Advertisement>;
+  updateAdvertisement(id: string, updates: Partial<Advertisement>): Promise<Advertisement | undefined>;
+  deleteAdvertisement(id: string): Promise<boolean>;
   
   // Clubs
   getClub(id: string): Promise<Club | undefined>;
@@ -140,6 +150,7 @@ export class MemStorage implements IStorage {
   private tournamentUsers: Map<string, TournamentUser>;
   private categories: Map<string, Category>;
   private sponsorBanners: Map<string, SponsorBanner>;
+  private advertisements: Map<string, Advertisement>;
   private clubs: Map<string, Club>;
   private courts: Map<string, Court>;
   private players: Map<string, Player>;
@@ -155,6 +166,7 @@ export class MemStorage implements IStorage {
     this.tournamentUsers = new Map();
     this.categories = new Map();
     this.sponsorBanners = new Map();
+    this.advertisements = new Map();
     this.clubs = new Map();
     this.courts = new Map();
     this.players = new Map();
@@ -839,6 +851,52 @@ export class MemStorage implements IStorage {
 
   async deleteSponsorBanner(id: string): Promise<boolean> {
     return this.sponsorBanners.delete(id);
+  }
+
+  // Advertisements
+  async getAdvertisement(id: string): Promise<Advertisement | undefined> {
+    return this.advertisements.get(id);
+  }
+
+  async getAdvertisementsByTournament(tournamentId: string): Promise<Advertisement[]> {
+    return Array.from(this.advertisements.values())
+      .filter(ad => ad.tournamentId === tournamentId)
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+  }
+
+  async getActiveAdvertisements(tournamentId: string): Promise<Advertisement[]> {
+    return Array.from(this.advertisements.values())
+      .filter(ad => ad.tournamentId === tournamentId && ad.isActive)
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+  }
+
+  async createAdvertisement(advertisement: InsertAdvertisement): Promise<Advertisement> {
+    const id = randomUUID();
+    const newAdvertisement: Advertisement = {
+      ...advertisement,
+      id,
+      isActive: advertisement.isActive ?? true,
+      displayOrder: advertisement.displayOrder ?? 0,
+      duration: advertisement.duration ?? 5,
+      startTime: advertisement.startTime ?? null,
+      endTime: advertisement.endTime ?? null,
+      activeDays: advertisement.activeDays ?? null,
+      createdAt: new Date(),
+    };
+    this.advertisements.set(id, newAdvertisement);
+    return newAdvertisement;
+  }
+
+  async updateAdvertisement(id: string, updates: Partial<Advertisement>): Promise<Advertisement | undefined> {
+    const advertisement = this.advertisements.get(id);
+    if (!advertisement) return undefined;
+    const updated = { ...advertisement, ...updates };
+    this.advertisements.set(id, updated);
+    return updated;
+  }
+
+  async deleteAdvertisement(id: string): Promise<boolean> {
+    return this.advertisements.delete(id);
   }
 
   private async buildScheduledMatchWithDetails(match: ScheduledMatch): Promise<ScheduledMatchWithDetails | null> {
