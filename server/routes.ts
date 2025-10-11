@@ -1211,10 +1211,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update a scheduled match
-  app.patch("/api/scheduled-matches/:id", requireTournamentRole('admin'), async (req, res) => {
+  app.patch("/api/scheduled-matches/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
+      
+      const match = await storage.getScheduledMatch(id);
+      if (!match) {
+        return res.status(404).json({ message: "Scheduled match not found" });
+      }
+
+      let isAuthorized = false;
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          match.tournamentId
+        );
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Tournament admin access required" });
+      }
       
       const updatedMatch = await storage.updateScheduledMatch(id, updates);
       if (!updatedMatch) {
@@ -1229,9 +1251,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete a scheduled match
-  app.delete("/api/scheduled-matches/:id", requireTournamentRole('admin'), async (req, res) => {
+  app.delete("/api/scheduled-matches/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
+      
+      const match = await storage.getScheduledMatch(id);
+      if (!match) {
+        return res.status(404).json({ message: "Scheduled match not found" });
+      }
+
+      let isAuthorized = false;
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          match.tournamentId
+        );
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Tournament admin access required" });
+      }
+      
       const success = await storage.deleteScheduledMatch(id);
       
       if (!success) {
