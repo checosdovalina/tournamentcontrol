@@ -61,8 +61,9 @@ export default function RegisterPlayerModal({ open, onOpenChange, tournamentId }
       return pairResponse.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting", tournamentId] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pairs"] });
       
       toast({
         title: "Pareja registrada exitosamente",
