@@ -19,6 +19,8 @@ import {
   insertScheduledMatchSchema
 } from "@shared/schema";
 import { z } from "zod";
+import multer from "multer";
+import * as XLSX from "xlsx";
 
 interface ExtendedWebSocket extends WebSocket {
   isAlive?: boolean;
@@ -422,6 +424,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import pairs from Excel
+  const upload = multer({ storage: multer.memoryStorage() });
+  
+  app.post("/api/pairs/import", requireAuth, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const { tournamentId } = req.body;
+      if (!tournamentId) {
+        return res.status(400).json({ message: "Tournament ID is required" });
+      }
+
+      // Parse Excel file
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(worksheet);
+
+      const results = {
+        success: 0,
+        errors: [] as any[],
+        created: [] as any[]
+      };
+
+      // Expected columns: Player1Name, Player2Name, CategoryName
+      for (let i = 0; i < data.length; i++) {
+        const row: any = data[i];
+        
+        try {
+          const player1Name = row['Jugador 1'] || row['Player 1'] || row['Player1'] || row['Player1Name'];
+          const player2Name = row['Jugador 2'] || row['Player 2'] || row['Player2'] || row['Player2Name'];
+          const categoryName = row['Categoría'] || row['Categoria'] || row['Category'] || row['CategoryName'];
+
+          if (!player1Name || !player2Name) {
+            results.errors.push({
+              row: i + 2,
+              error: "Faltan nombres de jugadores"
+            });
+            continue;
+          }
+
+          // Find or create category if specified
+          let categoryId = null;
+          if (categoryName) {
+            const categories = await storage.getCategoriesByTournament(tournamentId);
+            let category = categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
+            
+            if (!category) {
+              // Create new category
+              category = await storage.createCategory({
+                tournamentId,
+                name: categoryName
+              });
+            }
+            categoryId = category.id;
+          }
+
+          // Create players
+          const player1 = await storage.createPlayer({
+            name: player1Name
+          });
+
+          const player2 = await storage.createPlayer({
+            name: player2Name
+          });
+
+          // Create pair
+          const pair = await storage.createPair({
+            player1Id: player1.id,
+            player2Id: player2.id,
+            tournamentId,
+            categoryId,
+            isWaiting: true
+          });
+
+          results.created.push(pair);
+          results.success++;
+
+        } catch (error: any) {
+          results.errors.push({
+            row: i + 2,
+            error: error.message
+          });
+        }
+      }
+
+      res.json(results);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to import pairs", error: error.message });
+    }
+  });
+
   // Matches routes
   app.get("/api/matches/current/:tournamentId", async (req, res) => {
     try {
@@ -571,7 +667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Update match status
-      await storage.updateMatch(id, {
+      const updatedMatch = await storage.updateMatch(id, {
         status: "finished",
         endTime: new Date(),
         winnerId: winnerPairId,
@@ -580,11 +676,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Release court
       if (match.courtId) {
-        await storage.updateCourt(match.courtId, { isAvailable: true });
+        const updatedCourt = await storage.updateCourt(match.courtId, { isAvailable: true });
+        if (updatedCourt) {
+          broadcastUpdate({ type: "court_updated", data: updatedCourt });
+        }
       }
       
-      broadcastUpdate({ type: "match_finished", data: { match, result } });
-      res.json({ result, match });
+      // Update scheduled match to completed if it exists
+      const scheduledMatches = await storage.getScheduledMatchesByTournament(match.tournamentId);
+      const scheduledMatch = scheduledMatches.find(sm => sm.matchId === match.id);
+      if (scheduledMatch) {
+        const updatedScheduledMatch = await storage.updateScheduledMatch(scheduledMatch.id, { status: "completed" });
+        if (updatedScheduledMatch) {
+          broadcastUpdate({ type: "scheduled_match_updated", data: updatedScheduledMatch });
+        }
+      }
+      
+      broadcastUpdate({ type: "match_finished", data: { match: updatedMatch || match, result } });
+      res.json({ result, match: updatedMatch || match });
     } catch (error: any) {
       res.status(400).json({ message: "Failed to finish match", error: error.message });
     }

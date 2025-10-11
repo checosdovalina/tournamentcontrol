@@ -477,7 +477,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
       {/* Day Details Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full max-w-full h-full overflow-y-auto p-6 sm:p-8">
+        <SheetContent className="!w-screen !max-w-none h-full overflow-y-auto p-6 sm:p-8">
           <SheetHeader>
             <SheetTitle>
               {selectedDate && format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es })}
