@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit2, Save, X, Image } from "lucide-react";
+import { Plus, Trash2, Edit2, Save, X, Image, Zap, MoveRight, ZoomIn, Type, Sparkles } from "lucide-react";
 
 interface TournamentConfigModalProps {
   open: boolean;
@@ -37,9 +37,12 @@ interface SponsorBanner {
 interface Advertisement {
   id: string;
   tournamentId: string;
-  contentType: 'image' | 'video' | 'animation';
+  contentType: 'image' | 'video' | 'gif';
   contentUrl: string;
-  durationSeconds: number;
+  text: string | null;
+  animationType: 'fade-in' | 'fade-out' | 'slide-in' | 'zoom-in' | 'zoom-out' | 'typewriter';
+  displayDuration: number;
+  displayInterval: number;
   startTime: string | null;
   endTime: string | null;
   activeDays: string[];
@@ -73,16 +76,22 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   const [editBannerLink, setEditBannerLink] = useState("");
 
   // Advertisement state
-  const [newAdType, setNewAdType] = useState<'image' | 'video' | 'animation'>('image');
+  const [newAdType, setNewAdType] = useState<'image' | 'video' | 'gif'>('image');
   const [newAdUrl, setNewAdUrl] = useState("");
+  const [newAdText, setNewAdText] = useState("");
+  const [newAdAnimation, setNewAdAnimation] = useState<'fade-in' | 'fade-out' | 'slide-in' | 'zoom-in' | 'zoom-out' | 'typewriter'>('fade-in');
   const [newAdDuration, setNewAdDuration] = useState("10");
+  const [newAdInterval, setNewAdInterval] = useState("60");
   const [newAdStartTime, setNewAdStartTime] = useState("");
   const [newAdEndTime, setNewAdEndTime] = useState("");
   const [newAdActiveDays, setNewAdActiveDays] = useState<string[]>([]);
   const [editingAd, setEditingAd] = useState<string | null>(null);
-  const [editAdType, setEditAdType] = useState<'image' | 'video' | 'animation'>('image');
+  const [editAdType, setEditAdType] = useState<'image' | 'video' | 'gif'>('image');
   const [editAdUrl, setEditAdUrl] = useState("");
+  const [editAdText, setEditAdText] = useState("");
+  const [editAdAnimation, setEditAdAnimation] = useState<'fade-in' | 'fade-out' | 'slide-in' | 'zoom-in' | 'zoom-out' | 'typewriter'>('fade-in');
   const [editAdDuration, setEditAdDuration] = useState("10");
+  const [editAdInterval, setEditAdInterval] = useState("60");
   const [editAdStartTime, setEditAdStartTime] = useState("");
   const [editAdEndTime, setEditAdEndTime] = useState("");
   const [editAdActiveDays, setEditAdActiveDays] = useState<string[]>([]);
@@ -261,7 +270,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   });
 
   const createAdvertisementMutation = useMutation({
-    mutationFn: async (data: { tournamentId: string; contentType: string; contentUrl: string; durationSeconds: number; startTime: string | null; endTime: string | null; activeDays: string[] }) => {
+    mutationFn: async (data: { tournamentId: string; contentType: string; contentUrl: string; text: string | null; animationType: string; displayDuration: number; displayInterval: number; startTime: string | null; endTime: string | null; activeDays: string[] }) => {
       const response = await apiRequest("POST", "/api/advertisements", data);
       return response.json();
     },
@@ -269,7 +278,10 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
       queryClient.invalidateQueries({ queryKey: [`/api/advertisements/${tournament?.id}`] });
       setNewAdType('image');
       setNewAdUrl("");
+      setNewAdText("");
+      setNewAdAnimation('fade-in');
       setNewAdDuration("10");
+      setNewAdInterval("60");
       setNewAdStartTime("");
       setNewAdEndTime("");
       setNewAdActiveDays([]);
@@ -457,7 +469,10 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
       tournamentId: tournament.id,
       contentType: newAdType,
       contentUrl: newAdUrl,
-      durationSeconds: parseInt(newAdDuration),
+      text: newAdText || null,
+      animationType: newAdAnimation,
+      displayDuration: parseInt(newAdDuration),
+      displayInterval: parseInt(newAdInterval),
       startTime: newAdStartTime || null,
       endTime: newAdEndTime || null,
       activeDays: newAdActiveDays,
@@ -468,7 +483,10 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
     setEditingAd(ad.id);
     setEditAdType(ad.contentType);
     setEditAdUrl(ad.contentUrl);
-    setEditAdDuration(ad.durationSeconds.toString());
+    setEditAdText(ad.text || "");
+    setEditAdAnimation(ad.animationType);
+    setEditAdDuration(ad.displayDuration.toString());
+    setEditAdInterval(ad.displayInterval.toString());
     setEditAdStartTime(ad.startTime || "");
     setEditAdEndTime(ad.endTime || "");
     setEditAdActiveDays(ad.activeDays);
@@ -482,7 +500,10 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
       data: {
         contentType: editAdType,
         contentUrl: editAdUrl,
-        durationSeconds: parseInt(editAdDuration),
+        text: editAdText || null,
+        animationType: editAdAnimation,
+        displayDuration: parseInt(editAdDuration),
+        displayInterval: parseInt(editAdInterval),
         startTime: editAdStartTime || null,
         endTime: editAdEndTime || null,
         activeDays: editAdActiveDays,
@@ -495,7 +516,10 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
     setEditingAd(null);
     setEditAdType('image');
     setEditAdUrl("");
+    setEditAdText("");
+    setEditAdAnimation('fade-in');
     setEditAdDuration("10");
+    setEditAdInterval("60");
     setEditAdStartTime("");
     setEditAdEndTime("");
     setEditAdActiveDays([]);
@@ -1063,7 +1087,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                               <SelectContent>
                                 <SelectItem value="image">Imagen</SelectItem>
                                 <SelectItem value="video">Video</SelectItem>
-                                <SelectItem value="animation">Animación</SelectItem>
+                                <SelectItem value="gif">GIF Animado</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -1078,15 +1102,109 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                             />
                           </div>
                           <div>
-                            <Label htmlFor="editAdDuration">Duración (segundos)</Label>
+                            <Label htmlFor="editAdText">Texto Opcional</Label>
                             <Input
-                              id="editAdDuration"
-                              type="number"
-                              min="1"
-                              value={editAdDuration}
-                              onChange={(e) => setEditAdDuration(e.target.value)}
-                              data-testid="input-edit-ad-duration"
+                              id="editAdText"
+                              placeholder="Texto para mostrar sobre el contenido"
+                              value={editAdText}
+                              onChange={(e) => setEditAdText(e.target.value)}
+                              data-testid="input-edit-ad-text"
                             />
+                          </div>
+                          <div>
+                            <Label>Tipo de Animación</Label>
+                            <div className="grid grid-cols-3 gap-2 mt-2">
+                              <Button
+                                type="button"
+                                variant={editAdAnimation === 'fade-in' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setEditAdAnimation('fade-in')}
+                                data-testid="button-edit-animation-fade-in"
+                                className="flex items-center gap-1"
+                              >
+                                <Sparkles className="w-3 h-3" />
+                                Fade In
+                              </Button>
+                              <Button
+                                type="button"
+                                variant={editAdAnimation === 'fade-out' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setEditAdAnimation('fade-out')}
+                                data-testid="button-edit-animation-fade-out"
+                                className="flex items-center gap-1"
+                              >
+                                <Sparkles className="w-3 h-3" />
+                                Fade Out
+                              </Button>
+                              <Button
+                                type="button"
+                                variant={editAdAnimation === 'slide-in' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setEditAdAnimation('slide-in')}
+                                data-testid="button-edit-animation-slide-in"
+                                className="flex items-center gap-1"
+                              >
+                                <MoveRight className="w-3 h-3" />
+                                Slide In
+                              </Button>
+                              <Button
+                                type="button"
+                                variant={editAdAnimation === 'zoom-in' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setEditAdAnimation('zoom-in')}
+                                data-testid="button-edit-animation-zoom-in"
+                                className="flex items-center gap-1"
+                              >
+                                <ZoomIn className="w-3 h-3" />
+                                Zoom In
+                              </Button>
+                              <Button
+                                type="button"
+                                variant={editAdAnimation === 'zoom-out' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setEditAdAnimation('zoom-out')}
+                                data-testid="button-edit-animation-zoom-out"
+                                className="flex items-center gap-1"
+                              >
+                                <ZoomIn className="w-3 h-3" />
+                                Zoom Out
+                              </Button>
+                              <Button
+                                type="button"
+                                variant={editAdAnimation === 'typewriter' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setEditAdAnimation('typewriter')}
+                                data-testid="button-edit-animation-typewriter"
+                                className="flex items-center gap-1"
+                              >
+                                <Type className="w-3 h-3" />
+                                Letra x Letra
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="editAdDuration">Duración (segundos)</Label>
+                              <Input
+                                id="editAdDuration"
+                                type="number"
+                                min="1"
+                                value={editAdDuration}
+                                onChange={(e) => setEditAdDuration(e.target.value)}
+                                data-testid="input-edit-ad-duration"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="editAdInterval">Cada cuántos segundos aparece</Label>
+                              <Input
+                                id="editAdInterval"
+                                type="number"
+                                min="1"
+                                value={editAdInterval}
+                                onChange={(e) => setEditAdInterval(e.target.value)}
+                                data-testid="input-edit-ad-interval"
+                              />
+                            </div>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -1158,7 +1276,10 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                               <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary font-medium">
                                 {ad.contentType}
                               </span>
-                              <span className="text-xs text-muted-foreground">{ad.durationSeconds}s</span>
+                              <span className="text-xs text-muted-foreground">{ad.displayDuration}s</span>
+                              <span className="text-xs px-2 py-1 rounded bg-secondary/10 text-secondary-foreground">
+                                {ad.animationType}
+                              </span>
                             </div>
                             <p className="text-sm font-medium truncate max-w-md" data-testid={`ad-url-${ad.id}`}>
                               {ad.contentUrl}
@@ -1216,25 +1337,120 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                       <SelectContent>
                         <SelectItem value="image">Imagen</SelectItem>
                         <SelectItem value="video">Video</SelectItem>
-                        <SelectItem value="animation">Animación</SelectItem>
+                        <SelectItem value="gif">GIF Animado</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <Input
                     type="url"
-                    placeholder="URL del contenido"
+                    placeholder="URL del contenido (imagen/video/GIF)"
                     value={newAdUrl}
                     onChange={(e) => setNewAdUrl(e.target.value)}
                     data-testid="input-new-ad-url"
                   />
                   <Input
-                    type="number"
-                    min="1"
-                    placeholder="Duración en segundos"
-                    value={newAdDuration}
-                    onChange={(e) => setNewAdDuration(e.target.value)}
-                    data-testid="input-new-ad-duration"
+                    placeholder="Texto opcional (mostrar sobre el contenido)"
+                    value={newAdText}
+                    onChange={(e) => setNewAdText(e.target.value)}
+                    data-testid="input-new-ad-text"
                   />
+                  <div>
+                    <Label>Tipo de Animación</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      <Button
+                        type="button"
+                        variant={newAdAnimation === 'fade-in' ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setNewAdAnimation('fade-in')}
+                        data-testid="button-animation-fade-in"
+                        className="flex items-center gap-1"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        Fade In
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={newAdAnimation === 'fade-out' ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setNewAdAnimation('fade-out')}
+                        data-testid="button-animation-fade-out"
+                        className="flex items-center gap-1"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        Fade Out
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={newAdAnimation === 'slide-in' ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setNewAdAnimation('slide-in')}
+                        data-testid="button-animation-slide-in"
+                        className="flex items-center gap-1"
+                      >
+                        <MoveRight className="w-3 h-3" />
+                        Slide In
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={newAdAnimation === 'zoom-in' ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setNewAdAnimation('zoom-in')}
+                        data-testid="button-animation-zoom-in"
+                        className="flex items-center gap-1"
+                      >
+                        <ZoomIn className="w-3 h-3" />
+                        Zoom In
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={newAdAnimation === 'zoom-out' ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setNewAdAnimation('zoom-out')}
+                        data-testid="button-animation-zoom-out"
+                        className="flex items-center gap-1"
+                      >
+                        <ZoomIn className="w-3 h-3" />
+                        Zoom Out
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={newAdAnimation === 'typewriter' ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setNewAdAnimation('typewriter')}
+                        data-testid="button-animation-typewriter"
+                        className="flex items-center gap-1"
+                      >
+                        <Type className="w-3 h-3" />
+                        Letra x Letra
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="newAdDuration">Duración (segundos)</Label>
+                      <Input
+                        id="newAdDuration"
+                        type="number"
+                        min="1"
+                        placeholder="10"
+                        value={newAdDuration}
+                        onChange={(e) => setNewAdDuration(e.target.value)}
+                        data-testid="input-new-ad-duration"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="newAdInterval">Cada cuántos segundos aparece</Label>
+                      <Input
+                        id="newAdInterval"
+                        type="number"
+                        min="1"
+                        placeholder="60"
+                        value={newAdInterval}
+                        onChange={(e) => setNewAdInterval(e.target.value)}
+                        data-testid="input-new-ad-interval"
+                      />
+                    </div>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="newAdStartTime">Hora Inicio (opcional)</Label>
