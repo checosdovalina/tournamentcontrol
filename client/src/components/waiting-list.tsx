@@ -18,7 +18,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [courtSelectionOpen, setCourtSelectionOpen] = useState(false);
 
-  const { data: readyMatches = [], isLoading } = useQuery<ScheduledMatchWithDetails[]>({
+  const { data: allReadyMatches = [], isLoading } = useQuery<ScheduledMatchWithDetails[]>({
     queryKey: ["/api/scheduled-matches/ready", tournamentId],
     queryFn: async () => {
       if (!tournamentId) return [];
@@ -28,6 +28,27 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
     enabled: !!tournamentId,
     staleTime: 0,
     refetchInterval: 3000,
+  });
+
+  // Filter to show only matches from the last 12 hours (720 minutes)
+  const readyMatches = allReadyMatches.filter((match: ScheduledMatchWithDetails) => {
+    const players = [
+      match.pair1?.player1,
+      match.pair1?.player2,
+      match.pair2?.player1,
+      match.pair2?.player2,
+    ].filter(Boolean);
+
+    const checkInTimes = players
+      .filter((p: any) => p?.checkInTime)
+      .map((p: any) => new Date(p.checkInTime).getTime());
+    
+    if (checkInTimes.length === 0) return true; // Include matches without check-ins
+    
+    const earliestCheckIn = Math.min(...checkInTimes);
+    const now = new Date().getTime();
+    const diffMinutes = Math.floor((now - earliestCheckIn) / (1000 * 60));
+    return diffMinutes <= 720; // 12 hours = 720 minutes
   });
 
   const { data: courts = [] } = useQuery<any[]>({
