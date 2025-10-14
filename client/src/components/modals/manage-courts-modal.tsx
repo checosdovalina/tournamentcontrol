@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -120,6 +121,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
       name: newCourtName,
       clubId: selectedClub,
       isAvailable: true,
+      isEnabled: true,
     });
   };
 
@@ -150,18 +152,26 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
               <div className="space-y-3" data-testid="courts-management-list">
                 {courts.map((court: any) => {
                   const currentMatch = getCurrentMatch(court.id);
+                  const isEnabled = court.isEnabled !== false; // Default to true if not set
                   return (
                     <div
                       key={court.id}
                       className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border border-border"
                       data-testid={`court-management-${court.name.toLowerCase().replace(' ', '-')}`}
                     >
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-4 flex-1">
                         <span className={`status-indicator ${court.isAvailable ? 'status-available' : 'status-occupied'}`}></span>
-                        <div>
-                          <p className="font-medium" data-testid={`court-management-name-${court.name.toLowerCase().replace(' ', '-')}`}>
-                            {court.name}
-                          </p>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium" data-testid={`court-management-name-${court.name.toLowerCase().replace(' ', '-')}`}>
+                              {court.name}
+                            </p>
+                            {!isEnabled && (
+                              <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded">
+                                Deshabilitada
+                              </span>
+                            )}
+                          </div>
                           {currentMatch ? (
                             <p className="text-sm text-muted-foreground" data-testid={`court-management-match-${court.name.toLowerCase().replace(' ', '-')}`}>
                               {currentMatch.pair1.player1.name}/{currentMatch.pair1.player2.name} vs {currentMatch.pair2.player1.name}/{currentMatch.pair2.player2.name}
@@ -171,7 +181,24 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2">
+                          <Label htmlFor={`court-enabled-${court.id}`} className="text-sm">
+                            {isEnabled ? 'Habilitada' : 'Deshabilitada'}
+                          </Label>
+                          <Switch
+                            id={`court-enabled-${court.id}`}
+                            checked={isEnabled}
+                            onCheckedChange={(checked) => {
+                              updateCourtMutation.mutate({
+                                courtId: court.id,
+                                updates: { isEnabled: checked }
+                              });
+                            }}
+                            disabled={currentMatch !== undefined}
+                            data-testid={`switch-court-enabled-${court.name.toLowerCase().replace(' ', '-')}`}
+                          />
+                        </div>
                         {currentMatch && (
                           <Button
                             size="sm"
@@ -183,14 +210,6 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                             Finalizar
                           </Button>
                         )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={!court.isAvailable}
-                          data-testid={`button-reassign-${court.name.toLowerCase().replace(' ', '-')}`}
-                        >
-                          Reasignar
-                        </Button>
                       </div>
                     </div>
                   );
