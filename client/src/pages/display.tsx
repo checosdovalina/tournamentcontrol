@@ -44,12 +44,12 @@ export default function Display() {
     staleTime: 0,
   });
 
-  // Filter scheduled matches to show only those starting in the next 4 hours
+  // Filter scheduled matches to show only those starting in the next 8 hours
   const scheduledMatches = allScheduledMatches.filter((match: any) => {
     const now = new Date();
     const matchTime = new Date(`${match.day}T${match.time}`);
     const diffMinutes = Math.floor((matchTime.getTime() - now.getTime()) / (1000 * 60));
-    return diffMinutes >= 0 && diffMinutes <= 240; // 4 hours = 240 minutes
+    return diffMinutes >= 0 && diffMinutes <= 480; // 8 hours = 480 minutes
   });
 
   const { data: allResults = [] } = useQuery<any[]>({
