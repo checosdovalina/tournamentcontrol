@@ -26,7 +26,8 @@ export default function Display() {
   const { data: currentMatches = [] } = useQuery<any[]>({
     queryKey: ["/api/matches/current", tournament?.id],
     enabled: !!tournament?.id,
-    refetchInterval: 30000,
+    refetchInterval: 2000,
+    staleTime: 0,
   });
 
   const { data: scheduledMatches = [] } = useQuery<any[]>({
@@ -39,7 +40,8 @@ export default function Display() {
       return response.json();
     },
     enabled: !!tournament?.id,
-    refetchInterval: 30000,
+    refetchInterval: 5000,
+    staleTime: 0,
   });
 
   const { data: recentResults = [] } = useQuery<any[]>({
@@ -52,7 +54,8 @@ export default function Display() {
       return response.json();
     },
     enabled: !!tournament?.id,
-    refetchInterval: 30000,
+    refetchInterval: 5000,
+    staleTime: 0,
   });
 
   const { data: banners = [] } = useQuery<any[]>({
