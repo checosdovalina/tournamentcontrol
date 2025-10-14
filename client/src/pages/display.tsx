@@ -234,8 +234,19 @@ export default function Display() {
   };
 
   const formatResultScore = (score: any) => {
-    if (!score || !Array.isArray(score.sets)) return "0-0, 0-0";
-    return score.sets.map((set: any) => `${set[0] || 0}-${set[1] || 0}`).join(", ");
+    if (!score) return "0-0, 0-0";
+    
+    // Handle new format with sets array
+    if (score.sets && Array.isArray(score.sets)) {
+      return score.sets.map((set: any) => `${set[0] || 0}-${set[1] || 0}`).join(", ");
+    }
+    
+    // Handle old format (string like "6-4, 6-3")
+    if (typeof score === 'string') {
+      return score;
+    }
+    
+    return "0-0, 0-0";
   };
 
 

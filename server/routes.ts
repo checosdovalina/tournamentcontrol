@@ -980,18 +980,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "El ganador debe haber ganado al menos 2 de 3 sets completos" });
       }
       
-      // Format score string
-      const scoreString = sets.map((set: number[]) => `${set[0]}-${set[1]}`).join(', ');
-      
       // Determine loser
       const loserId = winnerPairId === match.pair1Id ? match.pair2Id : match.pair1Id;
       
-      // Create result
+      // Create result with score object
       const result = await storage.createResult({
         matchId: id,
         winnerId: winnerPairId,
         loserId: loserId,
-        score: scoreString
+        score: { sets }
       });
       
       // Update match status
