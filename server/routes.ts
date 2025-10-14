@@ -16,6 +16,7 @@ import {
   insertCategorySchema,
   insertSponsorBannerSchema,
   insertAdvertisementSchema,
+  insertAnnouncementSchema,
   insertScheduledMatchSchema
 } from "@shared/schema";
 import { z } from "zod";
@@ -1807,6 +1808,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
       broadcastUpdate({ type: "advertisement_deleted", data: { id } });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to delete advertisement", error: error.message });
+    }
+  });
+
+  // Announcements endpoints
+  app.get("/api/announcements/:tournamentId", async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const announcements = await storage.getAnnouncementsByTournament(tournamentId);
+      res.json(announcements);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get announcements", error: error.message });
+    }
+  });
+
+  app.get("/api/announcements/active/:tournamentId", async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const announcements = await storage.getActiveAnnouncements(tournamentId);
+      res.json(announcements);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get active announcements", error: error.message });
+    }
+  });
+
+  app.post("/api/announcements", requireTournamentRole('admin'), async (req, res) => {
+    try {
+      const announcementData = insertAnnouncementSchema.parse(req.body);
+      const announcement = await storage.createAnnouncement(announcementData);
+      res.json(announcement);
+      broadcastUpdate({ type: "announcement_created", data: announcement });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to create announcement", error: error.message });
+    }
+  });
+
+  app.patch("/api/announcements/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      // Fetch announcement to get tournamentId for authorization
+      const existing = await storage.getAnnouncement(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Announcement not found" });
+      }
+      
+      // Check authorization
+      let isAuthorized = false;
+      
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          existing.tournamentId
+        );
+        
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+      
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Admin access required for this tournament" });
+      }
+      
+      // Authorization passed - proceed with update
+      const announcement = await storage.updateAnnouncement(id, updates);
+      if (!announcement) {
+        return res.status(404).json({ message: "Announcement not found" });
+      }
+      res.json(announcement);
+      broadcastUpdate({ type: "announcement_updated", data: announcement });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update announcement", error: error.message });
+    }
+  });
+
+  app.delete("/api/announcements/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Fetch announcement to get tournamentId for authorization
+      const existing = await storage.getAnnouncement(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Announcement not found" });
+      }
+      
+      // Check authorization
+      let isAuthorized = false;
+      
+      if (req.session.userRole === 'superadmin') {
+        isAuthorized = true;
+      } else {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+          req.session.userId!,
+          existing.tournamentId
+        );
+        
+        if (tournamentUser && tournamentUser.status === 'active' && tournamentUser.role === 'admin') {
+          isAuthorized = true;
+        }
+      }
+      
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Admin access required for this tournament" });
+      }
+      
+      // Authorization passed - proceed with delete
+      const success = await storage.deleteAnnouncement(id);
+      if (!success) {
+        return res.status(404).json({ message: "Announcement not found" });
+      }
+      res.json({ message: "Announcement deleted" });
+      broadcastUpdate({ type: "announcement_deleted", data: { id } });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete announcement", error: error.message });
     }
   });
 
