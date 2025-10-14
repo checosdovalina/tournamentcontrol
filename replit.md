@@ -12,7 +12,7 @@ Built as a full-stack web application, it provides:
 - **Public Display**: Real-time tournament information for participants and spectators with live score updates and advertisement rotation
 - **Advertisement Module**: Commercial content management with time-based scheduling, automatic rotation, and multi-format support (images/videos)
 
-Last Updated: October 11, 2025 - Added monthly calendar view for scheduled matches with visual grid (7x6), day indicators showing match counts via badges, responsive navigation (previous/next month, today button), Sheet drawer for day details with all matches and controls, and timezone-safe date filtering using ISO strings to prevent boundary date omissions in negative offset zones
+Last Updated: October 14, 2025 - Enhanced court enable/disable functionality: waiting list now filters out disabled courts from selection dialog, preventing assignment attempts to unavailable courts. Backend validates both isEnabled and isAvailable status before court assignment with appropriate error messages.
 
 ## User Preferences
 
