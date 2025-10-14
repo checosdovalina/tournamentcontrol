@@ -43,9 +43,8 @@ export default function PairsManagement() {
     queryKey: ["/api/pairs", tournament?.id],
     queryFn: async () => {
       if (!tournament?.id) return [];
-      const response = await fetch(`/api/pairs`);
-      const allPairs = await response.json();
-      return allPairs.filter((p: any) => p.tournamentId === tournament.id);
+      const response = await fetch(`/api/pairs?tournamentId=${tournament.id}`);
+      return response.json();
     },
     enabled: !!tournament?.id,
   });

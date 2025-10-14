@@ -360,7 +360,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pairs routes
   app.get("/api/pairs", async (req, res) => {
     try {
-      const pairs = await storage.getPairs();
+      const { tournamentId } = req.query;
+      
+      // If tournamentId is provided, filter by tournament for better performance
+      const pairs = tournamentId 
+        ? await storage.getPairsByTournament(tournamentId as string)
+        : await storage.getPairs();
+      
       res.json(pairs);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to get pairs", error: error.message });
