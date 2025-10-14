@@ -2239,10 +2239,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/scheduled-matches/:id/auto-assign", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // First check if the match exists
+      const existingMatch = await storage.getScheduledMatch(id);
+      if (!existingMatch) {
+        return res.status(404).json({ message: "Partido programado no encontrado" });
+      }
+      
       const match = await storage.autoAssignCourt(id);
       
       if (!match) {
-        return res.status(404).json({ message: "Scheduled match not found or no available courts" });
+        return res.status(400).json({ message: "No hay canchas disponibles. Todas las canchas están ocupadas por partidos en curso." });
       }
       
       res.json(match);
