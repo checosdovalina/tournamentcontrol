@@ -87,6 +87,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   const [newAdStartTime, setNewAdStartTime] = useState("");
   const [newAdEndTime, setNewAdEndTime] = useState("");
   const [newAdActiveDays, setNewAdActiveDays] = useState<string[]>(['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']);
+  const [uploadingNewAd, setUploadingNewAd] = useState(false);
   const [editingAd, setEditingAd] = useState<string | null>(null);
   const [editAdType, setEditAdType] = useState<'image' | 'video' | 'gif'>('image');
   const [editAdUrl, setEditAdUrl] = useState("");
@@ -97,6 +98,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   const [editAdStartTime, setEditAdStartTime] = useState("");
   const [editAdEndTime, setEditAdEndTime] = useState("");
   const [editAdActiveDays, setEditAdActiveDays] = useState<string[]>([]);
+  const [uploadingEditAd, setUploadingEditAd] = useState(false);
 
   const { data: clubs = [] } = useQuery<any[]>({
     queryKey: ["/api/clubs"],
@@ -542,6 +544,78 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
       setNewAdActiveDays(prev => 
         prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
       );
+    }
+  };
+
+  const handleNewAdFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingNewAd(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/advertisements/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      const data = await response.json();
+      setNewAdUrl(data.url);
+      
+      toast({
+        title: "Archivo subido",
+        description: "El archivo se ha cargado correctamente",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error al subir archivo",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingNewAd(false);
+    }
+  };
+
+  const handleEditAdFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingEditAd(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/advertisements/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      const data = await response.json();
+      setEditAdUrl(data.url);
+      
+      toast({
+        title: "Archivo subido",
+        description: "El archivo se ha cargado correctamente",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error al subir archivo",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingEditAd(false);
     }
   };
 
@@ -1093,15 +1167,37 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                               </SelectContent>
                             </Select>
                           </div>
-                          <div>
-                            <Label htmlFor="editAdUrl">URL del Contenido</Label>
-                            <Input
-                              id="editAdUrl"
-                              type="url"
-                              value={editAdUrl}
-                              onChange={(e) => setEditAdUrl(e.target.value)}
-                              data-testid="input-edit-ad-url"
-                            />
+                          <div className="space-y-2">
+                            <Label htmlFor="editAdUrl">Contenido (URL o archivo)</Label>
+                            <div className="flex gap-2">
+                              <Input
+                                id="editAdUrl"
+                                type="url"
+                                placeholder="Pegar URL del contenido..."
+                                value={editAdUrl}
+                                onChange={(e) => setEditAdUrl(e.target.value)}
+                                data-testid="input-edit-ad-url"
+                                className="flex-1"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => document.getElementById('edit-ad-file-input')?.click()}
+                                disabled={uploadingEditAd}
+                                className="shrink-0"
+                                data-testid="button-upload-edit-ad"
+                              >
+                                <Upload className="w-4 h-4 mr-2" />
+                                {uploadingEditAd ? "Subiendo..." : "Subir Archivo"}
+                              </Button>
+                              <input
+                                id="edit-ad-file-input"
+                                type="file"
+                                accept="image/*,video/*"
+                                onChange={handleEditAdFileUpload}
+                                className="hidden"
+                              />
+                            </div>
                           </div>
                           <div>
                             <Label htmlFor="editAdText">Texto Opcional</Label>
@@ -1348,41 +1444,30 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                     <div className="flex gap-2">
                       <Input
                         type="url"
-                        placeholder="URL del contenido o subir archivo..."
+                        placeholder="Pegar URL del contenido..."
                         value={newAdUrl}
                         onChange={(e) => setNewAdUrl(e.target.value)}
                         data-testid="input-new-ad-url"
                         className="flex-1"
                       />
-                      <ObjectUploader
-                        maxNumberOfFiles={1}
-                        maxFileSize={104857600}
-                        onGetUploadParameters={async () => {
-                          const response = await apiRequest("POST", "/api/objects/upload");
-                          const data = await response.json();
-                          return {
-                            method: 'PUT' as const,
-                            url: data.uploadURL,
-                          };
-                        }}
-                        onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-                          if (result.successful && result.successful.length > 0) {
-                            const uploadURL = result.successful[0].uploadURL;
-                            // Simply set the upload URL - it will be normalized when creating the ad
-                            if (uploadURL) {
-                              setNewAdUrl(uploadURL);
-                              toast({
-                                title: "Archivo subido",
-                                description: "El archivo se ha subido correctamente. Ahora completa la información del anuncio.",
-                              });
-                            }
-                          }
-                        }}
-                        buttonClassName="shrink-0"
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('new-ad-file-input')?.click()}
+                        disabled={uploadingNewAd}
+                        className="shrink-0"
+                        data-testid="button-upload-new-ad"
                       >
                         <Upload className="w-4 h-4 mr-2" />
-                        Subir
-                      </ObjectUploader>
+                        {uploadingNewAd ? "Subiendo..." : "Subir Archivo"}
+                      </Button>
+                      <input
+                        id="new-ad-file-input"
+                        type="file"
+                        accept="image/*,video/*"
+                        onChange={handleNewAdFileUpload}
+                        className="hidden"
+                      />
                     </div>
                   </div>
                   <Input

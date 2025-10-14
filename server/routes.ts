@@ -1388,6 +1388,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============ Advertisement Management ============
   
+  // Configure multer for advertisement file uploads
+  const advertisementStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'public/uploads/advertisements');
+    },
+    filename: (req, file, cb) => {
+      // Generate unique filename: timestamp-randomstring-originalname
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = file.originalname.split('.').pop();
+      cb(null, `ad-${uniqueSuffix}.${ext}`);
+    }
+  });
+
+  const uploadAdvertisement = multer({ 
+    storage: advertisementStorage,
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+    fileFilter: (req, file, cb) => {
+      // Allow images, videos, and gifs
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm', 'video/ogg'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Invalid file type. Only images and videos are allowed.'));
+      }
+    }
+  });
+
+  // Upload advertisement file
+  app.post("/api/advertisements/upload", requireAuth, uploadAdvertisement.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Return the URL path to access the file
+      const fileUrl = `/uploads/advertisements/${req.file.filename}`;
+      res.json({ 
+        url: fileUrl,
+        filename: req.file.filename,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to upload file", error: error.message });
+    }
+  });
+  
   app.get("/api/advertisements/:tournamentId", async (req, res) => {
     try {
       const { tournamentId } = req.params;

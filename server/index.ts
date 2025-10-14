@@ -31,6 +31,9 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: false }));
 
+// Serve uploaded files statically
+app.use('/uploads', express.static('public/uploads'));
+
 // Session store configuration
 const PgSession = connectPgSimple(session);
 const sessionStore = new PgSession({
