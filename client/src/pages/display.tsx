@@ -394,10 +394,10 @@ export default function Display() {
         {/* Footer with Sponsors - Auto Scrolling Marquee */}
         <div className="px-8 py-3 border-t border-white/20 bg-white/5 overflow-hidden">
           <div className="flex items-center justify-between">
-            <div className="text-white/60 text-sm whitespace-nowrap">
-              Patrocinadores:
+            <div className="flex items-center">
+              <img src={courtflowLogo} alt="CourtFlow" className="h-12 w-auto object-contain" />
             </div>
-            <div className="flex-1 overflow-hidden mx-4">
+            <div className="flex-1 overflow-hidden mx-8">
               {activeBanners.length > 0 ? (
                 <div className="relative">
                   <div className="flex animate-marquee space-x-8">
@@ -422,8 +422,8 @@ export default function Display() {
                 </div>
               )}
             </div>
-            <div className="text-white/60 text-sm whitespace-nowrap">
-              Sistema de Control de Torneos v1.0
+            <div className="flex items-center">
+              <img src={courtflowLogo} alt="CourtFlow" className="h-12 w-auto object-contain" />
             </div>
           </div>
         </div>
