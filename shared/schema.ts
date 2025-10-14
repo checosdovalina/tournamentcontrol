@@ -40,7 +40,6 @@ export const courts = pgTable("courts", {
   name: text("name").notNull(),
   clubId: varchar("club_id").notNull(),
   isAvailable: boolean("is_available").default(true),
-  isEnabled: boolean("is_enabled").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

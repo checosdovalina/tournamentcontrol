@@ -40,38 +40,33 @@ export default function CourtStatus() {
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-3" data-testid="courts-status-container">
-          {courts.map((court: any) => {
-            const isEnabled = court.isEnabled !== false; // Default to true if not set
-            const isActuallyAvailable = court.isAvailable && isEnabled;
-            
-            return (
-              <div
-                key={court.id}
-                className={`flex items-center justify-between p-3 rounded-lg border ${
-                  isActuallyAvailable
-                    ? 'bg-success/5 border-success/20'
-                    : 'bg-destructive/5 border-destructive/20'
-                }`}
-                data-testid={`court-${court.name.toLowerCase().replace(' ', '-')}`}
-              >
-                <div className="flex items-center space-x-3">
-                  <span className={`status-indicator ${
-                    isActuallyAvailable ? 'status-available' : 'status-occupied'
-                  }`}></span>
-                  <span className="font-medium" data-testid={`court-name-${court.name.toLowerCase().replace(' ', '-')}`}>
-                    {court.name}
-                  </span>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded ${
-                  isActuallyAvailable
-                    ? 'bg-success text-success-foreground'
-                    : 'bg-destructive text-destructive-foreground'
-                }`} data-testid={`court-status-${court.name.toLowerCase().replace(' ', '-')}`}>
-                  {!isEnabled ? 'No disponible' : court.isAvailable ? 'Disponible' : 'Ocupada'}
+          {courts.map((court: any) => (
+            <div
+              key={court.id}
+              className={`flex items-center justify-between p-3 rounded-lg border ${
+                court.isAvailable
+                  ? 'bg-success/5 border-success/20'
+                  : 'bg-destructive/5 border-destructive/20'
+              }`}
+              data-testid={`court-${court.name.toLowerCase().replace(' ', '-')}`}
+            >
+              <div className="flex items-center space-x-3">
+                <span className={`status-indicator ${
+                  court.isAvailable ? 'status-available' : 'status-occupied'
+                }`}></span>
+                <span className="font-medium" data-testid={`court-name-${court.name.toLowerCase().replace(' ', '-')}`}>
+                  {court.name}
                 </span>
               </div>
-            );
-          })}
+              <span className={`text-xs px-2 py-1 rounded ${
+                court.isAvailable
+                  ? 'bg-success text-success-foreground'
+                  : 'bg-destructive text-destructive-foreground'
+              }`} data-testid={`court-status-${court.name.toLowerCase().replace(' ', '-')}`}>
+                {court.isAvailable ? 'Disponible' : 'Ocupada'}
+              </span>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

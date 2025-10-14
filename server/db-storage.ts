@@ -1033,11 +1033,11 @@ export class DatabaseStorage implements IStorage {
     const tournament = await this.getTournament(match.tournamentId);
     if (!tournament) return undefined;
 
-    // Get all available and enabled courts for this club
+    // Get all available courts for this club
     const clubCourts = await db
       .select()
       .from(courts)
-      .where(and(eq(courts.clubId, tournament.clubId), eq(courts.isAvailable, true), eq(courts.isEnabled, true)));
+      .where(and(eq(courts.clubId, tournament.clubId), eq(courts.isAvailable, true)));
 
     // Get all scheduled matches with assigned courts that are not completed/cancelled
     const activeScheduledMatches = await db

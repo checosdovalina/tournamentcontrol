@@ -764,7 +764,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                             <SelectValue placeholder="Seleccionar cancha..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {courts?.filter(c => c.isAvailable && c.isEnabled === true).map((court) => (
+                            {courts?.filter(c => c.isAvailable).map((court) => (
                               <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
                                 {court.name}
                               </SelectItem>
