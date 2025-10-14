@@ -72,7 +72,12 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
       return apiRequest("POST", "/api/scheduled-matches", payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          query.queryKey[0] === "/api/scheduled-matches" ||
+          query.queryKey[0] === "/api/scheduled-matches/day" ||
+          query.queryKey[0] === "/api/scheduled-matches/today"
+      });
       toast({ title: "Partido programado", description: "El partido se agregó al calendario" });
       onOpenChange(false);
       form.reset();

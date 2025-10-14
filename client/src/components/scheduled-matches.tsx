@@ -40,7 +40,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
       return response.json();
     },
     enabled: !!tournamentId,
-    staleTime: 30000, // Cache for 30 seconds
+    staleTime: 0,
   });
 
   // Filter matches for the current month

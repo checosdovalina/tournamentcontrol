@@ -63,8 +63,12 @@ export function useWebSocket(userId?: string) {
             case "player_checked_out":
             case "court_auto_assigned":
             case "court_manually_assigned":
-              queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/day"] });
-              queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches/today"] });
+              queryClient.invalidateQueries({ 
+                predicate: (query) => 
+                  query.queryKey[0] === "/api/scheduled-matches" ||
+                  query.queryKey[0] === "/api/scheduled-matches/day" ||
+                  query.queryKey[0] === "/api/scheduled-matches/today"
+              });
               queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
               break;
             default:
