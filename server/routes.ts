@@ -394,6 +394,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Release orphaned courts (courts marked as occupied but with no active matches)
+  app.post("/api/courts/release-orphaned", requireAdmin, async (req, res) => {
+    try {
+      const courts = await storage.getCourts();
+      const matches = await storage.getMatches();
+      const tournaments = await storage.getTournaments();
+      
+      // Get court IDs that have active matches
+      const activeCourts = new Set<string>();
+      matches.forEach(match => {
+        if (match.status === "playing" && match.courtId) {
+          activeCourts.add(match.courtId);
+        }
+      });
+      
+      // Check scheduled matches from all tournaments
+      for (const tournament of tournaments) {
+        const scheduledMatches = await storage.getScheduledMatchesByTournament(tournament.id);
+        scheduledMatches.forEach(sm => {
+          if ((sm.status === "playing" || sm.status === "assigned") && sm.courtId) {
+            activeCourts.add(sm.courtId);
+          }
+        });
+      }
+      
+      // Find and release orphaned courts
+      const releasedCourts: string[] = [];
+      for (const court of courts) {
+        if (!court.isAvailable && !activeCourts.has(court.id)) {
+          await storage.updateCourt(court.id, { isAvailable: true });
+          releasedCourts.push(court.name);
+          broadcastUpdate({ type: "court_updated", data: { id: court.id, isAvailable: true } });
+        }
+      }
+      
+      res.json({ 
+        message: `Released ${releasedCourts.length} orphaned court${releasedCourts.length !== 1 ? 's' : ''}`,
+        courts: releasedCourts
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to release orphaned courts", error: error.message });
+    }
+  });
+
   // Players routes
   app.get("/api/players", async (req, res) => {
     try {
@@ -2196,6 +2240,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!isAuthorized) {
         return res.status(403).json({ message: "Tournament admin access required" });
+      }
+      
+      // If court was assigned, release it before deleting
+      if (match.courtId) {
+        await storage.updateCourt(match.courtId, { isAvailable: true });
+        broadcastUpdate({ type: "court_updated", data: { id: match.courtId, isAvailable: true } });
       }
       
       const success = await storage.deleteScheduledMatch(id);
