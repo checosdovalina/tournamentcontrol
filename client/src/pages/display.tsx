@@ -45,7 +45,14 @@ export default function Display() {
   });
 
   const { data: recentResults = [] } = useQuery<any[]>({
-    queryKey: ["/api/results/recent", tournament?.id],
+    queryKey: ["/api/results/today", tournament?.id],
+    queryFn: async () => {
+      if (!tournament?.id) return [];
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const response = await fetch(`/api/results/today/${tournament.id}?day=${today}`);
+      return response.json();
+    },
     enabled: !!tournament?.id,
     refetchInterval: 5000,
     staleTime: 0,

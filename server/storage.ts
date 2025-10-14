@@ -634,11 +634,37 @@ export class MemStorage implements IStorage {
     const allResults = Array.from(this.results.values());
     const tournamentResults: Result[] = [];
     
+    // Build a map of matchId -> scheduledMatch for efficient lookup
+    const scheduledMatches = Array.from(this.scheduledMatches.values());
+    const matchIdToScheduledMatch = new Map<string, any>();
+    for (const sm of scheduledMatches) {
+      if (sm.matchId) {
+        matchIdToScheduledMatch.set(sm.matchId, sm);
+      }
+    }
+    
     for (const result of allResults) {
       const match = await this.getMatch(result.matchId);
       if (match && match.tournamentId === tournamentId) {
-        const resultDate = result.createdAt || new Date();
-        if (resultDate >= startDate && resultDate < endDate) {
+        let matchDay: Date;
+        
+        // Try to get day from scheduled match first
+        const scheduledMatch = matchIdToScheduledMatch.get(match.id);
+        if (scheduledMatch?.day) {
+          matchDay = new Date(scheduledMatch.day);
+        } 
+        // Fallback to match start time
+        else if (match.startTime) {
+          matchDay = new Date(match.startTime);
+        } 
+        // Last resort: use result creation time (clone to avoid mutation)
+        else {
+          matchDay = result.createdAt ? new Date(result.createdAt) : new Date();
+        }
+        
+        matchDay.setHours(0, 0, 0, 0);
+        
+        if (matchDay >= startDate && matchDay < endDate) {
           tournamentResults.push(result);
         }
       }
