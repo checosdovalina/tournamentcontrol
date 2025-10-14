@@ -70,6 +70,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   const [logoUrl, setLogoUrl] = useState("");
   const [clubLogoUrl, setClubLogoUrl] = useState("");
   const [systemLogoUrl, setSystemLogoUrl] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState<'tournament' | 'club' | 'system' | 'banner' | null>(null);
   const { toast } = useToast();
 
   // Category state
@@ -468,6 +469,59 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
       setSystemLogoUrl(tournament.systemLogoUrl || "");
     }
   }, [tournament, open]);
+
+  // Upload handlers for logos and banners
+  const getUploadParameters = async () => {
+    const response = await fetch("/api/objects/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await response.json();
+    return {
+      method: "PUT" as const,
+      url: data.uploadURL,
+    };
+  };
+
+  const handleLogoUploadComplete = (result: UploadResult, logoType: 'tournament' | 'club' | 'system') => {
+    const uploadedFile = result.successful[0];
+    if (uploadedFile) {
+      const fileUrl = uploadedFile.uploadURL?.split('?')[0] || '';
+      
+      if (logoType === 'tournament') {
+        setLogoUrl(fileUrl);
+      } else if (logoType === 'club') {
+        setClubLogoUrl(fileUrl);
+      } else if (logoType === 'system') {
+        setSystemLogoUrl(fileUrl);
+      }
+      
+      toast({
+        title: "Imagen cargada",
+        description: "La imagen se ha subido correctamente",
+      });
+      setUploadingLogo(null);
+    }
+  };
+
+  const handleBannerUploadComplete = (result: UploadResult) => {
+    const uploadedFile = result.successful[0];
+    if (uploadedFile) {
+      const fileUrl = uploadedFile.uploadURL?.split('?')[0] || '';
+      
+      if (editingBanner) {
+        setEditBannerUrl(fileUrl);
+      } else {
+        setNewBannerUrl(fileUrl);
+      }
+      
+      toast({
+        title: "Imagen cargada",
+        description: "La imagen del patrocinador se ha subido correctamente",
+      });
+      setUploadingLogo(null);
+    }
+  };
 
   const handleSubmitGeneral = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1082,7 +1136,7 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
           <TabsContent value="logos" className="space-y-4 mt-4">
             <form onSubmit={handleSubmitGeneral} className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Proporciona las URLs de los logos. Los logos se mostrarán en las pantallas del torneo.
+                Ingresa las URLs de los logos o sube archivos desde tu computadora. Los logos se mostrarán en las pantallas del torneo.
               </p>
               
               <div className="space-y-4">
@@ -1092,13 +1146,23 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                     <Input
                       id="logoUrl"
                       type="text"
-                      placeholder="https://ejemplo.com/logo-torneo.png o data:image/..."
+                      placeholder="https://ejemplo.com/logo-torneo.png"
                       value={logoUrl}
                       onChange={(e) => setLogoUrl(e.target.value)}
                       data-testid="input-logo-url"
                     />
+                    <ObjectUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={10485760}
+                      onGetUploadParameters={getUploadParameters}
+                      onComplete={(result) => handleLogoUploadComplete(result, 'tournament')}
+                      buttonClassName="shrink-0"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Subir
+                    </ObjectUploader>
                     {logoUrl && (
-                      <div className="w-16 h-16 border border-border rounded flex items-center justify-center bg-muted">
+                      <div className="w-16 h-16 border border-border rounded flex items-center justify-center bg-muted shrink-0">
                         <img 
                           src={logoUrl} 
                           alt="Logo preview" 
@@ -1118,13 +1182,23 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                     <Input
                       id="clubLogoUrl"
                       type="text"
-                      placeholder="https://ejemplo.com/logo-club.png o data:image/..."
+                      placeholder="https://ejemplo.com/logo-club.png"
                       value={clubLogoUrl}
                       onChange={(e) => setClubLogoUrl(e.target.value)}
                       data-testid="input-club-logo-url"
                     />
+                    <ObjectUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={10485760}
+                      onGetUploadParameters={getUploadParameters}
+                      onComplete={(result) => handleLogoUploadComplete(result, 'club')}
+                      buttonClassName="shrink-0"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Subir
+                    </ObjectUploader>
                     {clubLogoUrl && (
-                      <div className="w-16 h-16 border border-border rounded flex items-center justify-center bg-muted">
+                      <div className="w-16 h-16 border border-border rounded flex items-center justify-center bg-muted shrink-0">
                         <img 
                           src={clubLogoUrl} 
                           alt="Club logo preview" 
@@ -1144,13 +1218,23 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                     <Input
                       id="systemLogoUrl"
                       type="text"
-                      placeholder="https://ejemplo.com/logo-sistema.png o data:image/..."
+                      placeholder="https://ejemplo.com/logo-sistema.png"
                       value={systemLogoUrl}
                       onChange={(e) => setSystemLogoUrl(e.target.value)}
                       data-testid="input-system-logo-url"
                     />
+                    <ObjectUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={10485760}
+                      onGetUploadParameters={getUploadParameters}
+                      onComplete={(result) => handleLogoUploadComplete(result, 'system')}
+                      buttonClassName="shrink-0"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Subir
+                    </ObjectUploader>
                     {systemLogoUrl && (
-                      <div className="w-16 h-16 border border-border rounded flex items-center justify-center bg-muted">
+                      <div className="w-16 h-16 border border-border rounded flex items-center justify-center bg-muted shrink-0">
                         <img 
                           src={systemLogoUrl} 
                           alt="System logo preview" 
@@ -1220,13 +1304,25 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                           </div>
                           <div>
                             <Label htmlFor="editBannerUrl">URL de la Imagen</Label>
-                            <Input
-                              id="editBannerUrl"
-                              type="url"
-                              value={editBannerUrl}
-                              onChange={(e) => setEditBannerUrl(e.target.value)}
-                              data-testid="input-edit-banner-url"
-                            />
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                id="editBannerUrl"
+                                type="url"
+                                value={editBannerUrl}
+                                onChange={(e) => setEditBannerUrl(e.target.value)}
+                                data-testid="input-edit-banner-url"
+                              />
+                              <ObjectUploader
+                                maxNumberOfFiles={1}
+                                maxFileSize={10485760}
+                                onGetUploadParameters={getUploadParameters}
+                                onComplete={handleBannerUploadComplete}
+                                buttonClassName="shrink-0"
+                              >
+                                <Upload className="w-4 h-4 mr-2" />
+                                Subir
+                              </ObjectUploader>
+                            </div>
                           </div>
                           <div>
                             <Label htmlFor="editBannerLink">Enlace (opcional)</Label>
@@ -1331,13 +1427,25 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                     onChange={(e) => setNewBannerName(e.target.value)}
                     data-testid="input-new-banner-name"
                   />
-                  <Input
-                    type="url"
-                    placeholder="URL de la imagen del banner"
-                    value={newBannerUrl}
-                    onChange={(e) => setNewBannerUrl(e.target.value)}
-                    data-testid="input-new-banner-url"
-                  />
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="url"
+                      placeholder="URL de la imagen del banner"
+                      value={newBannerUrl}
+                      onChange={(e) => setNewBannerUrl(e.target.value)}
+                      data-testid="input-new-banner-url"
+                    />
+                    <ObjectUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={10485760}
+                      onGetUploadParameters={getUploadParameters}
+                      onComplete={handleBannerUploadComplete}
+                      buttonClassName="shrink-0"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Subir
+                    </ObjectUploader>
+                  </div>
                   <Input
                     type="url"
                     placeholder="Enlace del patrocinador (opcional)"
