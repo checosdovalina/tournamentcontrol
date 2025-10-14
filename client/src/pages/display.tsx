@@ -259,15 +259,16 @@ export default function Display() {
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
-            {tournament?.clubLogoUrl && (
-              <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-16 w-auto object-contain" />
-            )}
-            {tournament?.systemLogoUrl && (
-              <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-16 w-auto object-contain" />
-            )}
-            <img src={courtflowLogoNew} alt="CourtFlow" className="h-20 w-auto object-contain" />
-          </div>
+          {(tournament?.clubLogoUrl || tournament?.systemLogoUrl) && (
+            <div className="flex items-center space-x-4">
+              {tournament?.clubLogoUrl && (
+                <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-16 w-auto object-contain" />
+              )}
+              {tournament?.systemLogoUrl && (
+                <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-16 w-auto object-contain" />
+              )}
+            </div>
+          )}
 
           <div className="text-right text-white">
             <p className="text-4xl font-bold font-mono" data-testid="text-current-time">
@@ -282,15 +283,18 @@ export default function Display() {
               })}
             </p>
           </div>
-          <Button 
-            onClick={() => setLocation('/')}
-            variant="ghost"
-            size="sm"
-            className="text-white/60 hover:text-white text-xl"
-            data-testid="button-close-display"
-          >
-            <X />
-          </Button>
+          <div className="flex items-center space-x-4">
+            <img src={courtflowLogoNew} alt="CourtFlow" className="h-20 w-auto object-contain" />
+            <Button 
+              onClick={() => setLocation('/')}
+              variant="ghost"
+              size="sm"
+              className="text-white/60 hover:text-white text-xl"
+              data-testid="button-close-display"
+            >
+              <X />
+            </Button>
+          </div>
         </div>
 
         {/* Announcements Bar */}
