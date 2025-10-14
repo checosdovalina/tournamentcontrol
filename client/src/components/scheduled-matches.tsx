@@ -11,8 +11,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil } from "lucide-react";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
+import EditScheduledMatchModal from "@/components/modals/edit-scheduled-match-modal";
 import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/schema";
 
 interface ScheduledMatchesProps {
@@ -24,6 +25,8 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [matchToEdit, setMatchToEdit] = useState<ScheduledMatchWithDetails | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [timeFilter, setTimeFilter] = useState<string>("all");
@@ -773,46 +776,65 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                   </div>
                   
                   {userRole === 'admin' && (
-                    <AlertDialog 
-                      open={deleteDialogOpen === match.id} 
-                      onOpenChange={(open) => {
-                        if (!deleteMatchMutation.isPending) {
-                          setDeleteDialogOpen(open ? match.id : null);
-                        }
-                      }}
-                    >
-                      <AlertDialogTrigger asChild>
+                    <div className="flex gap-1">
+                      {/* Edit Button - Only for non-playing/completed matches */}
+                      {match.status !== "playing" && match.status !== "completed" && (
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                          data-testid={`button-delete-match-${match.id}`}
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                          onClick={() => {
+                            setMatchToEdit(match);
+                            setEditModalOpen(true);
+                          }}
+                          data-testid={`button-edit-match-${match.id}`}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Pencil className="h-4 w-4" />
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>¿Eliminar partido programado?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Esta acción no se puede deshacer. Se eliminará el partido programado para{" "}
-                            {match.pair1.player1.name}/{match.pair1.player2.name} vs{" "}
-                            {match.pair2.player1.name}/{match.pair2.player2.name}.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel disabled={deleteMatchMutation.isPending}>Cancelar</AlertDialogCancel>
-                          <Button
-                            onClick={() => deleteMatchMutation.mutate(match.id)}
-                            className="bg-destructive hover:bg-destructive/90"
-                            disabled={deleteMatchMutation.isPending}
-                            data-testid={`button-confirm-delete-${match.id}`}
+                      )}
+                      
+                      {/* Delete Button */}
+                      <AlertDialog 
+                        open={deleteDialogOpen === match.id} 
+                        onOpenChange={(open) => {
+                          if (!deleteMatchMutation.isPending) {
+                            setDeleteDialogOpen(open ? match.id : null);
+                          }
+                        }}
+                      >
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                            data-testid={`button-delete-match-${match.id}`}
                           >
-                            {deleteMatchMutation.isPending ? "Eliminando..." : "Eliminar"}
+                            <Trash2 className="h-4 w-4" />
                           </Button>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar partido programado?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción no se puede deshacer. Se eliminará el partido programado para{" "}
+                              {match.pair1.player1.name}/{match.pair1.player2.name} vs{" "}
+                              {match.pair2.player1.name}/{match.pair2.player2.name}.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel disabled={deleteMatchMutation.isPending}>Cancelar</AlertDialogCancel>
+                            <Button
+                              onClick={() => deleteMatchMutation.mutate(match.id)}
+                              className="bg-destructive hover:bg-destructive/90"
+                              disabled={deleteMatchMutation.isPending}
+                              data-testid={`button-confirm-delete-${match.id}`}
+                            >
+                              {deleteMatchMutation.isPending ? "Eliminando..." : "Eliminar"}
+                            </Button>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   )}
                 </div>
               </CardHeader>
@@ -954,6 +976,16 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
           onOpenChange={setScheduleModalOpen}
           tournamentId={tournamentId}
           selectedDate={selectedDate || new Date()}
+        />
+      )}
+
+      {/* Edit Match Modal */}
+      {userRole === 'admin' && (
+        <EditScheduledMatchModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          match={matchToEdit}
+          tournamentId={tournamentId}
         />
       )}
     </div>
