@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -533,6 +534,13 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
     if (confirm("¿Está seguro de eliminar esta publicidad?")) {
       deleteAdvertisementMutation.mutate(id);
     }
+  };
+
+  const handleToggleAdvertisementActive = (id: string, currentActive: boolean) => {
+    updateAdvertisementMutation.mutate({
+      id,
+      data: { isActive: !currentActive },
+    });
   };
 
   const handleToggleDay = (day: string, isEditing: boolean = false) => {
@@ -1393,7 +1401,18 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                               </p>
                             )}
                           </div>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <Label htmlFor={`active-toggle-${ad.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                                {ad.isActive ? 'Activa' : 'Inactiva'}
+                              </Label>
+                              <Switch
+                                id={`active-toggle-${ad.id}`}
+                                checked={ad.isActive}
+                                onCheckedChange={() => handleToggleAdvertisementActive(ad.id, ad.isActive)}
+                                data-testid={`toggle-ad-active-${ad.id}`}
+                              />
+                            </div>
                             <Button
                               type="button"
                               variant="ghost"
