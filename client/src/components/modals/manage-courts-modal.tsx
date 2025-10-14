@@ -190,12 +190,20 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                             id={`court-enabled-${court.id}`}
                             checked={isEnabled}
                             onCheckedChange={(checked) => {
+                              if (!checked && currentMatch) {
+                                toast({
+                                  title: "No se puede deshabilitar",
+                                  description: "Esta cancha tiene un partido activo",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
                               updateCourtMutation.mutate({
                                 courtId: court.id,
                                 updates: { isEnabled: checked }
                               });
                             }}
-                            disabled={currentMatch !== undefined}
+                            disabled={currentMatch !== undefined && isEnabled}
                             data-testid={`switch-court-enabled-${court.name.toLowerCase().replace(' ', '-')}`}
                           />
                         </div>
