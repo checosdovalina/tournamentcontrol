@@ -47,9 +47,12 @@ export default function Display() {
 
   // Filter scheduled matches to show only those starting in the next 8 hours
   const scheduledMatches = allScheduledMatches.filter((match: any) => {
-    const now = new Date();
-    const matchTime = new Date(`${match.day}T${match.time}`);
-    const diffMinutes = Math.floor((matchTime.getTime() - now.getTime()) / (1000 * 60));
+    if (!match.plannedTime) return true; // Show matches without time
+    
+    // Extract date from match.day (format: "2025-10-14T00:00:00.000Z")
+    const matchDate = match.day.toString().slice(0, 10); // "2025-10-14"
+    const matchDateTime = new Date(`${matchDate}T${match.plannedTime}`);
+    const diffMinutes = Math.floor((matchDateTime.getTime() - currentTime.getTime()) / (1000 * 60));
     return diffMinutes >= 0 && diffMinutes <= 480; // 8 hours = 480 minutes
   });
 
