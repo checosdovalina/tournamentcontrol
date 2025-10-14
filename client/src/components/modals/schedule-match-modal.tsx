@@ -46,7 +46,12 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
   });
 
   const { data: pairs } = useQuery<any[]>({
-    queryKey: ["/api/pairs"],
+    queryKey: ["/api/pairs", tournamentId],
+    queryFn: async () => {
+      if (!tournamentId) return [];
+      const response = await fetch(`/api/pairs?tournamentId=${tournamentId}`);
+      return response.json();
+    },
     enabled: !!tournamentId,
   });
 
