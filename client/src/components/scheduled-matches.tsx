@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload } from "lucide-react";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
 import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/schema";
 
@@ -29,6 +29,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   const [timeFilter, setTimeFilter] = useState<string>("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
 
   // Query for all scheduled matches in the tournament
@@ -386,6 +387,61 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     setSheetOpen(true);
   };
 
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !tournamentId) return;
+
+    setIsImporting(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`/api/scheduled-matches/import/${tournamentId}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Error al importar partidos');
+      }
+
+      // Show results
+      if (result.success > 0) {
+        toast({
+          title: "Importación exitosa",
+          description: `${result.success} partido${result.success > 1 ? 's' : ''} importado${result.success > 1 ? 's' : ''} correctamente.`,
+        });
+        
+        // Invalidate queries to refresh the list
+        queryClient.invalidateQueries({ 
+          predicate: (query) => 
+            query.queryKey[0] === "/api/scheduled-matches"
+        });
+      }
+
+      if (result.errors.length > 0) {
+        toast({
+          title: "Errores en importación",
+          description: `${result.errors.length} fila${result.errors.length > 1 ? 's' : ''} con errores. Revisa el archivo.`,
+          variant: "destructive",
+        });
+        console.error('Import errors:', result.errors);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error al importar",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -415,10 +471,28 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
         </div>
 
         {userRole === 'admin' && (
-          <Button onClick={() => setScheduleModalOpen(true)} data-testid="button-schedule-match">
-            <Plus className="w-4 h-4 mr-2" />
-            Programar Partido
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setScheduleModalOpen(true)} data-testid="button-schedule-match">
+              <Plus className="w-4 h-4 mr-2" />
+              Programar Partido
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => document.getElementById('match-import-file')?.click()}
+              disabled={isImporting}
+              data-testid="button-import-matches"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {isImporting ? 'Importando...' : 'Importar'}
+            </Button>
+            <input
+              id="match-import-file"
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleFileImport}
+              className="hidden"
+            />
+          </div>
         )}
       </div>
 

@@ -524,6 +524,225 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import scheduled matches from Excel
+  app.post("/api/scheduled-matches/import/:tournamentId", requireTournamentRole('admin'), upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se subió ningún archivo" });
+      }
+
+      const { tournamentId } = req.params;
+
+      // Parse Excel file
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+
+      const results = {
+        success: 0,
+        errors: [] as any[],
+        created: [] as any[]
+      };
+
+      // Load all existing players and pairs for lookup
+      const allPlayers = await storage.getPlayers();
+      const allPairs: any[] = await storage.getPairs();
+      const existingScheduledMatches = await storage.getScheduledMatchesByTournament(tournamentId);
+      
+      // Cache for created pairs during this import
+      const createdPairs: any[] = [];
+
+      // Helper function to find or create player
+      const findOrCreatePlayer = async (name: string) => {
+        const normalizedName = name.toString().trim().toLowerCase();
+        let player = allPlayers.find(p => p.name.toLowerCase() === normalizedName);
+        
+        if (!player) {
+          player = await storage.createPlayer({ name: name.toString().trim() });
+          allPlayers.push(player); // Add to cache
+        }
+        
+        return player;
+      };
+
+      // Helper function to find or create pair
+      const findOrCreatePair = async (player1Id: string, player2Id: string, categoryId: string | null) => {
+        // Check if pair already exists in DB (either order)
+        let pair = allPairs.find(p => 
+          p.tournamentId === tournamentId &&
+          ((p.player1Id === player1Id && p.player2Id === player2Id) ||
+           (p.player1Id === player2Id && p.player2Id === player1Id))
+        );
+        
+        // Check in recently created pairs
+        if (!pair) {
+          pair = createdPairs.find(p => 
+            p.tournamentId === tournamentId &&
+            ((p.player1Id === player1Id && p.player2Id === player2Id) ||
+             (p.player1Id === player2Id && p.player2Id === player1Id))
+          );
+        }
+        
+        if (!pair) {
+          pair = await storage.createPair({
+            player1Id,
+            player2Id,
+            tournamentId,
+            categoryId,
+            isWaiting: false
+          });
+          createdPairs.push(pair); // Add to import cache
+        }
+        
+        return pair;
+      };
+
+      // Skip header row, start from row 1
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        
+        try {
+          // Columns: Fecha, Hora, Jugador1Pareja1, Jugador2Pareja1, Jugador1Pareja2, Jugador2Pareja2, Categoría, Formato
+          const dateStr = row[0];
+          const timeStr = row[1];
+          const player1Pair1Name = row[2];
+          const player2Pair1Name = row[3];
+          const player1Pair2Name = row[4];
+          const player2Pair2Name = row[5];
+          const categoryName = row[6];
+          const format = row[7];
+
+          // Validate required fields
+          if (!dateStr || !player1Pair1Name || !player2Pair1Name || !player1Pair2Name || !player2Pair2Name) {
+            results.errors.push({
+              row: i + 1,
+              error: "Faltan datos requeridos (fecha, jugadores)"
+            });
+            continue;
+          }
+
+          // Parse date
+          let matchDate: Date;
+          if (typeof dateStr === 'number') {
+            // Excel serial date number
+            matchDate = new Date((dateStr - 25569) * 86400 * 1000);
+          } else {
+            matchDate = new Date(dateStr);
+          }
+
+          if (isNaN(matchDate.getTime())) {
+            results.errors.push({
+              row: i + 1,
+              error: `Fecha inválida: ${dateStr}`
+            });
+            continue;
+          }
+
+          // Parse time if provided
+          let plannedTime: string | null = null;
+          if (timeStr) {
+            if (typeof timeStr === 'number') {
+              // Excel time (fraction of day)
+              const hours = Math.floor(timeStr * 24);
+              const minutes = Math.floor((timeStr * 24 * 60) % 60);
+              plannedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            } else if (typeof timeStr === 'string') {
+              plannedTime = timeStr;
+            }
+          }
+
+          // Find or create category
+          let categoryId = null;
+          if (categoryName) {
+            const categories = await storage.getCategoriesByTournament(tournamentId);
+            let category = categories.find(c => c.name.toLowerCase() === categoryName.toString().toLowerCase());
+            
+            if (!category) {
+              category = await storage.createCategory({
+                tournamentId,
+                name: categoryName.toString()
+              });
+            }
+            categoryId = category.id;
+          }
+
+          // Find or create players
+          const player1Pair1 = await findOrCreatePlayer(player1Pair1Name);
+          const player2Pair1 = await findOrCreatePlayer(player2Pair1Name);
+          const player1Pair2 = await findOrCreatePlayer(player1Pair2Name);
+          const player2Pair2 = await findOrCreatePlayer(player2Pair2Name);
+
+          // Find or create pairs
+          const pair1 = await findOrCreatePair(player1Pair1.id, player2Pair1.id, categoryId);
+          const pair2 = await findOrCreatePair(player1Pair2.id, player2Pair2.id, categoryId);
+
+          if (!pair1 || !pair2) {
+            results.errors.push({
+              row: i + 1,
+              error: "Error al crear o encontrar parejas"
+            });
+            continue;
+          }
+
+          // Check if match already exists (same day, time, and pairs)
+          const matchDateStr = matchDate.toISOString().split('T')[0];
+          const isDuplicate = existingScheduledMatches.some((m: any) => {
+            const mDateStr = new Date(m.day).toISOString().split('T')[0];
+            const sameDay = mDateStr === matchDateStr;
+            const sameTime = m.plannedTime === plannedTime;
+            const samePairs = (
+              (m.pair1Id === pair1.id && m.pair2Id === pair2.id) ||
+              (m.pair1Id === pair2.id && m.pair2Id === pair1.id)
+            );
+            return sameDay && sameTime && samePairs;
+          });
+
+          if (isDuplicate) {
+            results.errors.push({
+              row: i + 1,
+              error: "Partido duplicado (ya existe con misma fecha, hora y parejas)"
+            });
+            continue;
+          }
+
+          // Validate match format
+          const validFormats = ['best_of_3', 'best_of_5', 'single_set'];
+          const matchFormat = format && validFormats.includes(format.toString()) 
+            ? format.toString() as 'best_of_3' | 'best_of_5' | 'single_set'
+            : 'best_of_3';
+
+          // Create scheduled match
+          const scheduledMatch = await storage.createScheduledMatch({
+            tournamentId,
+            pair1Id: pair1.id,
+            pair2Id: pair2.id,
+            categoryId,
+            day: matchDate,
+            plannedTime,
+            format: matchFormat,
+            status: 'unconfirmed'
+          });
+
+          existingScheduledMatches.push(scheduledMatch as any); // Add to cache for duplicate detection
+          results.created.push(scheduledMatch);
+          results.success++;
+          broadcastUpdate({ type: "scheduled_match_created", data: scheduledMatch });
+
+        } catch (error: any) {
+          results.errors.push({
+            row: i + 1,
+            error: error.message
+          });
+        }
+      }
+
+      res.json(results);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error al importar partidos", error: error.message });
+    }
+  });
+
   // Matches routes
   app.get("/api/matches/current/:tournamentId", async (req, res) => {
     try {
