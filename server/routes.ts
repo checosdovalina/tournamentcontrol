@@ -1827,6 +1827,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      if (court.isEnabled === false) {
+        return res.status(400).json({ 
+          message: "Esta cancha está deshabilitada",
+        });
+      }
+      
       // Check if court is already assigned to another active scheduled match
       const allScheduledMatches = await storage.getScheduledMatchesByTournament(currentMatch.tournamentId);
       const courtConflict = allScheduledMatches.find(m => 
@@ -1911,6 +1917,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No court assigned to this match" });
       }
       
+      // Verify court is enabled
+      const court = await storage.getCourt(scheduledMatch.courtId);
+      if (court && court.isEnabled === false) {
+        return res.status(400).json({ message: "Esta cancha está deshabilitada" });
+      }
+      
       // Create match "playing"
       const match = await storage.createMatch({
         tournamentId: scheduledMatch.tournamentId,
@@ -1958,10 +1970,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Scheduled match not found" });
       }
       
-      // Verify court is available
+      // Verify court is available and enabled
       const court = await storage.getCourt(courtId);
-      if (!court || !court.isAvailable) {
+      if (!court) {
+        return res.status(404).json({ message: "Court not found" });
+      }
+      if (!court.isAvailable) {
         return res.status(400).json({ message: "Court is not available" });
+      }
+      if (court.isEnabled === false) {
+        return res.status(400).json({ message: "Esta cancha está deshabilitada" });
       }
       
       // Check if court is already assigned to another active scheduled match
