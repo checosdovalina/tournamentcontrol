@@ -361,7 +361,7 @@ export default function Display() {
                   Resultados del Día
                 </h2>
                 
-                <div className="flex-1 overflow-hidden relative" data-testid="recent-results-list">
+                <div className="flex-1 overflow-hidden relative min-h-0" data-testid="recent-results-list">
                   {recentResults.length === 0 ? (
                     <div className="text-white/60 text-center py-12">
                       No hay resultados recientes
@@ -387,8 +387,8 @@ export default function Display() {
                 </div>
                 
                 {recentResults.length > 0 && (
-                  <div className="mt-4 text-center">
-                    <p className="text-white/70 text-sm font-medium tracking-wide">
+                  <div className="mt-4 pt-4 border-t border-white/10 text-center flex-shrink-0">
+                    <p className="text-white/80 text-lg font-semibold tracking-wider" data-testid="text-unofficial-score">
                       *** Marcador No Oficial ***
                     </p>
                   </div>
