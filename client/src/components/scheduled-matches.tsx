@@ -62,7 +62,12 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   // Get matches for the selected date
   const dayMatches = useMemo(() => {
     if (!selectedDate) return [];
-    const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+    // Extract date parts directly to avoid timezone conversion
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const dayNum = String(selectedDate.getDate()).padStart(2, '0');
+    const selectedDateStr = `${year}-${month}-${dayNum}`;
+    
     return allMatches.filter(match => {
       // Use ISO string directly to avoid timezone issues
       const matchDateStr = match.day.toString().slice(0, 10);
@@ -391,10 +396,17 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   };
 
   const handleDayClick = (day: Date) => {
-    const dayKey = format(day, "yyyy-MM-dd");
+    // Always update selected date first, before checking matches
+    setSelectedDate(day);
+    
+    // Extract date parts directly to avoid timezone conversion
+    const year = day.getFullYear();
+    const month = String(day.getMonth() + 1).padStart(2, '0');
+    const dayNum = String(day.getDate()).padStart(2, '0');
+    const dayKey = `${year}-${month}-${dayNum}`;
+    
     const matches = matchesByDate.get(dayKey) || [];
     if (matches.length > 0 || userRole === 'admin') {
-      setSelectedDate(day);
       setSheetOpen(true);
     }
   };
@@ -529,7 +541,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
         <CardContent className="p-3 sm:p-6">
           {/* Weekday Headers */}
           <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
-            {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
+            {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
               <div key={day} className="text-center text-xs sm:text-sm font-medium text-muted-foreground py-1 sm:py-2">
                 {day}
               </div>
@@ -539,7 +551,12 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
           {/* Calendar Days */}
           <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {calendarDays.map((day, idx) => {
-              const dayKey = format(day, "yyyy-MM-dd");
+              // Extract date parts directly to avoid timezone conversion
+              const year = day.getFullYear();
+              const month = String(day.getMonth() + 1).padStart(2, '0');
+              const dayNum = String(day.getDate()).padStart(2, '0');
+              const dayKey = `${year}-${month}-${dayNum}`;
+              
               const dayMatches = matchesByDate.get(dayKey) || [];
               const matchCount = dayMatches.length;
               const isCurrentMonth = isSameMonth(day, currentMonth);
