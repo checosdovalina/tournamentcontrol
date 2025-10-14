@@ -5,6 +5,7 @@ import { X, Volleyball } from "lucide-react";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
 import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
+import courtflowLogoNew from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
 
 export default function Display() {
   const [, setLocation] = useLocation();
@@ -258,16 +259,15 @@ export default function Display() {
             </div>
           </div>
           
-          {(tournament?.clubLogoUrl || tournament?.systemLogoUrl) && (
-            <div className="flex items-center space-x-4">
-              {tournament?.clubLogoUrl && (
-                <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-16 w-auto object-contain" />
-              )}
-              {tournament?.systemLogoUrl && (
-                <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-16 w-auto object-contain" />
-              )}
-            </div>
-          )}
+          <div className="flex items-center space-x-4">
+            {tournament?.clubLogoUrl && (
+              <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-16 w-auto object-contain" />
+            )}
+            {tournament?.systemLogoUrl && (
+              <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-16 w-auto object-contain" />
+            )}
+            <img src={courtflowLogoNew} alt="CourtFlow" className="h-20 w-auto object-contain" />
+          </div>
 
           <div className="text-right text-white">
             <p className="text-4xl font-bold font-mono" data-testid="text-current-time">
@@ -323,42 +323,7 @@ export default function Display() {
         <div className="flex-1 overflow-hidden p-6">
           <div className="grid grid-cols-3 gap-6 h-full">
             
-            {/* Column 1: Partidos en Curso */}
-            <div className="flex flex-col h-full">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 flex flex-col h-full">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
-                  <Volleyball className="mr-3" />
-                  Partidos en Curso
-                </h2>
-                
-                <div className="flex-1 overflow-hidden relative" data-testid="current-matches-list">
-                  {currentMatches.length === 0 ? (
-                    <div className="text-white/60 text-center py-12">
-                      No hay partidos en curso
-                    </div>
-                  ) : currentMatches.length <= 3 ? (
-                    <div className="space-y-3">
-                      {currentMatches.map((match: any) => (
-                        <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="h-full overflow-hidden">
-                      <div className="animate-scroll-vertical space-y-3">
-                        {currentMatches.map((match: any) => (
-                          <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
-                        ))}
-                        {currentMatches.map((match: any) => (
-                          <MatchCard key={`${match.id}-dup`} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Column 2: Próximos Partidos */}
+            {/* Column 1: Próximos Partidos */}
             <div className="flex flex-col h-full">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 flex flex-col h-full">
                 <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
@@ -385,6 +350,41 @@ export default function Display() {
                         ))}
                         {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
                           <NextMatchCard key={`${match.id}-dup`} match={match} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Column 2: Partidos en Curso */}
+            <div className="flex flex-col h-full">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 flex flex-col h-full">
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
+                  <Volleyball className="mr-3" />
+                  Partidos en Curso
+                </h2>
+                
+                <div className="flex-1 overflow-hidden relative" data-testid="current-matches-list">
+                  {currentMatches.length === 0 ? (
+                    <div className="text-white/60 text-center py-12">
+                      No hay partidos en curso
+                    </div>
+                  ) : currentMatches.length <= 3 ? (
+                    <div className="space-y-3">
+                      {currentMatches.map((match: any) => (
+                        <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="h-full overflow-hidden">
+                      <div className="animate-scroll-vertical space-y-3">
+                        {currentMatches.map((match: any) => (
+                          <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                        ))}
+                        {currentMatches.map((match: any) => (
+                          <MatchCard key={`${match.id}-dup`} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
                         ))}
                       </div>
                     </div>
@@ -445,11 +445,8 @@ export default function Display() {
 
         {/* Footer with Sponsors - Auto Scrolling Marquee */}
         <div className="px-8 py-3 border-t border-white/20 bg-white/5 overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <img src={courtflowLogo} alt="CourtFlow" className="h-12 w-auto object-contain" />
-            </div>
-            <div className="flex-1 overflow-hidden mx-8">
+          <div className="flex items-center justify-center">
+            <div className="flex-1 overflow-hidden">
               {activeBanners.length > 0 ? (
                 <div className="relative">
                   <div className="flex animate-marquee space-x-8">
@@ -473,9 +470,6 @@ export default function Display() {
                   <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 3</div>
                 </div>
               )}
-            </div>
-            <div className="flex items-center">
-              <img src={courtflowLogo} alt="CourtFlow" className="h-12 w-auto object-contain" />
             </div>
           </div>
         </div>
