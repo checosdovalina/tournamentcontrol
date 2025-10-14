@@ -394,8 +394,8 @@ export default function Display() {
         {/* Footer with Sponsors - Auto Scrolling Marquee */}
         <div className="px-8 py-3 border-t border-white/20 bg-white/5 overflow-hidden">
           <div className="flex items-center justify-between">
-            <div className="text-white/60 text-sm whitespace-nowrap">
-              Patrocinadores:
+            <div className="flex items-center">
+              <img src={courtflowLogo} alt="CourtFlow" className="h-12 w-auto" />
             </div>
             <div className="flex-1 overflow-hidden mx-4">
               {activeBanners.length > 0 ? (
@@ -422,8 +422,8 @@ export default function Display() {
                 </div>
               )}
             </div>
-            <div className="text-white/60 text-sm whitespace-nowrap">
-              Sistema de Control de Torneos v1.0
+            <div className="flex items-center">
+              <img src={courtflowLogo} alt="CourtFlow" className="h-12 w-auto" />
             </div>
           </div>
         </div>
@@ -533,7 +533,7 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
       </div>
       <div className="space-y-2 text-white">
         <div className="flex items-center justify-between">
-          <span className="text-base font-medium truncate flex-1">
+          <span className="text-lg font-medium truncate flex-1">
             {match.pair1.player1.name} / {match.pair1.player2.name}
           </span>
           <span className="text-2xl font-mono font-bold ml-2">
@@ -541,7 +541,7 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-base font-medium truncate flex-1">
+          <span className="text-lg font-medium truncate flex-1">
             {match.pair2.player1.name} / {match.pair2.player2.name}
           </span>
           <span className="text-2xl font-mono font-bold ml-2">
@@ -595,10 +595,10 @@ function NextMatchCard({ match }: any) {
         </div>
       )}
       <div className="space-y-2 text-white">
-        <div className="text-base font-medium truncate">
+        <div className="text-lg font-medium truncate">
           {match.pair1.player1.name} / {match.pair1.player2.name}
         </div>
-        <div className="text-base font-medium truncate">
+        <div className="text-lg font-medium truncate">
           {match.pair2.player1.name} / {match.pair2.player2.name}
         </div>
       </div>
@@ -624,18 +624,18 @@ function ResultCard({ result, formatResultScore }: any) {
       </div>
       <div className="space-y-1 text-white">
         <div className="flex justify-between items-center">
-          <span className="text-base font-medium truncate flex-1">
+          <span className="text-lg font-medium truncate flex-1">
             {result.winner.player1.name} / {result.winner.player2.name}
           </span>
-          <span className="font-mono font-bold text-success text-base ml-2 flex-shrink-0">
+          <span className="font-mono font-bold text-success text-lg ml-2 flex-shrink-0">
             {formatResultScore(result.score)}
           </span>
         </div>
         <div className="flex justify-between items-center text-white/70">
-          <span className="text-base truncate flex-1">
+          <span className="text-lg truncate flex-1">
             {result.loser.player1.name} / {result.loser.player2.name}
           </span>
-          <span className="font-mono text-base ml-2 flex-shrink-0">
+          <span className="font-mono text-lg ml-2 flex-shrink-0">
             {formatResultScore(result.score).split(', ').map((set: string) => {
               const [a, b] = set.split('-');
               return `${b}-${a}`;
