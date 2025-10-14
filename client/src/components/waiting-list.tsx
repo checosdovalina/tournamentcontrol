@@ -34,7 +34,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
     enabled: !!tournamentId,
   });
 
-  const availableCourts = courts.filter(c => c.isAvailable && c.isEnabled !== false);
+  const availableCourts = courts.filter(c => c.isAvailable && c.isEnabled === true);
 
   const assignAndStartMutation = useMutation({
     mutationFn: async ({ matchId, courtId }: { matchId: string; courtId: string }) => {
