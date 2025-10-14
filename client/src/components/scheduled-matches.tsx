@@ -455,32 +455,40 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     <div className="space-y-6">
       {/* Header with Month Navigation and Actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <Button variant="outline" size="icon" onClick={handlePrevMonth} data-testid="button-prev-month">
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-2xl font-semibold min-w-[200px] text-center">
+          <h2 className="text-lg sm:text-2xl font-semibold min-w-[150px] sm:min-w-[200px] text-center">
             {format(currentMonth, "MMMM yyyy", { locale: es })}
           </h2>
           <Button variant="outline" size="icon" onClick={handleNextMonth} data-testid="button-next-month">
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button variant="outline" onClick={handleToday} data-testid="button-today">
+          <Button variant="outline" size="sm" onClick={handleToday} data-testid="button-today">
             Hoy
           </Button>
         </div>
 
         {userRole === 'admin' && (
-          <div className="flex gap-2">
-            <Button onClick={() => setScheduleModalOpen(true)} data-testid="button-schedule-match">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button 
+              onClick={() => setScheduleModalOpen(true)} 
+              data-testid="button-schedule-match"
+              size="sm"
+              className="flex-1 sm:flex-none"
+            >
               <Plus className="w-4 h-4 mr-2" />
-              Programar Partido
+              <span className="hidden sm:inline">Programar Partido</span>
+              <span className="sm:hidden">Programar</span>
             </Button>
             <Button 
               variant="outline" 
               onClick={() => document.getElementById('match-import-file')?.click()}
               disabled={isImporting}
               data-testid="button-import-matches"
+              size="sm"
+              className="flex-1 sm:flex-none"
             >
               <Upload className="w-4 h-4 mr-2" />
               {isImporting ? 'Importando...' : 'Importar'}
@@ -498,18 +506,18 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
       {/* Monthly Calendar Grid */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-3 sm:p-6">
           {/* Weekday Headers */}
-          <div className="grid grid-cols-7 gap-2 mb-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
             {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
-              <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+              <div key={day} className="text-center text-xs sm:text-sm font-medium text-muted-foreground py-1 sm:py-2">
                 {day}
               </div>
             ))}
           </div>
 
           {/* Calendar Days */}
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {calendarDays.map((day, idx) => {
               const dayKey = format(day, "yyyy-MM-dd");
               const dayMatches = matchesByDate.get(dayKey) || [];
@@ -523,7 +531,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                   onClick={() => handleDayClick(day)}
                   disabled={!isCurrentMonth}
                   className={`
-                    relative min-h-[80px] p-2 rounded-lg border-2 transition-all text-left
+                    relative min-h-[60px] sm:min-h-[80px] p-1 sm:p-2 rounded-lg border-2 transition-all text-left
                     ${!isCurrentMonth ? 'bg-muted/30 text-muted-foreground/30 cursor-not-allowed border-transparent' : 'hover:border-primary/50 hover:shadow-md cursor-pointer'}
                     ${isDayToday ? 'border-primary bg-primary/10' : 'border-border'}
                     ${matchCount > 0 && isCurrentMonth ? 'bg-accent/20' : ''}
@@ -531,13 +539,14 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                   data-testid={`calendar-day-${dayKey}`}
                 >
                   <div className="flex flex-col h-full">
-                    <span className={`text-sm font-medium ${isDayToday ? 'text-primary' : ''}`}>
+                    <span className={`text-xs sm:text-sm font-medium ${isDayToday ? 'text-primary' : ''}`}>
                       {format(day, 'd')}
                     </span>
                     {matchCount > 0 && isCurrentMonth && (
                       <div className="mt-auto">
-                        <Badge variant="secondary" className="text-xs px-1 py-0">
-                          {matchCount} {matchCount === 1 ? 'partido' : 'partidos'}
+                        <Badge variant="secondary" className="text-[10px] sm:text-xs px-1 py-0">
+                          <span className="hidden sm:inline">{matchCount} {matchCount === 1 ? 'partido' : 'partidos'}</span>
+                          <span className="sm:hidden">{matchCount}</span>
                         </Badge>
                       </div>
                     )}
@@ -551,7 +560,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
       {/* Day Details Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="!w-screen !max-w-none h-full overflow-y-auto p-6 sm:p-8">
+        <SheetContent className="w-full sm:!w-screen sm:!max-w-none h-full overflow-y-auto p-4 sm:p-6 lg:p-8">
           <SheetHeader>
             <SheetTitle>
               {selectedDate && format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es })}
@@ -569,33 +578,38 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
             <div>
               <label className="text-sm font-medium mb-2 block">Estado del Partido</label>
               <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="all" className="text-xs" data-testid="tab-status-all">
-                    Todos
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+                  <TabsTrigger value="all" className="text-xs px-2" data-testid="tab-status-all">
+                    <span className="hidden sm:inline">Todos</span>
+                    <span className="sm:hidden">All</span>
                     <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.all}</Badge>
                   </TabsTrigger>
-                  <TabsTrigger value="pending" className="text-xs" data-testid="tab-status-pending">
-                    Pendiente
+                  <TabsTrigger value="pending" className="text-xs px-2" data-testid="tab-status-pending">
+                    <span className="hidden sm:inline">Pendiente</span>
+                    <span className="sm:hidden">Pend.</span>
                     <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.pending}</Badge>
                   </TabsTrigger>
-                  <TabsTrigger value="ready" className="text-xs" data-testid="tab-status-ready">
-                    Listos
+                  <TabsTrigger value="ready" className="text-xs px-2" data-testid="tab-status-ready">
+                    <span className="hidden sm:inline">Listos</span>
+                    <span className="sm:hidden">Listo</span>
                     <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.ready}</Badge>
                   </TabsTrigger>
-                  <TabsTrigger value="in_progress" className="text-xs" data-testid="tab-status-in-progress">
-                    En Curso
+                  <TabsTrigger value="in_progress" className="text-xs px-2" data-testid="tab-status-in-progress">
+                    <span className="hidden sm:inline">En Curso</span>
+                    <span className="sm:hidden">Curso</span>
                     <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.in_progress}</Badge>
                   </TabsTrigger>
-                  <TabsTrigger value="completed" className="text-xs" data-testid="tab-status-completed">
-                    Terminados
+                  <TabsTrigger value="completed" className="text-xs px-2" data-testid="tab-status-completed">
+                    <span className="hidden sm:inline">Terminados</span>
+                    <span className="sm:hidden">Fin</span>
                     <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.completed}</Badge>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
-            {/* Time Filter */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Category and Time Filters */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium mb-2 block">Categoría</label>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
