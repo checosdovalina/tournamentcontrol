@@ -44,11 +44,19 @@ export default function Display() {
     staleTime: 0,
   });
 
-  const { data: recentResults = [] } = useQuery<any[]>({
+  const { data: allResults = [] } = useQuery<any[]>({
     queryKey: ["/api/results/recent", tournament?.id],
     enabled: !!tournament?.id,
     refetchInterval: 5000,
     staleTime: 0,
+  });
+
+  // Filter results to show only those from the last 24 hours (1,440 minutes)
+  const recentResults = allResults.filter((result: any) => {
+    const resultTime = new Date(result.createdAt);
+    const now = new Date();
+    const diffMinutes = Math.floor((now.getTime() - resultTime.getTime()) / (1000 * 60));
+    return diffMinutes <= 1440;
   });
 
   const { data: banners = [] } = useQuery<any[]>({
