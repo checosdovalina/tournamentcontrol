@@ -1200,6 +1200,19 @@ export class MemStorage implements IStorage {
     const tournament = await this.getTournament(match.tournamentId);
     if (!tournament) return undefined;
 
+    // Check if match already has a pre-selected court
+    if (match.courtId) {
+      const preselectedCourt = await this.getCourt(match.courtId);
+      // If pre-selected court is available, use it
+      if (preselectedCourt && preselectedCourt.isAvailable) {
+        return await this.updateScheduledMatch(scheduledMatchId, { 
+          status: "assigned"
+        });
+      }
+      // If pre-selected court is not available, fall through to auto-assignment
+    }
+
+    // Find an available court
     const availableCourt = Array.from(this.courts.values())
       .find(court => court.clubId === tournament.clubId && court.isAvailable);
 
