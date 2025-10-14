@@ -1,18 +1,73 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Clock, MoreVertical } from "lucide-react";
+import { Play, Clock, MoreVertical, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 
 interface CurrentMatchesProps {
   tournamentId?: string;
 }
 
 export default function CurrentMatches({ tournamentId }: CurrentMatchesProps) {
+  const { toast } = useToast();
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const [reassignDialogOpen, setReassignDialogOpen] = useState(false);
+
   const { data: matches = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/matches/current", tournamentId],
     enabled: !!tournamentId,
     refetchInterval: 30000, // Refresh every 30 seconds
   });
+
+  const { data: courts = [] } = useQuery<any[]>({
+    queryKey: ["/api/courts"],
+    enabled: !!tournamentId,
+  });
+
+  const reassignMutation = useMutation({
+    mutationFn: async ({ matchId, courtId }: { matchId: string; courtId: string }) => {
+      return apiRequest("POST", `/api/matches/${matchId}/reassign-court`, { 
+        courtId,
+        tournamentId 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
+      setReassignDialogOpen(false);
+      setSelectedMatchId(null);
+      toast({
+        title: "Cancha reasignada",
+        description: "El partido ha sido movido a la nueva cancha",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo reasignar la cancha",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleReassignCourt = (courtId: string) => {
+    if (!selectedMatchId) return;
+    reassignMutation.mutate({ matchId: selectedMatchId, courtId });
+  };
 
   const formatDuration = (startTime: string | Date) => {
     const start = new Date(startTime);
@@ -87,9 +142,25 @@ export default function CurrentMatches({ tournamentId }: CurrentMatchesProps) {
                       </span>
                     </span>
                   </div>
-                  <Button variant="ghost" size="sm">
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" data-testid={`button-menu-${match.id}`}>
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedMatchId(match.id);
+                          setReassignDialogOpen(true);
+                        }}
+                        data-testid={`option-reassign-${match.id}`}
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Reasignar Cancha
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 <div className="grid grid-cols-3 gap-4 items-center">
                   <div className="col-span-1">
@@ -113,6 +184,46 @@ export default function CurrentMatches({ tournamentId }: CurrentMatchesProps) {
           </div>
         )}
       </CardContent>
+
+      {/* Reassign Court Dialog */}
+      <Dialog open={reassignDialogOpen} onOpenChange={setReassignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reasignar Cancha</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground mb-4">
+              Selecciona una cancha disponible para reasignar el partido
+            </p>
+            {courts.map((court) => (
+              <Button
+                key={court.id}
+                variant={court.isAvailable ? "outline" : "ghost"}
+                className="w-full justify-start"
+                disabled={!court.isAvailable || reassignMutation.isPending}
+                onClick={() => handleReassignCourt(court.id)}
+                data-testid={`button-court-${court.id}`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div>
+                    <div className="font-semibold">{court.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {court.surface}
+                    </div>
+                  </div>
+                  <div>
+                    {court.isAvailable ? (
+                      <span className="text-xs text-green-600 dark:text-green-400">Disponible</span>
+                    ) : (
+                      <span className="text-xs text-red-600 dark:text-red-400">Ocupada</span>
+                    )}
+                  </div>
+                </div>
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

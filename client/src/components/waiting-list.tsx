@@ -88,6 +88,32 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
     },
   });
 
+  const reassignMutation = useMutation({
+    mutationFn: async ({ matchId, courtId }: { matchId: string; courtId: string }) => {
+      return apiRequest("PATCH", `/api/scheduled-matches/${matchId}`, { 
+        courtId,
+        tournamentId 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
+      setCourtSelectionOpen(false);
+      setSelectedMatchId(null);
+      toast({
+        title: "Cancha reasignada",
+        description: "La cancha del partido ha sido actualizada",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo reasignar la cancha",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAssignCourt = (matchId: string) => {
     if (availableCourts.length === 0) {
       toast({
@@ -218,15 +244,34 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-primary hover:text-primary/80 font-medium"
-                      onClick={() => handleAssignCourt(match.id)}
-                      data-testid={`button-assign-court-${index + 1}`}
-                    >
-                      Asignar Cancha
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      {match.courtId ? (
+                        <>
+                          <Badge variant="outline" className="text-xs">
+                            {courts.find(c => c.id === match.courtId)?.name || 'Cancha asignada'}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary hover:text-primary/80 font-medium"
+                            onClick={() => handleAssignCourt(match.id)}
+                            data-testid={`button-reassign-court-${index + 1}`}
+                          >
+                            Reasignar
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-primary hover:text-primary/80 font-medium"
+                          onClick={() => handleAssignCourt(match.id)}
+                          data-testid={`button-assign-court-${index + 1}`}
+                        >
+                          Asignar Cancha
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -238,41 +283,85 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
       <Dialog open={courtSelectionOpen} onOpenChange={setCourtSelectionOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Seleccionar Cancha e Iniciar Partido</DialogTitle>
+            <DialogTitle>
+              {readyMatches.find(m => m.id === selectedMatchId)?.courtId 
+                ? "Reasignar Cancha" 
+                : "Seleccionar Cancha e Iniciar Partido"}
+            </DialogTitle>
             <DialogDescription>
-              Elige una cancha disponible para asignar e iniciar el partido inmediatamente
+              {readyMatches.find(m => m.id === selectedMatchId)?.courtId 
+                ? "Elige una nueva cancha para reasignar el partido"
+                : "Elige una cancha disponible para asignar e iniciar el partido inmediatamente"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 mt-4">
-            {availableCourts.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4">
-                No hay canchas disponibles
-              </p>
-            ) : (
-              availableCourts.map((court) => (
+            {readyMatches.find(m => m.id === selectedMatchId)?.courtId ? (
+              // Show all courts for reassignment
+              courts.map((court) => (
                 <Button
                   key={court.id}
-                  variant="outline"
+                  variant={court.isAvailable ? "outline" : "ghost"}
                   className="w-full justify-start text-left h-auto py-3"
+                  disabled={!court.isAvailable || reassignMutation.isPending}
                   onClick={() => {
                     if (selectedMatchId) {
-                      assignAndStartMutation.mutate({
+                      reassignMutation.mutate({
                         matchId: selectedMatchId,
                         courtId: court.id,
                       });
                     }
                   }}
-                  disabled={assignAndStartMutation.isPending}
                   data-testid={`button-select-court-${court.name}`}
                 >
-                  <div>
-                    <div className="font-semibold">{court.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {court.surface} - Disponible
+                  <div className="flex items-center justify-between w-full">
+                    <div>
+                      <div className="font-semibold">{court.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {court.surface}
+                      </div>
+                    </div>
+                    <div>
+                      {court.isAvailable ? (
+                        <span className="text-xs text-green-600 dark:text-green-400">Disponible</span>
+                      ) : (
+                        <span className="text-xs text-red-600 dark:text-red-400">Ocupada</span>
+                      )}
                     </div>
                   </div>
                 </Button>
               ))
+            ) : (
+              // Show only available courts for initial assignment
+              availableCourts.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  No hay canchas disponibles
+                </p>
+              ) : (
+                availableCourts.map((court) => (
+                  <Button
+                    key={court.id}
+                    variant="outline"
+                    className="w-full justify-start text-left h-auto py-3"
+                    onClick={() => {
+                      if (selectedMatchId) {
+                        assignAndStartMutation.mutate({
+                          matchId: selectedMatchId,
+                          courtId: court.id,
+                        });
+                      }
+                    }}
+                    disabled={assignAndStartMutation.isPending}
+                    data-testid={`button-select-court-${court.name}`}
+                  >
+                    <div>
+                      <div className="font-semibold">{court.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {court.surface} - Disponible
+                      </div>
+                    </div>
+                  </Button>
+                ))
+              )
             )}
           </div>
         </DialogContent>
