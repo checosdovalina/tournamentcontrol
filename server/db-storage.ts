@@ -1176,46 +1176,58 @@ export class DatabaseStorage implements IStorage {
         .where(eq(scheduledMatches.tournamentId, tournamentId));
       
       if (pairIds.length > 0) {
-        // Get all match IDs that involve any pair from this tournament
-        const tournamentMatches = await db
+        // Get all matches involving pair1
+        const matchesPair1 = await db
           .select({ id: matches.id })
           .from(matches)
-          .where(
-            or(
-              inArray(matches.pair1Id, pairIds),
-              inArray(matches.pair2Id, pairIds)
-            )
-          );
+          .where(inArray(matches.pair1Id, pairIds));
         
-        const matchIds = tournamentMatches.map(m => m.id);
+        // Get all matches involving pair2
+        const matchesPair2 = await db
+          .select({ id: matches.id })
+          .from(matches)
+          .where(inArray(matches.pair2Id, pairIds));
+        
+        // Combine and deduplicate match IDs
+        const allMatchIds = [
+          ...matchesPair1.map(m => m.id),
+          ...matchesPair2.map(m => m.id)
+        ];
+        const matchIds = Array.from(new Set(allMatchIds));
         
         // Delete all results for these matches
         if (matchIds.length > 0) {
           await db
             .delete(results)
             .where(inArray(results.matchId, matchIds));
+          
+          // Delete all matches
+          await db
+            .delete(matches)
+            .where(inArray(matches.id, matchIds));
         }
         
-        // Delete all matches that involve any pair from this tournament
-        await db
-          .delete(matches)
-          .where(
-            or(
-              inArray(matches.pair1Id, pairIds),
-              inArray(matches.pair2Id, pairIds)
-            )
-          );
+        // Get all player IDs from tournament pairs
+        const playerIds = Array.from(new Set([
+          ...tournamentPairs.map(p => p.player1Id),
+          ...tournamentPairs.map(p => p.player2Id)
+        ]));
         
         // Delete pairs (includes waiting pairs)
         await db
           .delete(pairs)
           .where(eq(pairs.tournamentId, tournamentId));
+        
+        // Delete all players from these pairs
+        if (playerIds.length > 0) {
+          await db
+            .delete(players)
+            .where(inArray(players.id, playerIds));
+        }
+      } else {
+        // If there are no pairs, there are no players to delete
+        // (since players are only associated through pairs)
       }
-      
-      // Delete all players for this tournament
-      await db
-        .delete(players)
-        .where(eq(players.tournamentId, tournamentId));
       
       return true;
     } catch (error) {
