@@ -270,26 +270,26 @@ export default function Display() {
             </div>
           )}
 
-          <div className="text-right text-white mr-8">
-            <p className="text-4xl font-bold font-mono" data-testid="text-current-time">
-              {formatTime(currentTime)}
-            </p>
-            <p className="text-sm text-white/80">
-              {currentTime.toLocaleDateString('es-ES', { 
-                weekday: 'long', 
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-              })}
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <img src={courtflowLogoNew} alt="CourtFlow" className="h-20 w-auto object-contain" />
+          <div className="flex items-center space-x-2">
+            <div className="text-right text-white">
+              <p className="text-4xl font-bold font-mono" data-testid="text-current-time">
+                {formatTime(currentTime)}
+              </p>
+              <p className="text-sm text-white/80">
+                {currentTime.toLocaleDateString('es-ES', { 
+                  weekday: 'long', 
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })}
+              </p>
+            </div>
+            <img src={courtflowLogoNew} alt="CourtFlow" className="h-20 w-auto object-contain ml-2" />
             <Button 
               onClick={() => setLocation('/')}
               variant="ghost"
               size="sm"
-              className="text-white/60 hover:text-white text-xl"
+              className="text-white/60 hover:text-white text-xl ml-2"
               data-testid="button-close-display"
             >
               <X />
