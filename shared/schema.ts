@@ -138,7 +138,7 @@ export const announcements = pgTable("announcements", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tournamentId: varchar("tournament_id").notNull(),
   message: text("message").notNull(),
-  priority: text("priority").default("normal"), // low, normal, high, urgent
+  priority: integer("priority").notNull().default(1),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -243,6 +243,8 @@ export const insertAdvertisementSchema = createInsertSchema(advertisements).omit
 export const insertAnnouncementSchema = createInsertSchema(announcements).omit({
   id: true,
   createdAt: true,
+}).extend({
+  priority: z.coerce.number().int().min(1).max(10).default(1),
 });
 
 export const insertScheduledMatchSchema = createInsertSchema(scheduledMatches).omit({

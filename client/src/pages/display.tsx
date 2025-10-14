@@ -79,6 +79,12 @@ export default function Display() {
     refetchInterval: 60000,
   });
 
+  const { data: announcements = [] } = useQuery<any[]>({
+    queryKey: ["/api/announcements/active", tournament?.id],
+    enabled: !!tournament?.id,
+    refetchInterval: 10000,
+  });
+
   useWebSocket();
 
   // Create a time key that changes only when day or minute changes (not every second)
@@ -286,6 +292,32 @@ export default function Display() {
             <X />
           </Button>
         </div>
+
+        {/* Announcements Bar */}
+        {announcements.length > 0 && (
+          <div className="bg-yellow-500/90 backdrop-blur-sm border-y border-yellow-600">
+            <div className="px-8 py-3">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 text-black font-bold whitespace-nowrap">
+                  <span className="text-lg">⚠️</span>
+                  <span className="text-lg">AVISOS:</span>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <div className="animate-marquee whitespace-nowrap text-black font-semibold text-lg">
+                    {announcements
+                      .sort((a: any, b: any) => b.priority - a.priority)
+                      .map((announcement: any, index: number) => (
+                        <span key={announcement.id} className="inline-block">
+                          {announcement.message}
+                          {index < announcements.length - 1 && <span className="mx-8">•</span>}
+                        </span>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main Content - 3 Equal Columns */}
         <div className="flex-1 overflow-hidden p-6">
