@@ -52,6 +52,15 @@ interface Advertisement {
   isActive: boolean;
 }
 
+interface Announcement {
+  id: string;
+  tournamentId: string;
+  message: string;
+  isActive: boolean;
+  priority: number;
+  createdAt: string;
+}
+
 export default function TournamentConfigModal({ open, onOpenChange, tournament }: TournamentConfigModalProps) {
   const [tournamentName, setTournamentName] = useState("");
   const [selectedClub, setSelectedClub] = useState("");
@@ -101,6 +110,13 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   const [editAdActiveDays, setEditAdActiveDays] = useState<string[]>([]);
   const [uploadingEditAd, setUploadingEditAd] = useState(false);
 
+  // Announcement state
+  const [newAnnouncementMessage, setNewAnnouncementMessage] = useState("");
+  const [newAnnouncementPriority, setNewAnnouncementPriority] = useState("1");
+  const [editingAnnouncement, setEditingAnnouncement] = useState<string | null>(null);
+  const [editAnnouncementMessage, setEditAnnouncementMessage] = useState("");
+  const [editAnnouncementPriority, setEditAnnouncementPriority] = useState("1");
+
   const { data: clubs = [] } = useQuery<any[]>({
     queryKey: ["/api/clubs"],
     enabled: open,
@@ -118,6 +134,11 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
 
   const { data: advertisements = [], isLoading: advertisementsLoading } = useQuery<Advertisement[]>({
     queryKey: [`/api/advertisements/${tournament?.id}`],
+    enabled: open && !!tournament?.id,
+  });
+
+  const { data: announcements = [], isLoading: announcementsLoading } = useQuery<Announcement[]>({
+    queryKey: [`/api/announcements/${tournament?.id}`],
     enabled: open && !!tournament?.id,
   });
 
@@ -334,6 +355,70 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
       toast({
         title: "Publicidad eliminada",
         description: "El contenido ha sido removido",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al eliminar",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createAnnouncementMutation = useMutation({
+    mutationFn: async (data: { tournamentId: string; message: string; priority: number }) => {
+      const response = await apiRequest("POST", "/api/announcements", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/announcements/${tournament?.id}`] });
+      setNewAnnouncementMessage("");
+      setNewAnnouncementPriority("1");
+      toast({
+        title: "Aviso agregado",
+        description: "El aviso ha sido creado exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al crear aviso",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateAnnouncementMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiRequest("PATCH", `/api/announcements/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/announcements/${tournament?.id}`] });
+      toast({
+        title: "Aviso actualizado",
+        description: "El aviso ha sido modificado",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al actualizar",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteAnnouncementMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/announcements/${id}`, null);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/announcements/${tournament?.id}`] });
+      toast({
+        title: "Aviso eliminado",
+        description: "El aviso ha sido removido",
       });
     },
     onError: (error: any) => {
@@ -627,6 +712,54 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
     }
   };
 
+  const handleAddAnnouncement = () => {
+    if (!newAnnouncementMessage || !tournament?.id) return;
+    
+    createAnnouncementMutation.mutate({
+      tournamentId: tournament.id,
+      message: newAnnouncementMessage,
+      priority: parseInt(newAnnouncementPriority),
+    });
+  };
+
+  const handleStartEditAnnouncement = (announcement: Announcement) => {
+    setEditingAnnouncement(announcement.id);
+    setEditAnnouncementMessage(announcement.message);
+    setEditAnnouncementPriority(announcement.priority.toString());
+  };
+
+  const handleSaveAnnouncement = () => {
+    if (!editingAnnouncement) return;
+    
+    updateAnnouncementMutation.mutate({
+      id: editingAnnouncement,
+      data: {
+        message: editAnnouncementMessage,
+        priority: parseInt(editAnnouncementPriority),
+      },
+    });
+    setEditingAnnouncement(null);
+  };
+
+  const handleCancelEditAnnouncement = () => {
+    setEditingAnnouncement(null);
+    setEditAnnouncementMessage("");
+    setEditAnnouncementPriority("1");
+  };
+
+  const handleDeleteAnnouncement = (id: string) => {
+    if (confirm("¿Está seguro de eliminar este aviso?")) {
+      deleteAnnouncementMutation.mutate(id);
+    }
+  };
+
+  const handleToggleAnnouncementActive = (id: string, currentActive: boolean) => {
+    updateAnnouncementMutation.mutate({
+      id,
+      data: { isActive: !currentActive },
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
@@ -638,12 +771,13 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
         </DialogHeader>
         
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="general" data-testid="tab-general">General</TabsTrigger>
             <TabsTrigger value="categories" data-testid="tab-categories">Categorías</TabsTrigger>
             <TabsTrigger value="logos" data-testid="tab-logos">Logos</TabsTrigger>
             <TabsTrigger value="sponsors" data-testid="tab-sponsors">Patrocinadores</TabsTrigger>
             <TabsTrigger value="ads" data-testid="tab-ads">Publicidad</TabsTrigger>
+            <TabsTrigger value="announcements" data-testid="tab-announcements">Avisos</TabsTrigger>
           </TabsList>
 
           {/* General Settings Tab */}
@@ -1641,6 +1775,168 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Agregar Publicidad
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Announcements Tab */}
+          <TabsContent value="announcements" className="space-y-4 mt-4">
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">Avisos del Torneo</h3>
+              <p className="text-sm text-muted-foreground">
+                Gestiona los avisos importantes que se mostrarán en el display público
+              </p>
+              
+              {announcementsLoading ? (
+                <div className="text-center py-4">Cargando avisos...</div>
+              ) : announcements.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No hay avisos configurados
+                </div>
+              ) : (
+                announcements.map((announcement) => (
+                  <Card key={announcement.id}>
+                    <CardContent className="p-4">
+                      {editingAnnouncement === announcement.id ? (
+                        <div className="space-y-3">
+                          <div>
+                            <Label htmlFor="editAnnouncementMessage">Mensaje</Label>
+                            <Input
+                              id="editAnnouncementMessage"
+                              value={editAnnouncementMessage}
+                              onChange={(e) => setEditAnnouncementMessage(e.target.value)}
+                              placeholder="Ingrese el mensaje del aviso"
+                              data-testid="input-edit-announcement-message"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="editAnnouncementPriority">Prioridad (1-10)</Label>
+                            <Input
+                              id="editAnnouncementPriority"
+                              type="number"
+                              min="1"
+                              max="10"
+                              value={editAnnouncementPriority}
+                              onChange={(e) => setEditAnnouncementPriority(e.target.value)}
+                              data-testid="input-edit-announcement-priority"
+                            />
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleCancelEditAnnouncement}
+                              data-testid="button-cancel-edit-announcement"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Cancelar
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={handleSaveAnnouncement}
+                              disabled={updateAnnouncementMutation.isPending}
+                              data-testid="button-save-announcement"
+                            >
+                              <Save className="w-4 h-4 mr-1" />
+                              Guardar
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1 flex-1">
+                            <p className="text-sm font-medium" data-testid={`announcement-message-${announcement.id}`}>
+                              {announcement.message}
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary font-medium">
+                                Prioridad: {announcement.priority}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(announcement.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <Label htmlFor={`announcement-active-toggle-${announcement.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                                {announcement.isActive ? 'Activo' : 'Inactivo'}
+                              </Label>
+                              <Switch
+                                id={`announcement-active-toggle-${announcement.id}`}
+                                checked={announcement.isActive}
+                                onCheckedChange={() => handleToggleAnnouncementActive(announcement.id, announcement.isActive)}
+                                data-testid={`toggle-announcement-active-${announcement.id}`}
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStartEditAnnouncement(announcement)}
+                              data-testid={`button-edit-announcement-${announcement.id}`}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteAnnouncement(announcement.id)}
+                              className="text-destructive hover:text-destructive/80"
+                              data-testid={`button-delete-announcement-${announcement.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+              
+              <Separator />
+              
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold">Agregar Nuevo Aviso</h4>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="newAnnouncementMessage">Mensaje</Label>
+                    <Input
+                      id="newAnnouncementMessage"
+                      value={newAnnouncementMessage}
+                      onChange={(e) => setNewAnnouncementMessage(e.target.value)}
+                      placeholder="Ingrese el mensaje del aviso"
+                      data-testid="input-new-announcement-message"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="newAnnouncementPriority">Prioridad (1-10)</Label>
+                    <Input
+                      id="newAnnouncementPriority"
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={newAnnouncementPriority}
+                      onChange={(e) => setNewAnnouncementPriority(e.target.value)}
+                      placeholder="1"
+                      data-testid="input-new-announcement-priority"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleAddAnnouncement}
+                    disabled={!newAnnouncementMessage || createAnnouncementMutation.isPending}
+                    className="w-full"
+                    data-testid="button-add-announcement"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Agregar Aviso
                   </Button>
                 </div>
               </div>
