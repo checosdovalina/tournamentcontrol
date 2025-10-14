@@ -30,7 +30,7 @@ export default function Display() {
     staleTime: 0,
   });
 
-  const { data: scheduledMatches = [] } = useQuery<any[]>({
+  const { data: allScheduledMatches = [] } = useQuery<any[]>({
     queryKey: ["/api/scheduled-matches/today", tournament?.id],
     queryFn: async () => {
       if (!tournament?.id) return [];
@@ -42,6 +42,14 @@ export default function Display() {
     enabled: !!tournament?.id,
     refetchInterval: 5000,
     staleTime: 0,
+  });
+
+  // Filter scheduled matches to show only those starting in the next 4 hours
+  const scheduledMatches = allScheduledMatches.filter((match: any) => {
+    const now = new Date();
+    const matchTime = new Date(`${match.day}T${match.time}`);
+    const diffMinutes = Math.floor((matchTime.getTime() - now.getTime()) / (1000 * 60));
+    return diffMinutes >= 0 && diffMinutes <= 240; // 4 hours = 240 minutes
   });
 
   const { data: allResults = [] } = useQuery<any[]>({
