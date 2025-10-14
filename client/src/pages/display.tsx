@@ -270,7 +270,7 @@ export default function Display() {
             </div>
           )}
 
-          <div className="text-right text-white">
+          <div className="text-right text-white mr-8">
             <p className="text-4xl font-bold font-mono" data-testid="text-current-time">
               {formatTime(currentTime)}
             </p>
