@@ -384,6 +384,14 @@ export default function Display() {
                     </div>
                   )}
                 </div>
+                
+                {recentResults.length > 0 && (
+                  <div className="mt-4 text-center">
+                    <p className="text-white/70 text-sm font-medium tracking-wide">
+                      *** Marcador No Oficial ***
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
