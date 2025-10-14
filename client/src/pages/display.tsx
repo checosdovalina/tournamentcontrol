@@ -402,13 +402,13 @@ export default function Display() {
 
             {/* Column 3: Últimos Resultados */}
             <div className="flex flex-col h-full">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 flex flex-col h-full">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 flex flex-col" style={{ height: '100%' }}>
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center flex-shrink-0">
                   <Volleyball className="mr-3" />
                   Resultados del Día
                 </h2>
                 
-                <div className="flex-1 overflow-hidden relative" data-testid="recent-results-list" style={{ maxHeight: recentResults.length > 0 ? 'calc(100% - 80px)' : '100%' }}>
+                <div className="overflow-hidden relative" style={{ flex: '1 1 auto', minHeight: 0 }} data-testid="recent-results-list">
                   {recentResults.length === 0 ? (
                     <div className="text-white/60 text-center py-12">
                       No hay resultados recientes
@@ -433,7 +433,7 @@ export default function Display() {
                   )}
                 </div>
                 
-                <div className="mt-auto pt-3 border-t border-white/20 text-center flex-shrink-0" style={{ height: '60px', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="pt-3 border-t border-white/20 text-center" style={{ height: '60px', minHeight: '60px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {recentResults.length > 0 ? (
                     <p className="text-yellow-300 text-xl font-bold tracking-widest" data-testid="text-unofficial-score">
                       *** MARCADOR NO OFICIAL ***
