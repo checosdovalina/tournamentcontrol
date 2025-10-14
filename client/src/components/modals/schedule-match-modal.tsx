@@ -60,6 +60,11 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
     enabled: !!tournamentId,
   });
 
+  const { data: courts } = useQuery<any[]>({
+    queryKey: ["/api/courts"],
+    enabled: !!tournamentId,
+  });
+
   const scheduleMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const payload = {
@@ -71,7 +76,7 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
         categoryId: data.categoryId,
         format: data.format,
         status: "scheduled" as const,
-        courtId: undefined,
+        courtId: data.courtId || undefined,
       };
 
       return apiRequest("POST", "/api/scheduled-matches", payload);
@@ -249,6 +254,35 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
                       {filteredPairs?.filter(p => p.id !== form.watch("pair1Id")).map((pair) => (
                         <SelectItem key={pair.id} value={pair.id} data-testid={`option-pair2-${pair.id}`}>
                           {getPairLabel(pair)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="courtId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cancha (opcional)</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value || ""}
+                  >
+                    <FormControl>
+                      <SelectTrigger data-testid="select-court">
+                        <SelectValue placeholder="Sin asignar (auto)" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="" data-testid="option-court-none">Sin asignar (auto)</SelectItem>
+                      {courts?.map((court) => (
+                        <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
+                          {court.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
