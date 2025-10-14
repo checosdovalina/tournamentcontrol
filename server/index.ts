@@ -4,6 +4,8 @@ import connectPgSimple from "connect-pg-simple";
 import { Pool } from "@neondatabase/serverless";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { mkdir } from "fs/promises";
+import { join } from "path";
 
 const app = express();
 
@@ -86,7 +88,21 @@ app.use((req, res, next) => {
   next();
 });
 
+// Ensure upload directories exist
+async function ensureUploadDirectories() {
+  const uploadsDir = join(process.cwd(), 'public', 'uploads', 'advertisements');
+  try {
+    await mkdir(uploadsDir, { recursive: true });
+    log('Upload directories ready');
+  } catch (error) {
+    log(`Warning: Could not create upload directories: ${error}`);
+  }
+}
+
 (async () => {
+  // Create upload directories before starting server
+  await ensureUploadDirectories();
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

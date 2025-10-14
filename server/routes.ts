@@ -1416,10 +1416,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload advertisement file
-  app.post("/api/advertisements/upload", requireAuth, uploadAdvertisement.single('file'), async (req, res) => {
-    try {
+  app.post("/api/advertisements/upload", requireAuth, (req, res, next) => {
+    uploadAdvertisement.single('file')(req, res, (err) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          // Multer-specific errors
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ message: "El archivo es demasiado grande. Máximo 50MB" });
+          }
+          return res.status(400).json({ message: `Error al subir archivo: ${err.message}` });
+        }
+        // Other errors (like file type rejection)
+        return res.status(400).json({ message: err.message || "Error al subir archivo" });
+      }
+      
       if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
+        return res.status(400).json({ message: "No se seleccionó ningún archivo" });
       }
 
       // Return the URL path to access the file
@@ -1430,9 +1442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mimetype: req.file.mimetype,
         size: req.file.size
       });
-    } catch (error: any) {
-      res.status(500).json({ message: "Failed to upload file", error: error.message });
-    }
+    });
   });
   
   app.get("/api/advertisements/:tournamentId", async (req, res) => {
