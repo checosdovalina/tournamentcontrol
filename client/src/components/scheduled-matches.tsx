@@ -281,7 +281,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const autoAssignMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      return apiRequest("POST", `/api/scheduled-matches/${matchId}/auto-assign`, {});
+      return apiRequest("POST", `/api/scheduled-matches/${matchId}/auto-assign`, { tournamentId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
@@ -294,7 +294,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const manualAssignMutation = useMutation({
     mutationFn: async ({ matchId, courtId }: { matchId: string; courtId: string }) => {
-      return apiRequest("POST", `/api/scheduled-matches/${matchId}/assign-court`, { courtId });
+      return apiRequest("POST", `/api/scheduled-matches/${matchId}/assign-court`, { courtId, tournamentId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
@@ -307,7 +307,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const startMatchMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      return apiRequest("POST", `/api/scheduled-matches/${matchId}/start`, {});
+      return apiRequest("POST", `/api/scheduled-matches/${matchId}/start`, { tournamentId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });

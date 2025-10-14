@@ -40,6 +40,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
     mutationFn: async ({ matchId, courtId }: { matchId: string; courtId: string }) => {
       const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/assign-and-start`, {
         courtId,
+        tournamentId,
       });
       return response.json();
     },
