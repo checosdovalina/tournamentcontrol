@@ -524,27 +524,27 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
       data-testid={`match-card-${match.court.name.toLowerCase().replace(' ', '-')}`}
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="px-3 py-1 bg-destructive/80 text-white rounded-lg font-bold text-base">
+        <span className="px-3 py-1 bg-destructive/80 text-white rounded-lg font-bold text-lg">
           {match.court.name}
         </span>
-        <span className="text-white/60 text-sm">
+        <span className="text-white/60 text-base">
           {formatMatchDuration(match.startTime)}
         </span>
       </div>
       <div className="space-y-2 text-white">
         <div className="flex items-center justify-between">
-          <span className="text-base font-medium truncate flex-1">
+          <span className="text-lg font-medium truncate flex-1">
             {match.pair1.player1.name} / {match.pair1.player2.name}
           </span>
-          <span className="text-2xl font-mono font-bold ml-2">
+          <span className="text-[26px] font-mono font-bold ml-2">
             {formatScore(match.score).split(' | ')[0] || '0'}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-base font-medium truncate flex-1">
+          <span className="text-lg font-medium truncate flex-1">
             {match.pair2.player1.name} / {match.pair2.player2.name}
           </span>
-          <span className="text-2xl font-mono font-bold ml-2">
+          <span className="text-[26px] font-mono font-bold ml-2">
             {formatScore(match.score).split(' | ')[1] || '0'}
           </span>
         </div>
@@ -557,16 +557,16 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
 function NextMatchCard({ match }: any) {
   const getStatusBadge = () => {
     if (match.status === 'assigned' && match.court) {
-      return <span className="text-white bg-purple-600/80 text-xs px-2 py-1 rounded">Cancha asignada</span>;
+      return <span className="text-white bg-purple-600/80 text-sm px-2 py-1 rounded">Cancha asignada</span>;
     }
     if (match.status === 'ready') {
-      return <span className="text-white bg-green-600/80 text-xs px-2 py-1 rounded">✓ Listos</span>;
+      return <span className="text-white bg-green-600/80 text-sm px-2 py-1 rounded">✓ Listos</span>;
     }
     const presentCount = match.players?.filter((p: any) => p.isPresent).length || 0;
     if (presentCount > 0) {
-      return <span className="text-white/60 text-xs">{presentCount}/4 presentes</span>;
+      return <span className="text-white/60 text-sm">{presentCount}/4 presentes</span>;
     }
-    return <span className="text-white/40 text-xs">Esperando jugadores</span>;
+    return <span className="text-white/40 text-sm">Esperando jugadores</span>;
   };
 
   return (
@@ -575,12 +575,12 @@ function NextMatchCard({ match }: any) {
       data-testid={`next-match-${match.id}`}
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="px-3 py-1 bg-blue-600/80 text-white rounded-lg font-bold text-sm">
+        <span className="px-3 py-1 bg-blue-600/80 text-white rounded-lg font-bold text-base">
           {match.plannedTime || 'Por confirmar'}
         </span>
         <div className="flex items-center gap-2">
           {match.court && (
-            <span className="text-white/80 text-sm font-medium">
+            <span className="text-white/80 text-base font-medium">
               {match.court.name}
             </span>
           )}
@@ -589,16 +589,16 @@ function NextMatchCard({ match }: any) {
       </div>
       {match.category && (
         <div className="mb-2">
-          <span className="text-white/60 text-xs bg-white/10 px-2 py-1 rounded">
+          <span className="text-white/60 text-sm bg-white/10 px-2 py-1 rounded">
             {match.category.name}
           </span>
         </div>
       )}
       <div className="space-y-2 text-white">
-        <div className="text-base font-medium truncate">
+        <div className="text-lg font-medium truncate">
           {match.pair1.player1.name} / {match.pair1.player2.name}
         </div>
-        <div className="text-base font-medium truncate">
+        <div className="text-lg font-medium truncate">
           {match.pair2.player1.name} / {match.pair2.player2.name}
         </div>
       </div>
@@ -613,7 +613,7 @@ function ResultCard({ result, formatResultScore }: any) {
       className="pb-3 border-b border-white/20 last:border-b-0"
       data-testid={`result-${result.id}`}
     >
-      <div className="flex items-center justify-between mb-2 text-white/60 text-xs">
+      <div className="flex items-center justify-between mb-2 text-white/60 text-sm">
         <span>
           {result.createdAt ? 
             `Hace ${Math.floor((new Date().getTime() - new Date(result.createdAt).getTime()) / (1000 * 60))} min` : 
@@ -624,18 +624,18 @@ function ResultCard({ result, formatResultScore }: any) {
       </div>
       <div className="space-y-1 text-white">
         <div className="flex justify-between items-center">
-          <span className="text-base font-medium truncate flex-1">
+          <span className="text-lg font-medium truncate flex-1">
             {result.winner.player1.name} / {result.winner.player2.name}
           </span>
-          <span className="font-mono font-bold text-success text-base ml-2 flex-shrink-0">
+          <span className="font-mono font-bold text-success text-lg ml-2 flex-shrink-0">
             {formatResultScore(result.score)}
           </span>
         </div>
         <div className="flex justify-between items-center text-white/70">
-          <span className="text-base truncate flex-1">
+          <span className="text-lg truncate flex-1">
             {result.loser.player1.name} / {result.loser.player2.name}
           </span>
-          <span className="font-mono text-base ml-2 flex-shrink-0">
+          <span className="font-mono text-lg ml-2 flex-shrink-0">
             {formatResultScore(result.score).split(', ').map((set: string) => {
               const [a, b] = set.split('-');
               return `${b}-${a}`;
