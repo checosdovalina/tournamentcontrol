@@ -282,55 +282,75 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const autoAssignMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      return apiRequest("POST", `/api/scheduled-matches/${matchId}/auto-assign`, { tournamentId });
+      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/auto-assign`, { tournamentId });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
       toast({ title: "Cancha asignada", description: "Se asignó automáticamente una cancha disponible" });
     },
-    onError: () => {
-      toast({ title: "Error", description: "No hay canchas disponibles", variant: "destructive" });
+    onError: (error: any) => {
+      // Extract message from error format "404: {message}"
+      const errorMessage = error.message || "";
+      const messageParts = errorMessage.split(": ");
+      const message = messageParts.length > 1 ? messageParts.slice(1).join(": ") : "No hay canchas disponibles";
+      toast({ title: "Error", description: message, variant: "destructive" });
     },
   });
 
   const manualAssignMutation = useMutation({
     mutationFn: async ({ matchId, courtId }: { matchId: string; courtId: string }) => {
-      return apiRequest("POST", `/api/scheduled-matches/${matchId}/assign-court`, { courtId, tournamentId });
+      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/assign-court`, { courtId, tournamentId });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
       toast({ title: "Cancha asignada", description: "Cancha asignada manualmente" });
     },
-    onError: () => {
-      toast({ title: "Error", description: "No se pudo asignar la cancha", variant: "destructive" });
+    onError: (error: any) => {
+      // Extract message from error format "404: {message}"
+      const errorMessage = error.message || "";
+      const messageParts = errorMessage.split(": ");
+      const message = messageParts.length > 1 ? messageParts.slice(1).join(": ") : "No se pudo asignar la cancha";
+      toast({ title: "Error", description: message, variant: "destructive" });
     },
   });
 
   const startMatchMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      return apiRequest("POST", `/api/scheduled-matches/${matchId}/start`, { tournamentId });
+      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/start`, { tournamentId });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
       queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
       toast({ title: "Partido iniciado", description: "El partido está ahora en curso" });
     },
-    onError: () => {
-      toast({ title: "Error", description: "No se pudo iniciar el partido", variant: "destructive" });
+    onError: (error: any) => {
+      // Extract message from error format "404: {message}"
+      const errorMessage = error.message || "";
+      const messageParts = errorMessage.split(": ");
+      const message = messageParts.length > 1 ? messageParts.slice(1).join(": ") : "No se pudo iniciar el partido";
+      toast({ title: "Error", description: message, variant: "destructive" });
     },
   });
 
   const deleteMatchMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      return apiRequest("DELETE", `/api/scheduled-matches/${matchId}`, {});
+      const response = await apiRequest("DELETE", `/api/scheduled-matches/${matchId}`, {});
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
       toast({ title: "Partido eliminado", description: "El partido programado ha sido eliminado" });
       setDeleteDialogOpen(null);
     },
-    onError: () => {
-      toast({ title: "Error", description: "No se pudo eliminar el partido", variant: "destructive" });
+    onError: (error: any) => {
+      // Extract message from error format "404: {message}"
+      const errorMessage = error.message || "";
+      const messageParts = errorMessage.split(": ");
+      const message = messageParts.length > 1 ? messageParts.slice(1).join(": ") : "No se pudo eliminar el partido";
+      toast({ title: "Error", description: message, variant: "destructive" });
       setDeleteDialogOpen(null);
     },
   });
