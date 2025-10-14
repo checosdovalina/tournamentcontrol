@@ -922,6 +922,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reassign court for active match
+  app.post("/api/matches/:id/reassign-court", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { courtId } = req.body;
+      
+      if (!courtId) {
+        return res.status(400).json({ message: "Court ID is required" });
+      }
+      
+      // Get current match
+      const match = await storage.getMatch(id);
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+      
+      // Check if new court exists and is available
+      const newCourt = await storage.getCourt(courtId);
+      if (!newCourt) {
+        return res.status(404).json({ message: "Court not found" });
+      }
+      
+      if (!newCourt.isAvailable && newCourt.id !== match.courtId) {
+        return res.status(400).json({ message: "Court is not available" });
+      }
+      
+      // If match had a previous court, make it available
+      if (match.courtId && match.courtId !== courtId) {
+        const oldCourt = await storage.updateCourt(match.courtId, { isAvailable: true });
+        if (oldCourt) {
+          broadcastUpdate({ type: "court_updated", data: oldCourt });
+        }
+      }
+      
+      // Assign new court
+      const updatedMatch = await storage.updateMatch(id, { courtId });
+      const updatedNewCourt = await storage.updateCourt(courtId, { isAvailable: false });
+      
+      if (updatedNewCourt) {
+        broadcastUpdate({ type: "court_updated", data: updatedNewCourt });
+      }
+      
+      broadcastUpdate({ type: "match_updated", data: updatedMatch });
+      res.json({ match: updatedMatch, court: updatedNewCourt });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to reassign court", error: error.message });
+    }
+  });
+
   // Finish match and save result (from live score capture)
   app.post("/api/matches/:id/finish", requireAuth, async (req, res) => {
     try {
