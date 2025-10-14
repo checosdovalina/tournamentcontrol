@@ -26,7 +26,8 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
       return response.json();
     },
     enabled: !!tournamentId,
-    refetchInterval: 30000,
+    staleTime: 0,
+    refetchInterval: 3000,
   });
 
   const { data: courts = [] } = useQuery<any[]>({

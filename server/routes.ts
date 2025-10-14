@@ -1547,10 +1547,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { tournamentId } = req.params;
       const allMatches = await storage.getScheduledMatchesByTournament(tournamentId);
       
-      // Filter for matches where all players are present and no court assigned yet
+      // Get today's date in server's local timezone
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      
+      // Helper to extract YYYY-MM-DD preserving intended calendar date
+      const getDateStr = (dateInput: Date | string): string => {
+        if (typeof dateInput === 'string') {
+          // ISO string - just extract YYYY-MM-DD part
+          return dateInput.slice(0, 10);
+        } else {
+          const d = dateInput;
+          // Check if this is a date-only value (UTC midnight) vs a timestamp with time
+          const isUTCMidnight = d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && 
+                                d.getUTCSeconds() === 0 && d.getUTCMilliseconds() === 0;
+          
+          if (isUTCMidnight) {
+            // Date-only value from ISO string - use UTC components to preserve original date
+            return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+          } else {
+            // Timestamp with time - use local components
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+          }
+        }
+      };
+      
+      // Filter for matches where all players are present, no court assigned yet, and scheduled for today
       const readyMatches = allMatches.filter(match => {
         const allPlayersPresent = match.players.every(p => p.isPresent === true);
-        return allPlayersPresent && !match.courtId && (match.status === 'scheduled' || match.status === 'ready');
+        const matchDateStr = getDateStr(match.day);
+        const isToday = matchDateStr === todayStr;
+        return allPlayersPresent && !match.courtId && (match.status === 'scheduled' || match.status === 'ready') && isToday;
       });
       
       // Sort by waiting time (oldest first)

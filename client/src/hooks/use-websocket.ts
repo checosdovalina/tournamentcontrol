@@ -30,6 +30,13 @@ export function useWebSocket(userId?: string) {
           // Handle real-time updates
           switch (message.type) {
             case "match_started":
+              queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/pairs/waiting"] });
+              queryClient.invalidateQueries({ 
+                predicate: (query) => query.queryKey[0] === "/api/scheduled-matches/ready"
+              });
+              break;
             case "match_updated":
             case "score_updated":
               queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
@@ -67,7 +74,8 @@ export function useWebSocket(userId?: string) {
                 predicate: (query) => 
                   query.queryKey[0] === "/api/scheduled-matches" ||
                   query.queryKey[0] === "/api/scheduled-matches/day" ||
-                  query.queryKey[0] === "/api/scheduled-matches/today"
+                  query.queryKey[0] === "/api/scheduled-matches/today" ||
+                  query.queryKey[0] === "/api/scheduled-matches/ready"
               });
               queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
               break;
