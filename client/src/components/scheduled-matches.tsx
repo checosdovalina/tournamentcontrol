@@ -136,23 +136,43 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   // Filter day matches by category, status, and time
   const filteredDayMatches = dayMatches?.filter(match => {
     const categoryMatch = selectedCategory === "all" || match.categoryId === selectedCategory;
-    const statusMatch = statusFilter === "all" || getMatchStatus(match) === statusFilter;
+    
+    // For status filter, combine pending and ready into "pending_ready"
+    const matchStatus = getMatchStatus(match);
+    let statusMatch = statusFilter === "all";
+    if (statusFilter === "pending_ready") {
+      statusMatch = matchStatus === 'pending' || matchStatus === 'ready';
+    } else {
+      statusMatch = statusFilter === "all" || matchStatus === statusFilter;
+    }
+    
     const timeMatch = timeFilter === "all" || getMatchTimeRange(match) === timeFilter;
     return categoryMatch && statusMatch && timeMatch;
   }) || [];
 
-  // Count matches by status for badges
+  // Count matches by status for badges (combine pending and ready)
   const statusCounts = useMemo(() => {
-    const counts = { all: 0, pending: 0, ready: 0, in_progress: 0, completed: 0 };
+    const counts = { all: 0, pending_ready: 0, in_progress: 0, completed: 0 };
     dayMatches.forEach(match => {
       counts.all++;
       const status = getMatchStatus(match);
-      if (status === 'pending') counts.pending++;
-      else if (status === 'ready') counts.ready++;
+      if (status === 'pending' || status === 'ready') counts.pending_ready++;
       else if (status === 'in_progress') counts.in_progress++;
       else if (status === 'completed') counts.completed++;
     });
     return counts;
+  }, [dayMatches]);
+
+  // Get available categories for the selected day (only categories with matches)
+  const availableCategories = useMemo(() => {
+    const categoryIds = new Set(dayMatches.map(m => m.categoryId).filter(Boolean));
+    return categories?.filter(cat => categoryIds.has(cat.id)) || [];
+  }, [dayMatches, categories]);
+
+  // Get available time ranges for the selected day (only ranges with matches)
+  const availableTimeRanges = useMemo(() => {
+    const ranges = new Set(dayMatches.map(m => getMatchTimeRange(m)));
+    return Array.from(ranges).filter(r => r !== 'all');
   }, [dayMatches]);
 
   // Generate calendar days
@@ -615,21 +635,16 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
             <div>
               <label className="text-sm font-medium mb-2 block">Estado del Partido</label>
               <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1">
                   <TabsTrigger value="all" className="text-xs px-2" data-testid="tab-status-all">
                     <span className="hidden sm:inline">Todos</span>
                     <span className="sm:hidden">All</span>
                     <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.all}</Badge>
                   </TabsTrigger>
-                  <TabsTrigger value="pending" className="text-xs px-2" data-testid="tab-status-pending">
-                    <span className="hidden sm:inline">Pendiente</span>
+                  <TabsTrigger value="pending_ready" className="text-xs px-2" data-testid="tab-status-pending-ready">
+                    <span className="hidden sm:inline">Pendiente / Listos</span>
                     <span className="sm:hidden">Pend.</span>
-                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.pending}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="ready" className="text-xs px-2" data-testid="tab-status-ready">
-                    <span className="hidden sm:inline">Listos</span>
-                    <span className="sm:hidden">Listo</span>
-                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.ready}</Badge>
+                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.pending_ready}</Badge>
                   </TabsTrigger>
                   <TabsTrigger value="in_progress" className="text-xs px-2" data-testid="tab-status-in-progress">
                     <span className="hidden sm:inline">En Curso</span>
@@ -657,7 +672,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                     <SelectItem value="all" data-testid="option-category-all">
                       Todas
                     </SelectItem>
-                    {categories?.map((cat) => (
+                    {availableCategories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id} data-testid={`option-category-${cat.id}`}>
                         {cat.name}
                       </SelectItem>
@@ -676,15 +691,21 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                     <SelectItem value="all" data-testid="option-time-all">
                       Todos
                     </SelectItem>
-                    <SelectItem value="morning" data-testid="option-time-morning">
-                      Mañana (00:00 - 11:59)
-                    </SelectItem>
-                    <SelectItem value="afternoon" data-testid="option-time-afternoon">
-                      Tarde (12:00 - 17:59)
-                    </SelectItem>
-                    <SelectItem value="evening" data-testid="option-time-evening">
-                      Noche (18:00 - 23:59)
-                    </SelectItem>
+                    {availableTimeRanges.includes('morning') && (
+                      <SelectItem value="morning" data-testid="option-time-morning">
+                        Mañana (00:00 - 11:59)
+                      </SelectItem>
+                    )}
+                    {availableTimeRanges.includes('afternoon') && (
+                      <SelectItem value="afternoon" data-testid="option-time-afternoon">
+                        Tarde (12:00 - 17:59)
+                      </SelectItem>
+                    )}
+                    {availableTimeRanges.includes('evening') && (
+                      <SelectItem value="evening" data-testid="option-time-evening">
+                        Noche (18:00 - 23:59)
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
