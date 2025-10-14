@@ -11,6 +11,8 @@ import {
   type InsertSponsorBanner,
   type Advertisement,
   type InsertAdvertisement,
+  type Announcement,
+  type InsertAnnouncement,
   type Club,
   type InsertClub,
   type Court,
@@ -80,6 +82,14 @@ export interface IStorage {
   createAdvertisement(advertisement: InsertAdvertisement): Promise<Advertisement>;
   updateAdvertisement(id: string, updates: Partial<Advertisement>): Promise<Advertisement | undefined>;
   deleteAdvertisement(id: string): Promise<boolean>;
+  
+  // Announcements
+  getAnnouncement(id: string): Promise<Announcement | undefined>;
+  getAnnouncementsByTournament(tournamentId: string): Promise<Announcement[]>;
+  getActiveAnnouncements(tournamentId: string): Promise<Announcement[]>;
+  createAnnouncement(announcement: InsertAnnouncement): Promise<Announcement>;
+  updateAnnouncement(id: string, updates: Partial<Announcement>): Promise<Announcement | undefined>;
+  deleteAnnouncement(id: string): Promise<boolean>;
   
   // Clubs
   getClub(id: string): Promise<Club | undefined>;

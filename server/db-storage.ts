@@ -6,6 +6,7 @@ import {
   categories,
   sponsorBanners,
   advertisements,
+  announcements,
   clubs,
   courts,
   players,
@@ -26,6 +27,8 @@ import {
   type InsertSponsorBanner,
   type Advertisement,
   type InsertAdvertisement,
+  type Announcement,
+  type InsertAnnouncement,
   type Club,
   type InsertClub,
   type Court,
@@ -239,6 +242,43 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAdvertisement(id: string): Promise<boolean> {
     const result = await db.delete(advertisements).where(eq(advertisements.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Announcements
+  async getAnnouncement(id: string): Promise<Announcement | undefined> {
+    const result = await db.select().from(announcements).where(eq(announcements.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getAnnouncementsByTournament(tournamentId: string): Promise<Announcement[]> {
+    return await db
+      .select()
+      .from(announcements)
+      .where(eq(announcements.tournamentId, tournamentId))
+      .orderBy(desc(announcements.createdAt));
+  }
+
+  async getActiveAnnouncements(tournamentId: string): Promise<Announcement[]> {
+    return await db
+      .select()
+      .from(announcements)
+      .where(and(eq(announcements.tournamentId, tournamentId), eq(announcements.isActive, true)))
+      .orderBy(desc(announcements.createdAt));
+  }
+
+  async createAnnouncement(announcement: InsertAnnouncement): Promise<Announcement> {
+    const result = await db.insert(announcements).values(announcement).returning();
+    return result[0];
+  }
+
+  async updateAnnouncement(id: string, updates: Partial<Announcement>): Promise<Announcement | undefined> {
+    const result = await db.update(announcements).set(updates).where(eq(announcements.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteAnnouncement(id: string): Promise<boolean> {
+    const result = await db.delete(announcements).where(eq(announcements.id, id)).returning();
     return result.length > 0;
   }
 
