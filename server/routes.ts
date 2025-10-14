@@ -37,12 +37,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  // Admin role middleware
+  // Admin role middleware (allows both admin and superadmin)
   const requireAdmin = (req: any, res: any, next: any) => {
     if (!req.session?.userId) {
       return res.status(401).json({ message: "Authentication required" });
     }
-    if (req.session.userRole !== 'admin') {
+    if (req.session.userRole !== 'admin' && req.session.userRole !== 'superadmin') {
       return res.status(403).json({ message: "Admin access required" });
     }
     next();
@@ -423,9 +423,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const releasedCourts: string[] = [];
       for (const court of courts) {
         if (!court.isAvailable && !activeCourts.has(court.id)) {
-          await storage.updateCourt(court.id, { isAvailable: true });
-          releasedCourts.push(court.name);
-          broadcastUpdate({ type: "court_updated", data: { id: court.id, isAvailable: true } });
+          const updatedCourt = await storage.updateCourt(court.id, { isAvailable: true });
+          if (updatedCourt) {
+            releasedCourts.push(court.name);
+            broadcastUpdate({ type: "court_updated", data: updatedCourt });
+          }
         }
       }
       
@@ -2244,8 +2246,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If court was assigned, release it before deleting
       if (match.courtId) {
-        await storage.updateCourt(match.courtId, { isAvailable: true });
-        broadcastUpdate({ type: "court_updated", data: { id: match.courtId, isAvailable: true } });
+        const updatedCourt = await storage.updateCourt(match.courtId, { isAvailable: true });
+        if (updatedCourt) {
+          broadcastUpdate({ type: "court_updated", data: updatedCourt });
+        }
       }
       
       const success = await storage.deleteScheduledMatch(id);
