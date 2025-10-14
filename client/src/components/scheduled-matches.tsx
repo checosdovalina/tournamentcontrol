@@ -856,6 +856,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                 size="sm"
                                 className={`w-8 h-8 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
                                 onClick={() => handleCheckIn(match.id, player.playerId)}
+                                disabled={match.status === "completed"}
                                 data-testid={`button-present-${player.playerId}`}
                                 title={`${player.player.name}: Marcar como presente`}
                               >
@@ -866,6 +867,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                 size="sm"
                                 className={`w-8 h-8 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
                                 onClick={() => handleCheckOut(match.id, player.playerId)}
+                                disabled={match.status === "completed"}
                                 data-testid={`button-absent-${player.playerId}`}
                                 title={`${player.player.name}: No se presentó`}
                               >
@@ -876,6 +878,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                 size="sm"
                                 className={`w-8 h-8 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
                                 onClick={() => handleResetStatus(match.id, player.playerId)}
+                                disabled={match.status === "completed"}
                                 data-testid={`button-pending-${player.playerId}`}
                                 title={`${player.player.name}: Sin confirmar`}
                               >
