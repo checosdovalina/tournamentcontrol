@@ -152,6 +152,9 @@ export interface IStorage {
   // Court Assignment
   autoAssignCourt(scheduledMatchId: string): Promise<ScheduledMatch | undefined>;
   manualAssignCourt(scheduledMatchId: string, courtId: string): Promise<ScheduledMatch | undefined>;
+  
+  // Tournament Reset
+  resetTournamentData(tournamentId: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -1216,6 +1219,51 @@ export class MemStorage implements IStorage {
       courtId,
       status: "assigned"
     });
+  }
+
+  async resetTournamentData(tournamentId: string): Promise<boolean> {
+    try {
+      // Get all pairs for this tournament
+      const tournamentPairs = Array.from(this.pairs.values())
+        .filter(p => p.tournamentId === tournamentId);
+      
+      const pairIds = new Set(tournamentPairs.map(p => p.id));
+      
+      // Delete scheduled match players
+      const scheduledMatchesToDelete = Array.from(this.scheduledMatches.values())
+        .filter(sm => sm.tournamentId === tournamentId);
+      
+      for (const sm of scheduledMatchesToDelete) {
+        Array.from(this.scheduledMatchPlayers.values())
+          .filter(smp => smp.scheduledMatchId === sm.id)
+          .forEach(smp => this.scheduledMatchPlayers.delete(smp.id));
+        this.scheduledMatches.delete(sm.id);
+      }
+      
+      // Delete matches and their results
+      const matchesToDelete = Array.from(this.matches.values())
+        .filter(m => pairIds.has(m.pair1Id) || pairIds.has(m.pair2Id));
+      
+      for (const match of matchesToDelete) {
+        Array.from(this.results.values())
+          .filter(r => r.matchId === match.id)
+          .forEach(r => this.results.delete(r.id));
+        this.matches.delete(match.id);
+      }
+      
+      // Delete pairs
+      tournamentPairs.forEach(p => this.pairs.delete(p.id));
+      
+      // Delete players
+      Array.from(this.players.values())
+        .filter(p => p.tournamentId === tournamentId)
+        .forEach(p => this.players.delete(p.id));
+      
+      return true;
+    } catch (error) {
+      console.error("Error resetting tournament data:", error);
+      return false;
+    }
   }
 }
 

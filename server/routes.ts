@@ -253,6 +253,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reset tournament data (players, pairs, matches, results)
+  app.post("/api/tournament/:id/reset", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.session.userId!;
+      
+      // Get user to check if superadmin
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      // Check if user is superadmin or admin of this tournament
+      const isSuperadmin = user.role === "superadmin";
+      const tournamentUser = await storage.getTournamentUserByUserAndTournament(userId, id);
+      const isAdmin = tournamentUser?.role === "admin";
+      
+      if (!isSuperadmin && !isAdmin) {
+        return res.status(403).json({ 
+          message: "Solo los administradores del torneo pueden resetear los datos" 
+        });
+      }
+      
+      // Check if tournament exists
+      const tournament = await storage.getTournament(id);
+      if (!tournament) {
+        return res.status(404).json({ message: "Torneo no encontrado" });
+      }
+      
+      // Reset tournament data
+      const success = await storage.resetTournamentData(id);
+      
+      if (!success) {
+        return res.status(500).json({ 
+          message: "Error al resetear los datos del torneo" 
+        });
+      }
+      
+      // Broadcast update to all connected clients
+      broadcastUpdate({ 
+        type: "tournament_reset", 
+        data: { tournamentId: id } 
+      });
+      
+      res.json({ 
+        message: "Datos del torneo reseteados exitosamente",
+        tournamentId: id
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Error al resetear los datos del torneo", 
+        error: error.message 
+      });
+    }
+  });
+
   // Clubs routes
   app.get("/api/clubs", async (req, res) => {
     try {

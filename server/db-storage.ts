@@ -50,7 +50,7 @@ import {
   type InsertScheduledMatchPlayer,
   type ScheduledMatchWithDetails,
 } from "@shared/schema";
-import { eq, and, desc, sql, gte, lt, inArray, isNotNull, notInArray } from "drizzle-orm";
+import { eq, and, or, desc, sql, gte, lt, inArray, isNotNull, notInArray } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -1144,5 +1144,83 @@ export class DatabaseStorage implements IStorage {
       court,
       players: matchPlayers,
     };
+  }
+
+  async resetTournamentData(tournamentId: string): Promise<boolean> {
+    try {
+      // Get all pairs for this tournament to find related scheduled matches and regular matches
+      const tournamentPairs = await db
+        .select()
+        .from(pairs)
+        .where(eq(pairs.tournamentId, tournamentId));
+      
+      const pairIds = tournamentPairs.map(p => p.id);
+      
+      // Delete scheduled match players for scheduled matches of this tournament
+      const tournamentScheduledMatches = await db
+        .select()
+        .from(scheduledMatches)
+        .where(eq(scheduledMatches.tournamentId, tournamentId));
+      
+      const scheduledMatchIds = tournamentScheduledMatches.map(sm => sm.id);
+      
+      if (scheduledMatchIds.length > 0) {
+        await db
+          .delete(scheduledMatchPlayers)
+          .where(inArray(scheduledMatchPlayers.scheduledMatchId, scheduledMatchIds));
+      }
+      
+      // Delete scheduled matches (includes waiting list)
+      await db
+        .delete(scheduledMatches)
+        .where(eq(scheduledMatches.tournamentId, tournamentId));
+      
+      if (pairIds.length > 0) {
+        // Get all match IDs that involve any pair from this tournament
+        const tournamentMatches = await db
+          .select({ id: matches.id })
+          .from(matches)
+          .where(
+            or(
+              inArray(matches.pair1Id, pairIds),
+              inArray(matches.pair2Id, pairIds)
+            )
+          );
+        
+        const matchIds = tournamentMatches.map(m => m.id);
+        
+        // Delete all results for these matches
+        if (matchIds.length > 0) {
+          await db
+            .delete(results)
+            .where(inArray(results.matchId, matchIds));
+        }
+        
+        // Delete all matches that involve any pair from this tournament
+        await db
+          .delete(matches)
+          .where(
+            or(
+              inArray(matches.pair1Id, pairIds),
+              inArray(matches.pair2Id, pairIds)
+            )
+          );
+        
+        // Delete pairs (includes waiting pairs)
+        await db
+          .delete(pairs)
+          .where(eq(pairs.tournamentId, tournamentId));
+      }
+      
+      // Delete all players for this tournament
+      await db
+        .delete(players)
+        .where(eq(players.tournamentId, tournamentId));
+      
+      return true;
+    } catch (error) {
+      console.error("Error resetting tournament data:", error);
+      return false;
+    }
   }
 }

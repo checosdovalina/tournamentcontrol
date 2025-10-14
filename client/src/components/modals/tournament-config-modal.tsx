@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit2, Save, X, Image, Zap, MoveRight, ZoomIn, Type, Sparkles, Upload } from "lucide-react";
+import { Plus, Trash2, Edit2, Save, X, Image, Zap, MoveRight, ZoomIn, Type, Sparkles, Upload, AlertTriangle } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import type { UploadResult } from "@uppy/core";
 
@@ -158,6 +159,32 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
     onError: (error: any) => {
       toast({
         title: "Error al guardar",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const resetTournamentMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/tournament/${tournament.id}/reset`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tournament"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pairs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/players"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/results/recent"] });
+      toast({
+        title: "Torneo reseteado",
+        description: "Todos los datos de jugadores, parejas y partidos han sido eliminados",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al resetear",
         description: error.message,
         variant: "destructive",
       });
@@ -834,22 +861,83 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                 </div>
               </div>
               
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => onOpenChange(false)}
-                  data-testid="button-cancel-general"
-                >
-                  Cerrar
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={updateTournamentMutation.isPending}
-                  data-testid="button-save-general"
-                >
-                  {updateTournamentMutation.isPending ? "Guardando..." : "Guardar Cambios"}
-                </Button>
+              <div className="flex justify-between items-center pt-4">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      disabled={resetTournamentMutation.isPending}
+                      data-testid="button-reset-tournament"
+                    >
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      {resetTournamentMutation.isPending ? "Reseteando..." : "Resetear Torneo"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                        ¿Resetear datos del torneo?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-3 pt-2">
+                        <p className="font-semibold text-destructive">
+                          Esta acción es PERMANENTE y NO se puede deshacer.
+                        </p>
+                        <p>
+                          Se eliminarán TODOS los siguientes datos:
+                        </p>
+                        <ul className="list-disc list-inside space-y-1 text-sm">
+                          <li>Todos los jugadores registrados</li>
+                          <li>Todas las parejas formadas (incluyendo listas de espera)</li>
+                          <li>Todos los partidos programados</li>
+                          <li>Todos los partidos en curso</li>
+                          <li>Todos los resultados guardados (históricos y recientes)</li>
+                        </ul>
+                        <p className="font-semibold pt-2">
+                          NO se eliminarán:
+                        </p>
+                        <ul className="list-disc list-inside space-y-1 text-sm">
+                          <li>Configuración del torneo</li>
+                          <li>Categorías</li>
+                          <li>Logos y patrocinadores</li>
+                          <li>Publicidad y avisos</li>
+                          <li>Canchas y clubes</li>
+                        </ul>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel data-testid="button-cancel-reset">
+                        Cancelar
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => resetTournamentMutation.mutate()}
+                        className="bg-destructive hover:bg-destructive/90"
+                        data-testid="button-confirm-reset"
+                      >
+                        Sí, resetear todo
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <div className="flex space-x-3">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => onOpenChange(false)}
+                    data-testid="button-cancel-general"
+                  >
+                    Cerrar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={updateTournamentMutation.isPending}
+                    data-testid="button-save-general"
+                  >
+                    {updateTournamentMutation.isPending ? "Guardando..." : "Guardar Cambios"}
+                  </Button>
+                </div>
               </div>
             </form>
           </TabsContent>
