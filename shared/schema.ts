@@ -134,6 +134,15 @@ export const advertisements = pgTable("advertisements", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const announcements = pgTable("announcements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tournamentId: varchar("tournament_id").notNull(),
+  message: text("message").notNull(),
+  priority: text("priority").default("normal"), // low, normal, high, urgent
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const scheduledMatches = pgTable("scheduled_matches", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tournamentId: varchar("tournament_id").notNull(),
@@ -231,6 +240,11 @@ export const insertAdvertisementSchema = createInsertSchema(advertisements).omit
   createdAt: true,
 });
 
+export const insertAnnouncementSchema = createInsertSchema(announcements).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertScheduledMatchSchema = createInsertSchema(scheduledMatches).omit({
   id: true,
   createdAt: true,
@@ -259,6 +273,7 @@ export type TournamentUser = typeof tournamentUsers.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type SponsorBanner = typeof sponsorBanners.$inferSelect;
 export type Advertisement = typeof advertisements.$inferSelect;
+export type Announcement = typeof announcements.$inferSelect;
 export type ScheduledMatch = typeof scheduledMatches.$inferSelect;
 export type ScheduledMatchPlayer = typeof scheduledMatchPlayers.$inferSelect;
 
@@ -274,6 +289,7 @@ export type InsertTournamentUser = z.infer<typeof insertTournamentUserSchema>;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertSponsorBanner = z.infer<typeof insertSponsorBannerSchema>;
 export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;
+export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
 export type InsertScheduledMatch = z.infer<typeof insertScheduledMatchSchema>;
 export type InsertScheduledMatchPlayer = z.infer<typeof insertScheduledMatchPlayerSchema>;
 
