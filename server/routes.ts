@@ -1615,6 +1615,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const insertMatch = insertScheduledMatchSchema.parse(req.body);
       
+      // Validate that the match is for today or a future date
+      const now = new Date();
+      const matchDay = new Date(insertMatch.day);
+      matchDay.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (matchDay < today) {
+        return res.status(400).json({ 
+          message: "No se pueden crear partidos en fechas pasadas. Seleccione hoy o una fecha futura." 
+        });
+      }
+      
+      // If it's today and has a planned time, validate it's not in the past
+      if (matchDay.getTime() === today.getTime() && insertMatch.plannedTime) {
+        const [hours, minutes] = insertMatch.plannedTime.split(':').map(Number);
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        
+        if (hours < currentHour || (hours === currentHour && minutes < currentMinute)) {
+          return res.status(400).json({ 
+            message: "No se pueden crear partidos con horarios pasados. Seleccione la hora actual o posterior." 
+          });
+        }
+      }
+      
       // Check for duplicates if court and time are specified
       if (insertMatch.courtId && insertMatch.plannedTime) {
         const existingMatches = await storage.getScheduledMatchesByDay(
