@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Clock, MoreVertical, RefreshCw } from "lucide-react";
+import { Play, Clock, MoreVertical, RefreshCw, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import QRCode from "qrcode";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,8 @@ export default function CurrentMatches({ tournamentId }: CurrentMatchesProps) {
   const { toast } = useToast();
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [reassignDialogOpen, setReassignDialogOpen] = useState(false);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
 
   const { data: matches = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/matches/current", tournamentId],
@@ -67,6 +70,33 @@ export default function CurrentMatches({ tournamentId }: CurrentMatchesProps) {
   const handleReassignCourt = (courtId: string) => {
     if (!selectedMatchId) return;
     reassignMutation.mutate({ matchId: selectedMatchId, courtId });
+  };
+
+  const handleShowQR = async (match: any) => {
+    if (!match.accessToken) {
+      toast({
+        title: "Error",
+        description: "Este partido no tiene un código de acceso",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const url = `${window.location.origin}/score/${match.accessToken}`;
+      const qrDataUrl = await QRCode.toDataURL(url, {
+        width: 300,
+        margin: 2,
+      });
+      setQrCodeUrl(qrDataUrl);
+      setQrDialogOpen(true);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo generar el código QR",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatDuration = (startTime: string | Date) => {
@@ -159,6 +189,13 @@ export default function CurrentMatches({ tournamentId }: CurrentMatchesProps) {
                         <RefreshCw className="w-4 h-4 mr-2" />
                         Reasignar Cancha
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleShowQR(match)}
+                        data-testid={`option-qr-${match.id}`}
+                      >
+                        <QrCode className="w-4 h-4 mr-2" />
+                        Mostrar QR para Invitados
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -221,6 +258,30 @@ export default function CurrentMatches({ tournamentId }: CurrentMatchesProps) {
                 </div>
               </Button>
             ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR Code Dialog */}
+      <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Código QR para Invitados</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center space-y-4 py-4">
+            {qrCodeUrl && (
+              <>
+                <img 
+                  src={qrCodeUrl} 
+                  alt="QR Code" 
+                  className="w-64 h-64"
+                  data-testid="qr-code-image"
+                />
+                <p className="text-sm text-center text-muted-foreground">
+                  Los invitados pueden escanear este código QR para acceder a la captura de score del partido sin necesidad de autenticarse
+                </p>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
