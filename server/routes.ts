@@ -943,16 +943,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate the actual winner server-side
       const actualWinnerId = setsWon[0] >= 2 ? match.pair1Id : match.pair2Id;
+      const actualLoserId = setsWon[0] >= 2 ? match.pair2Id : match.pair1Id;
 
       // If winnerId provided, validate it matches
       if (winnerId && winnerId !== actualWinnerId) {
         return res.status(400).json({ message: "Provided winner does not match score" });
       }
 
-      // Create result with server-calculated winner
+      // Create result with server-calculated winner and loser
       const result = await storage.createResult({
         matchId: match.id,
         winnerId: actualWinnerId,
+        loserId: actualLoserId,
         score: finalScore
       });
 

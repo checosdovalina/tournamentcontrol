@@ -336,7 +336,10 @@ export default function GuestScore() {
                 {/* Current Game */}
                 <div className="bg-muted p-4 rounded-lg">
                   <p className="text-sm text-muted-foreground mb-2">
-                    {isInTiebreak() ? "Tie-break" : `Juego Actual - Set ${liveScore.currentSet}`}
+                    {match.status === "finished" 
+                      ? "Partido Finalizado" 
+                      : isInTiebreak() ? "Tie-break" : `Juego Actual - Set ${liveScore.currentSet}`
+                    }
                   </p>
                   <div className="flex gap-4 items-center justify-center">
                     <div className="flex-1 flex items-center justify-between">
@@ -346,6 +349,7 @@ export default function GuestScore() {
                           size="sm"
                           variant="outline"
                           onClick={() => subtractPoint(0)}
+                          disabled={match.status === "finished"}
                           data-testid="button-subtract-point-pair1"
                         >
                           <Minus className="h-4 w-4" />
@@ -353,6 +357,7 @@ export default function GuestScore() {
                         <Button
                           size="sm"
                           onClick={() => addPoint(0)}
+                          disabled={match.status === "finished"}
                           data-testid="button-add-point-pair1"
                         >
                           <Plus className="h-4 w-4" />
@@ -366,6 +371,7 @@ export default function GuestScore() {
                           size="sm"
                           variant="outline"
                           onClick={() => subtractPoint(1)}
+                          disabled={match.status === "finished"}
                           data-testid="button-subtract-point-pair2"
                         >
                           <Minus className="h-4 w-4" />
@@ -373,6 +379,7 @@ export default function GuestScore() {
                         <Button
                           size="sm"
                           onClick={() => addPoint(1)}
+                          disabled={match.status === "finished"}
                           data-testid="button-add-point-pair2"
                         >
                           <Plus className="h-4 w-4" />
@@ -384,7 +391,7 @@ export default function GuestScore() {
                 </div>
 
                 {/* Complete Match Button */}
-                {isMatchComplete() && (
+                {isMatchComplete() && match.status !== "finished" && (
                   <div className="mt-6 pt-6 border-t">
                     <Button
                       className="w-full"
