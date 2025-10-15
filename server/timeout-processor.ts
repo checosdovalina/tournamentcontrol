@@ -40,6 +40,13 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
         
         const timeoutThreshold = new Date(matchDateTime.getTime() + TOLERANCE_MINUTES * 60 * 1000);
         
+        // Skip if match was created AFTER its timeout period (retroactive scheduling)
+        const matchCreatedAt = typeof match.createdAt === 'string' ? new Date(match.createdAt) : match.createdAt;
+        if (matchCreatedAt && matchCreatedAt >= timeoutThreshold) {
+          log(`[Timeout Processor] Match ${match.id}: SKIPPED - created after timeout (created=${matchCreatedAt.toLocaleString()}, timeout=${timeoutThreshold.toLocaleString()})`);
+          continue;
+        }
+        
         // Debug logging
         log(`[Timeout Processor] Match ${match.id}: planned=${matchDateTime.toLocaleString()}, timeout=${timeoutThreshold.toLocaleString()}, now=${now.toLocaleString()}, overdue=${now >= timeoutThreshold}`);
         
