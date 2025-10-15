@@ -92,18 +92,23 @@ export default function EditScheduledMatchModal({
     mutationFn: async (data: FormData) => {
       if (!match) throw new Error("No match to update");
       
-      // Ensure day is a valid Date object
-      const dayDate = data.day instanceof Date ? data.day : new Date(data.day);
+      // Build payload with only changed fields
+      const payload: any = {};
       
-      const payload = {
-        day: format(dayDate, "yyyy-MM-dd"),
-        plannedTime: data.plannedTime,
-        pair1Id: data.pair1Id,
-        pair2Id: data.pair2Id,
-        categoryId: data.categoryId,
-        format: data.format || null,
-        courtId: data.courtId || null,
-      };
+      // Always update these fields
+      if (data.day) {
+        const dayDate = data.day instanceof Date ? data.day : new Date(data.day);
+        payload.day = dayDate.toISOString().split('T')[0]; // Simple YYYY-MM-DD format
+      }
+      
+      if (data.plannedTime) payload.plannedTime = data.plannedTime;
+      if (data.pair1Id) payload.pair1Id = data.pair1Id;
+      if (data.pair2Id) payload.pair2Id = data.pair2Id;
+      if (data.categoryId) payload.categoryId = data.categoryId;
+      
+      // Optional fields
+      payload.format = data.format || null;
+      payload.courtId = data.courtId || null;
 
       return apiRequest("PATCH", `/api/scheduled-matches/${match.id}`, payload);
     },
