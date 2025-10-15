@@ -9,6 +9,7 @@ import Dashboard from "@/pages/dashboard";
 import Display from "@/pages/display";
 import Login from "@/pages/login";
 import Setup from "@/pages/setup";
+import GuestScore from "@/pages/guest-score";
 import { useWebSocket } from "@/hooks/use-websocket";
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
@@ -51,6 +52,7 @@ function Router() {
         </AuthWrapper>
       )} />
       <Route path="/display" component={Display} />
+      <Route path="/score/:token" component={GuestScore} />
       <Route path="/login" component={Login} />
       <Route path="/setup" component={Setup} />
       <Route component={NotFound} />
