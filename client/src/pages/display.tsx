@@ -364,7 +364,7 @@ export default function Display() {
                     <div className="text-white/60 text-center py-12">
                       No hay partidos programados
                     </div>
-                  ) : scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length <= 3 ? (
+                  ) : scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length <= 2 ? (
                     <div className="space-y-3">
                       {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
                         <NextMatchCard key={match.id} match={match} />
@@ -399,7 +399,7 @@ export default function Display() {
                     <div className="text-white/60 text-center py-12">
                       No hay partidos en curso
                     </div>
-                  ) : currentMatches.length <= 3 ? (
+                  ) : currentMatches.length <= 2 ? (
                     <div className="space-y-3">
                       {currentMatches.map((match: any) => (
                         <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
@@ -434,7 +434,7 @@ export default function Display() {
                     <div className="text-white/60 text-center py-12">
                       No hay resultados recientes
                     </div>
-                  ) : recentResults.length <= 4 ? (
+                  ) : recentResults.length <= 2 ? (
                     <div className="space-y-3">
                       {recentResults.map((result: any) => (
                         <ResultCard key={result.id} result={result} formatResultScore={formatResultScore} />
