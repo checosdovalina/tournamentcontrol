@@ -349,7 +349,7 @@ export default function GuestScore() {
                           size="sm"
                           variant="outline"
                           onClick={() => subtractPoint(0)}
-                          disabled={match.status === "finished"}
+                          disabled={match.status === "finished" || isMatchComplete()}
                           data-testid="button-subtract-point-pair1"
                         >
                           <Minus className="h-4 w-4" />
@@ -357,7 +357,7 @@ export default function GuestScore() {
                         <Button
                           size="sm"
                           onClick={() => addPoint(0)}
-                          disabled={match.status === "finished"}
+                          disabled={match.status === "finished" || isMatchComplete()}
                           data-testid="button-add-point-pair1"
                         >
                           <Plus className="h-4 w-4" />
@@ -371,7 +371,7 @@ export default function GuestScore() {
                           size="sm"
                           variant="outline"
                           onClick={() => subtractPoint(1)}
-                          disabled={match.status === "finished"}
+                          disabled={match.status === "finished" || isMatchComplete()}
                           data-testid="button-subtract-point-pair2"
                         >
                           <Minus className="h-4 w-4" />
@@ -379,7 +379,7 @@ export default function GuestScore() {
                         <Button
                           size="sm"
                           onClick={() => addPoint(1)}
-                          disabled={match.status === "finished"}
+                          disabled={match.status === "finished" || isMatchComplete()}
                           data-testid="button-add-point-pair2"
                         >
                           <Plus className="h-4 w-4" />
