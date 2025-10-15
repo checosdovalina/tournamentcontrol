@@ -45,18 +45,8 @@ export default function Display() {
     staleTime: 0,
   });
 
-  // Filter scheduled matches to show only those starting in the next 8 hours or within 15 minutes tolerance after start
-  const scheduledMatches = allScheduledMatches.filter((match: any) => {
-    if (!match.plannedTime) return true; // Show matches without time
-    
-    // Extract date from match.day (format: "2025-10-14T00:00:00.000Z")
-    const matchDate = match.day.toString().slice(0, 10); // "2025-10-14"
-    const matchDateTime = new Date(`${matchDate}T${match.plannedTime}`);
-    const diffMinutes = Math.floor((matchDateTime.getTime() - currentTime.getTime()) / (1000 * 60));
-    
-    // Show matches that start in the next 8 hours OR are within 15 minutes after their start time
-    return diffMinutes <= 480 && diffMinutes >= -15; // 8 hours ahead = 480 minutes, 15 minutes tolerance after
-  });
+  // Show all scheduled matches from today without time filtering
+  const scheduledMatches = allScheduledMatches;
 
   const { data: allResults = [] } = useQuery<any[]>({
     queryKey: ["/api/results/recent", tournament?.id],
