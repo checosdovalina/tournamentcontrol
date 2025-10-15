@@ -350,28 +350,61 @@ export default function Display() {
                 </h2>
                 
                 <div className="flex-1 overflow-hidden relative" data-testid="next-matches-list">
-                  {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length === 0 ? (
-                    <div className="text-white/60 text-center py-12">
-                      No hay partidos programados
-                    </div>
-                  ) : scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length <= 3 ? (
-                    <div className="space-y-3">
-                      {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
-                        <NextMatchCard key={match.id} match={match} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="h-full overflow-hidden">
-                      <div className="animate-scroll-vertical space-y-3">
-                        {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
+                  {(() => {
+                    const now = new Date();
+                    const TOLERANCE_MINUTES = 15;
+                    
+                    // Filter out matches that are playing, completed, cancelled, or past tolerance time
+                    const upcomingMatches = scheduledMatches.filter((m: any) => {
+                      if (m.status === 'playing' || m.status === 'completed' || m.status === 'cancelled') {
+                        return false;
+                      }
+                      
+                      // Check if match has passed tolerance time
+                      if (m.plannedTime) {
+                        const matchDay = new Date(m.day);
+                        const [hours, minutes] = m.plannedTime.split(':').map(Number);
+                        const matchDateTime = new Date(
+                          matchDay.getFullYear(),
+                          matchDay.getMonth(),
+                          matchDay.getDate(),
+                          hours,
+                          minutes
+                        );
+                        const toleranceDeadline = new Date(matchDateTime.getTime() + TOLERANCE_MINUTES * 60 * 1000);
+                        
+                        // Hide if past tolerance deadline
+                        if (now >= toleranceDeadline) {
+                          return false;
+                        }
+                      }
+                      
+                      return true;
+                    });
+                    
+                    return upcomingMatches.length === 0 ? (
+                      <div className="text-white/60 text-center py-12">
+                        No hay partidos programados
+                      </div>
+                    ) : upcomingMatches.length <= 3 ? (
+                      <div className="space-y-3">
+                        {upcomingMatches.map((match: any) => (
                           <NextMatchCard key={match.id} match={match} />
                         ))}
-                        {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
-                          <NextMatchCard key={`${match.id}-dup`} match={match} />
-                        ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="h-full overflow-hidden">
+                        <div className="animate-scroll-vertical space-y-3">
+                          {upcomingMatches.map((match: any) => (
+                            <NextMatchCard key={match.id} match={match} />
+                          ))}
+                          {upcomingMatches.map((match: any) => (
+                            <NextMatchCard key={`${match.id}-dup`} match={match} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
