@@ -22,11 +22,6 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
           continue;
         }
         
-        // Only process matches that are ready or assigned (have players waiting)
-        if (match.status !== 'ready' && match.status !== 'assigned') {
-          continue;
-        }
-        
         // Skip if no planned time
         if (!match.plannedTime) {
           continue;
