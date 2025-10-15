@@ -864,6 +864,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint to update score - no authentication required
+  app.patch("/api/matches/public/:token/score", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const { score } = req.body;
+      
+      if (!score) {
+        return res.status(400).json({ message: "Score is required" });
+      }
+
+      // Find match by access token
+      const match = await storage.getMatchByAccessToken(token);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+
+      // Update the score
+      const updatedMatch = await storage.updateMatch(match.id, { score });
+      
+      if (!updatedMatch) {
+        return res.status(404).json({ message: "Failed to update match" });
+      }
+      
+      // Broadcast score update for real-time display
+      broadcastUpdate({ type: "score_updated", data: updatedMatch });
+      
+      res.json(updatedMatch);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to update score", error: error.message });
+    }
+  });
+
   app.get("/api/matches/current/:tournamentId", async (req, res) => {
     try {
       const { tournamentId } = req.params;

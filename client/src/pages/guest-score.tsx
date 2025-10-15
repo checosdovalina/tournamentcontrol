@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Trophy, Plus, Minus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import courtflowLogo from "@assets/_LogosCOURTFLOW  sin fondo_1760488965348.png";
 
 export default function GuestScore() {
   const { toast } = useToast();
@@ -48,7 +49,7 @@ export default function GuestScore() {
 
   const updateScoreMutation = useMutation({
     mutationFn: async (score: any) => {
-      const response = await fetch(`/api/matches/${match.id}/score`, {
+      const response = await fetch(`/api/matches/public/${token}/score`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ score }),
@@ -191,6 +192,15 @@ export default function GuestScore() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 p-4">
       <div className="max-w-4xl mx-auto space-y-4">
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
+          <img 
+            src={courtflowLogo} 
+            alt="CourtFlow" 
+            className="h-16 w-auto"
+          />
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
