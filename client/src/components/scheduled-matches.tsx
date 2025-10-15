@@ -340,9 +340,18 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
       const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/assign-court`, { courtId, tournamentId });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
-      toast({ title: "Cancha asignada", description: "Cancha asignada manualmente" });
+      queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
+      
+      if (data.isPreAssigned) {
+        toast({ 
+          title: "Cancha pre-asignada", 
+          description: data.message || "La cancha se asignará automáticamente cuando esté libre" 
+        });
+      } else {
+        toast({ title: "Cancha asignada", description: "Cancha asignada manualmente" });
+      }
     },
     onError: (error: any) => {
       // Extract message from error format "404: {message}"
@@ -929,45 +938,69 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                     <p className="text-sm font-medium text-green-600">
                       ✓ Todos los jugadores presentes - Listo para asignar cancha
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button
-                        onClick={() => handleAutoAssign(match.id)}
-                        disabled={autoAssignMutation.isPending}
-                        data-testid={`button-auto-assign-${match.id}`}
-                      >
-                        <Zap className="w-4 h-4 mr-2" />
-                        Asignación Automática
-                      </Button>
-                      <div className="flex gap-2 flex-1">
-                        <Select onValueChange={(courtId) => courtId && handleManualAssign(match.id, courtId)}>
-                          <SelectTrigger className="flex-1" data-testid={`select-court-${match.id}`}>
-                            <SelectValue placeholder="Seleccionar cancha..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {courts?.filter(c => c.isAvailable).map((court) => (
-                              <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
-                                {court.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                    {match.courtId && courts?.find(c => c.id === match.courtId && c.preAssignedScheduledMatchId === match.id) && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <p className="text-sm font-medium text-amber-800">
+                          🕐 Cancha pre-asignada: {courts.find(c => c.id === match.courtId)?.name}
+                        </p>
+                        <p className="text-xs text-amber-600 mt-1">
+                          El partido iniciará automáticamente cuando la cancha esté libre
+                        </p>
                       </div>
-                    </div>
+                    )}
+                    {!match.courtId && (
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                          onClick={() => handleAutoAssign(match.id)}
+                          disabled={autoAssignMutation.isPending}
+                          data-testid={`button-auto-assign-${match.id}`}
+                        >
+                          <Zap className="w-4 h-4 mr-2" />
+                          Asignación Automática
+                        </Button>
+                        <div className="flex gap-2 flex-1">
+                          <Select onValueChange={(courtId) => courtId && handleManualAssign(match.id, courtId)}>
+                            <SelectTrigger className="flex-1" data-testid={`select-court-${match.id}`}>
+                              <SelectValue placeholder="Seleccionar cancha..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {courts?.map((court) => (
+                                <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
+                                  {court.name} {!court.isAvailable && '(En uso - Pre-asignar)'}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {/* Start Match Control */}
                 {match.status === 'assigned' && (userRole === 'admin' || userRole === 'scorekeeper') && (
                   <div className="border-t pt-4">
-                    <Button
-                      onClick={() => startMatchMutation.mutate(match.id)}
-                      disabled={startMatchMutation.isPending}
-                      className="w-full bg-green-600 hover:bg-green-700"
-                      data-testid={`button-start-match-${match.id}`}
-                    >
-                      <Users className="w-4 h-4 mr-2" />
-                      {startMatchMutation.isPending ? "Iniciando..." : "Iniciar Partido"}
-                    </Button>
+                    {courts?.find(c => c.id === match.courtId && c.preAssignedScheduledMatchId === match.id) ? (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <p className="text-sm font-medium text-amber-800 mb-2">
+                          🕐 Esperando a que se libere la cancha
+                        </p>
+                        <p className="text-xs text-amber-600">
+                          Este partido está pre-asignado a la cancha {courts.find(c => c.id === match.courtId)?.name}. 
+                          El botón de inicio se habilitará automáticamente cuando termine el partido actual.
+                        </p>
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={() => startMatchMutation.mutate(match.id)}
+                        disabled={startMatchMutation.isPending}
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        data-testid={`button-start-match-${match.id}`}
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        {startMatchMutation.isPending ? "Iniciando..." : "Iniciar Partido"}
+                      </Button>
+                    )}
                   </div>
                 )}
               </CardContent>
