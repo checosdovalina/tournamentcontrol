@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { 
@@ -1286,6 +1287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           courtId: court.id,
           pair1Id: pair1.id,
           pair2Id: pair2.id,
+          accessToken: randomUUID(),
           status: "playing"
         });
         
@@ -1350,6 +1352,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         courtId: court.id,
         pair1Id: pair1.id,
         pair2Id: pair2.id,
+        accessToken: randomUUID(),
         status: "playing"
       });
 
@@ -2541,6 +2544,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pair2Id: scheduledMatch.pair2Id,
         categoryId: scheduledMatch.categoryId,
         format: scheduledMatch.format,
+        accessToken: randomUUID(),
         status: "playing",
       });
       
@@ -2612,6 +2616,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pair2Id: scheduledMatch.pair2Id,
         categoryId: scheduledMatch.categoryId,
         format: scheduledMatch.format,
+        accessToken: randomUUID(),
         status: "playing",
       });
       
