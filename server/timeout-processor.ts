@@ -83,10 +83,17 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
   const handleCancellation = async (storage: IStorage, match: any, broadcastUpdate: (data: any) => void) => {
     log(`[Timeout Processor] Cancelling match ${match.id} - both pairs absent`);
     
+    // Get courtId - use assigned court or get first available court
+    let courtId = match.courtId;
+    if (!courtId) {
+      const courts = await storage.getCourts();
+      courtId = courts[0]?.id || 'unknown';
+    }
+    
     // Create a cancelled match record with no winner
     const cancelledMatch = await storage.createMatch({
       tournamentId: match.tournamentId,
-      courtId: match.courtId || '',
+      courtId,
       pair1Id: match.pair1Id,
       pair2Id: match.pair2Id,
       categoryId: match.categoryId,
@@ -138,6 +145,13 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
     const loserPairId = winnerPairId === match.pair1Id ? match.pair2Id : match.pair1Id;
     log(`[Timeout Processor] Match ${match.id} won by default - winner: ${winnerPairId}`);
     
+    // Get courtId - use assigned court or get first available court
+    let courtId = match.courtId;
+    if (!courtId) {
+      const courts = await storage.getCourts();
+      courtId = courts[0]?.id || 'unknown';
+    }
+    
     // Create default score: 6-3, 6-3
     const defaultScore = {
       sets: winnerPairId === match.pair1Id ? [[6, 3], [6, 3]] : [[3, 6], [3, 6]],
@@ -148,7 +162,7 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
     // Create match record with finished status
     const createdMatch = await storage.createMatch({
       tournamentId: match.tournamentId,
-      courtId: match.courtId || '', // Should have court assigned
+      courtId,
       pair1Id: match.pair1Id,
       pair2Id: match.pair2Id,
       categoryId: match.categoryId,
