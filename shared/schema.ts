@@ -156,6 +156,9 @@ export const scheduledMatches = pgTable("scheduled_matches", {
   status: text("status").default("scheduled"), // scheduled, ready, assigned, playing, completed, cancelled
   courtId: varchar("court_id"), // Assigned court (nullable until assigned)
   matchId: varchar("match_id"), // Link to active match when playing (nullable)
+  outcome: text("outcome").default("normal"), // normal, default, cancelled
+  outcomeReason: text("outcome_reason"), // Display message (e.g., "PARTIDO GANADO POR DEFAULT", "PARTIDO CANCELADO")
+  defaultWinnerPairId: varchar("default_winner_pair_id"), // Pair that won by default (nullable)
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
 });
