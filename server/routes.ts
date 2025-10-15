@@ -2625,18 +2625,21 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       }
       
       // Check if court is already assigned to another active scheduled match
-      const allScheduledMatches = await storage.getScheduledMatchesByTournament(currentMatch.tournamentId);
-      const courtConflict = allScheduledMatches.find(m => 
-        m.id !== id && // Exclude current match
-        m.courtId === courtId && 
-        m.status !== 'cancelled' &&
-        m.status !== 'completed'
-      );
-      
-      if (courtConflict) {
-        return res.status(400).json({ 
-          message: "Esta cancha ya está asignada a otro partido activo",
-        });
+      // Skip this check if we're doing a pre-assignment (court is busy with ongoing match)
+      if (!isPreAssignment) {
+        const allScheduledMatches = await storage.getScheduledMatchesByTournament(currentMatch.tournamentId);
+        const courtConflict = allScheduledMatches.find(m => 
+          m.id !== id && // Exclude current match
+          m.courtId === courtId && 
+          m.status !== 'cancelled' &&
+          m.status !== 'completed'
+        );
+        
+        if (courtConflict) {
+          return res.status(400).json({ 
+            message: "Esta cancha ya está asignada a otro partido activo",
+          });
+        }
       }
       
       // Check for conflicts if time is specified
