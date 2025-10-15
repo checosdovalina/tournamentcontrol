@@ -2299,8 +2299,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? insertMatch.day.split('T')[0] 
         : insertMatch.day.toISOString().split('T')[0];
       
+      // Get today's date in local timezone as YYYY-MM-DD
       const now = new Date();
-      const todayStr = now.toISOString().split('T')[0];
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
       
       if (matchDayStr < todayStr) {
         return res.status(400).json({ 
