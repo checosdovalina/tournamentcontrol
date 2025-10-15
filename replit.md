@@ -31,7 +31,7 @@ The backend uses **Node.js** with **Express.js**. **Express-session** with **con
 -   **Scheduled Matches Calendar Optimization**: Client-side filtering of all tournament matches to optimize performance and prevent timezone issues.
 -   **Auto-Assignment Logic**: Server-side FIFO algorithm for fair court allocation.
 -   **Timeout Processor Date Handling**: Uses timezone-safe date calculation by extracting date components (getFullYear, getMonth, getDate) from match.day and combining with plannedTime to create local Date objects, preventing premature timeout evaluation caused by UTC/local timezone offsets.
--   **Timeout Processor Retroactive Protection**: Skips matches created AFTER their timeout period to prevent immediate cancellation of retroactively scheduled matches. Only processes matches that existed before their 15-minute timeout window expired.
+-   **Timeout Processor Retroactive Protection**: Skips matches created AFTER their timeout period to prevent immediate cancellation of retroactively scheduled matches. The timeout (15 minutes after planned time) only applies to matches that existed BEFORE the timeout expired. This allows scheduling past matches without auto-cancellation.
 
 ## External Dependencies
 
