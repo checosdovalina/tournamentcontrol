@@ -30,7 +30,8 @@ The backend uses **Node.js** with **Express.js**. **Express-session** with **con
 -   **Query Strategy**: Aggressive `staleTime` with manual cache invalidation via WebSocket events for optimal performance.
 -   **Scheduled Matches Calendar Optimization**: Client-side filtering of all tournament matches to optimize performance and prevent timezone issues.
 -   **Auto-Assignment Logic**: Server-side FIFO algorithm for fair court allocation.
--   **Timeout Processor Date Handling**: Uses timezone-safe date calculation by extracting ISO date strings (YYYY-MM-DD) from match.day and combining with plannedTime to create local Date objects, preventing premature timeout evaluation caused by UTC/local timezone offsets.
+-   **Timeout Processor Date Handling**: Uses timezone-safe date calculation by extracting date components (getFullYear, getMonth, getDate) from match.day and combining with plannedTime to create local Date objects, preventing premature timeout evaluation caused by UTC/local timezone offsets.
+-   **Timeout Processor State Filtering**: Only evaluates matches in 'ready' or 'assigned' status (players confirmed and waiting), preventing auto-cancellation of test matches with past dates in 'scheduled' state.
 
 ## External Dependencies
 
