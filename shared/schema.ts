@@ -3,6 +3,12 @@ import { pgTable, text, varchar, timestamp, boolean, integer, json } from "drizz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const session = pgTable("session", {
+  sid: varchar("sid").primaryKey(),
+  sess: json("sess").notNull(),
+  expire: timestamp("expire").notNull(),
+});
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
@@ -40,6 +46,7 @@ export const courts = pgTable("courts", {
   name: text("name").notNull(),
   clubId: varchar("club_id").notNull(),
   isAvailable: boolean("is_available").default(true),
+  preAssignedScheduledMatchId: varchar("pre_assigned_scheduled_match_id"), // Pre-assigned match waiting for court to be free
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -159,6 +166,7 @@ export const scheduledMatches = pgTable("scheduled_matches", {
   outcome: text("outcome").default("normal"), // normal, default, cancelled
   outcomeReason: text("outcome_reason"), // Display message (e.g., "PARTIDO GANADO POR DEFAULT", "PARTIDO CANCELADO")
   defaultWinnerPairId: varchar("default_winner_pair_id"), // Pair that won by default (nullable)
+  preAssignedAt: timestamp("pre_assigned_at"), // When the court was pre-assigned (40+ min match in progress)
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
 });
