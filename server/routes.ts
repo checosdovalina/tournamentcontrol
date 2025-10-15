@@ -2226,31 +2226,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       const { tournamentId } = req.params;
       const allMatches = await storage.getScheduledMatchesByTournament(tournamentId);
       
-      // Get today's date in server's local timezone
-      const now = new Date();
-      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-      
-      // Helper to extract YYYY-MM-DD preserving intended calendar date
-      const getDateStr = (dateInput: Date | string): string => {
-        if (typeof dateInput === 'string') {
-          // ISO string - just extract YYYY-MM-DD part
-          return dateInput.slice(0, 10);
-        } else {
-          const d = dateInput;
-          // Check if this is a date-only value (UTC midnight) vs a timestamp with time
-          const isUTCMidnight = d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && 
-                                d.getUTCSeconds() === 0 && d.getUTCMilliseconds() === 0;
-          
-          if (isUTCMidnight) {
-            // Date-only value from ISO string - use UTC components to preserve original date
-            return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
-          } else {
-            // Timestamp with time - use local components
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-          }
-        }
-      };
-      
       // Filter for matches where at least one pair is confirmed (both players of one pair checked in), no court assigned yet
       const readyMatches = allMatches.filter(match => {
         // Count players present per pair using match.players array
