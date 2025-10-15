@@ -22,7 +22,13 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
     queryKey: ["/api/scheduled-matches/ready", tournamentId],
     queryFn: async () => {
       if (!tournamentId) return [];
-      const response = await fetch(`/api/scheduled-matches/ready/${tournamentId}`);
+      const response = await fetch(`/api/scheduled-matches/ready/${tournamentId}`, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       return response.json();
     },
     enabled: !!tournamentId,
