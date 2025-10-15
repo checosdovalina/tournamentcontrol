@@ -137,21 +137,30 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   };
 
   // Filter day matches by category, status, and time
-  const filteredDayMatches = dayMatches?.filter(match => {
-    const categoryMatch = selectedCategory === "all" || match.categoryId === selectedCategory;
-    
-    // For status filter, combine pending and ready into "pending_ready"
-    const matchStatus = getMatchStatus(match);
-    let statusMatch = statusFilter === "all";
-    if (statusFilter === "pending_ready") {
-      statusMatch = matchStatus === 'pending' || matchStatus === 'ready';
-    } else {
-      statusMatch = statusFilter === "all" || matchStatus === statusFilter;
-    }
-    
-    const timeMatch = timeFilter === "all" || getMatchTimeRange(match) === timeFilter;
-    return categoryMatch && statusMatch && timeMatch;
-  }) || [];
+  const filteredDayMatches = useMemo(() => {
+    const filtered = dayMatches?.filter(match => {
+      const categoryMatch = selectedCategory === "all" || match.categoryId === selectedCategory;
+      
+      // For status filter, combine pending and ready into "pending_ready"
+      const matchStatus = getMatchStatus(match);
+      let statusMatch = statusFilter === "all";
+      if (statusFilter === "pending_ready") {
+        statusMatch = matchStatus === 'pending' || matchStatus === 'ready';
+      } else {
+        statusMatch = statusFilter === "all" || matchStatus === statusFilter;
+      }
+      
+      const timeMatch = timeFilter === "all" || getMatchTimeRange(match) === timeFilter;
+      return categoryMatch && statusMatch && timeMatch;
+    }) || [];
+
+    // Sort by time (hour)
+    return filtered.sort((a, b) => {
+      const timeA = a.plannedTime || "99:99"; // Matches without time go to the end
+      const timeB = b.plannedTime || "99:99";
+      return timeA.localeCompare(timeB);
+    });
+  }, [dayMatches, selectedCategory, statusFilter, timeFilter]);
 
   // Count matches by status for badges (combine pending and ready)
   const statusCounts = useMemo(() => {
