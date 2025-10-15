@@ -25,12 +25,25 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
           continue;
         }
         
-        // Calculate the timeout threshold (plannedTime + 15 minutes)
-        const matchDate = new Date(match.day);
-        const [hours, minutes] = match.plannedTime.split(':').map(Number);
-        matchDate.setHours(hours, minutes, 0, 0);
+        // Extract date from match.day preserving the calendar date
+        let matchDayStr: string;
+        if (typeof match.day === 'string') {
+          matchDayStr = match.day.slice(0, 10);
+        } else if (match.day instanceof Date) {
+          matchDayStr = match.day.toISOString().slice(0, 10);
+        } else {
+          matchDayStr = String(match.day).slice(0, 10);
+        }
         
-        const timeoutThreshold = new Date(matchDate.getTime() + TOLERANCE_MINUTES * 60 * 1000);
+        const [hours, minutes] = match.plannedTime.split(':').map(Number);
+        
+        // Create match datetime in local timezone
+        const matchDateTime = new Date(`${matchDayStr}T${match.plannedTime}:00`);
+        
+        const timeoutThreshold = new Date(matchDateTime.getTime() + TOLERANCE_MINUTES * 60 * 1000);
+        
+        // Debug logging
+        log(`[Timeout Processor] Match ${match.id}: planned=${matchDateTime.toLocaleString()}, timeout=${timeoutThreshold.toLocaleString()}, now=${now.toLocaleString()}, overdue=${now >= timeoutThreshold}`);
         
         // Check if we've passed the timeout threshold
         if (now >= timeoutThreshold) {

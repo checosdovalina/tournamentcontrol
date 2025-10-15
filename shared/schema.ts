@@ -321,6 +321,7 @@ export type ResultWithDetails = Result & {
   match: MatchWithDetails;
   winner: PairWithPlayers;
   loser: PairWithPlayers;
+  scheduledMatch?: ScheduledMatch;
 };
 
 export type ScheduledMatchWithDetails = ScheduledMatch & {

@@ -674,6 +674,10 @@ function NextMatchCard({ match }: any) {
 
 // Result Card Component
 function ResultCard({ result, formatResultScore }: any) {
+  const isDefaultWin = result.scheduledMatch?.outcome === 'default';
+  const isCancelled = result.scheduledMatch?.outcome === 'cancelled';
+  const outcomeReason = result.scheduledMatch?.outcomeReason;
+  
   return (
     <div 
       className="pb-3 border-b border-white/20 last:border-b-0"
@@ -688,6 +692,15 @@ function ResultCard({ result, formatResultScore }: any) {
         </span>
         <span>{result.match?.court?.name || 'Cancha'}</span>
       </div>
+      
+      {(isDefaultWin || isCancelled) && outcomeReason ? (
+        <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-3 mb-2">
+          <p className="text-yellow-400 font-bold text-sm text-center tracking-wide">
+            {outcomeReason}
+          </p>
+        </div>
+      ) : null}
+      
       <div className="space-y-1 text-white">
         <div className="flex justify-between items-center">
           <span className="text-lg font-medium truncate flex-1">

@@ -539,9 +539,11 @@ export class DatabaseStorage implements IStorage {
       .select({
         result: results,
         match: matches,
+        scheduledMatch: scheduledMatches,
       })
       .from(results)
       .innerJoin(matches, eq(results.matchId, matches.id))
+      .leftJoin(scheduledMatches, eq(scheduledMatches.matchId, matches.id))
       .where(eq(matches.tournamentId, tournamentId))
       .orderBy(desc(results.createdAt))
       .limit(limit);
@@ -578,6 +580,7 @@ export class DatabaseStorage implements IStorage {
         },
         winner: { ...winner, player1: winner_p1, player2: winner_p2 },
         loser: { ...loser, player1: loser_p1, player2: loser_p2 },
+        scheduledMatch: row.scheduledMatch || undefined,
       });
     }
     return resultDetails;
