@@ -171,7 +171,13 @@ export default function EditScheduledMatchModal({
                       <Input
                         type="date"
                         value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
-                        onChange={(e) => field.onChange(new Date(e.target.value))}
+                        onChange={(e) => {
+                          const dateValue = e.target.value;
+                          if (dateValue) {
+                            // Create date at noon to avoid timezone issues
+                            field.onChange(new Date(dateValue + 'T12:00:00'));
+                          }
+                        }}
                         data-testid="input-edit-date"
                       />
                     </FormControl>
