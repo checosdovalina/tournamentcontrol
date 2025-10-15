@@ -728,7 +728,7 @@ function ResultCard({ result, formatResultScore }: any) {
           <span className="text-lg font-medium truncate flex-1">
             {result.winner.player1.name} / {result.winner.player2.name}
           </span>
-          <span className="font-mono font-bold text-success text-lg ml-2 flex-shrink-0">
+          <span className="font-mono font-bold text-white text-lg ml-2 flex-shrink-0">
             {formatResultScore(result.score)}
           </span>
         </div>
