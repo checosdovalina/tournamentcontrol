@@ -8,11 +8,13 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
   const TOLERANCE_MINUTES = 15;
 
   const processTimeouts = async () => {
+    log('[Timeout Processor] Running timeout check...');
     try {
       const now = new Date();
       
       // Get all scheduled matches that might be overdue
       const allMatches = await storage.getAllScheduledMatches();
+      log(`[Timeout Processor] Found ${allMatches.length} total matches to evaluate`);
       
       for (const match of allMatches) {
         // Skip if already completed, cancelled, or playing
