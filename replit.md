@@ -12,7 +12,7 @@ Built as a full-stack web application, it provides:
 - **Public Display**: Real-time tournament information for participants and spectators with live score updates and advertisement rotation
 - **Advertisement Module**: Commercial content management with time-based scheduling, automatic rotation, and multi-format support (images/videos)
 
-Last Updated: October 14, 2025 - Changed display filter for scheduled matches from 4 hours to 8 hours (480 minutes). Previously added: monthly calendar view for scheduled matches with visual grid (7x6), day indicators showing match counts via badges, responsive navigation (previous/next month, today button), Sheet drawer for day details with all matches and controls, and timezone-safe date filtering using ISO strings to prevent boundary date omissions in negative offset zones
+Last Updated: October 15, 2025 - Added scheduled match editing functionality for non-playing/non-completed matches with loading states for pair selection; disabled check-in buttons for playing and completed matches; implemented court reassignment for active matches and waiting list with pre-selection capability during match creation. Previously: Changed display filter for scheduled matches from 4 hours to 8 hours (480 minutes); added monthly calendar view for scheduled matches with visual grid (7x6), day indicators showing match counts via badges, responsive navigation (previous/next month, today button), Sheet drawer for day details with all matches and controls, and timezone-safe date filtering using ISO strings to prevent boundary date omissions in negative offset zones
 
 ## User Preferences
 
