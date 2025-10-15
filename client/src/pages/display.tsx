@@ -73,6 +73,14 @@ export default function Display() {
     return diffMinutes <= 1440;
   });
 
+  // Stable keys for carousels based on item count (prevents animation restart on data updates)
+  const upcomingCount = useMemo(() => 
+    scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length,
+    [scheduledMatches]
+  );
+  const currentCount = useMemo(() => currentMatches.length, [currentMatches]);
+  const resultsCount = useMemo(() => recentResults.length, [recentResults]);
+
   const { data: banners = [] } = useQuery<any[]>({
     queryKey: ["/api/banners", tournament?.id],
     enabled: !!tournament?.id,
@@ -364,7 +372,7 @@ export default function Display() {
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
-                      <div key="upcoming-carousel" className="animate-scroll-vertical space-y-3">
+                      <div key={`upcoming-${upcomingCount}`} className="animate-scroll-vertical space-y-3">
                         {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
                           <NextMatchCard key={match.id} match={match} />
                         ))}
@@ -399,7 +407,7 @@ export default function Display() {
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
-                      <div key="current-carousel" className="animate-scroll-vertical space-y-3">
+                      <div key={`current-${currentCount}`} className="animate-scroll-vertical space-y-3">
                         {currentMatches.map((match: any) => (
                           <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
                         ))}
@@ -434,7 +442,7 @@ export default function Display() {
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
-                      <div key="results-carousel" className="animate-scroll-vertical space-y-3">
+                      <div key={`results-${resultsCount}`} className="animate-scroll-vertical space-y-3">
                         {recentResults.map((result: any) => (
                           <ResultCard key={result.id} result={result} formatResultScore={formatResultScore} />
                         ))}
