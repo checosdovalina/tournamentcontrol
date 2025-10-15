@@ -68,7 +68,7 @@ export default function EditScheduledMatchModal({
     }
   }, [match, form]);
 
-  const { data: pairs } = useQuery<any[]>({
+  const { data: pairs, isLoading: pairsLoading } = useQuery<any[]>({
     queryKey: ["/api/pairs", tournamentId],
     queryFn: async () => {
       if (!tournamentId) return [];
@@ -138,11 +138,16 @@ export default function EditScheduledMatchModal({
     return pair.categoryId === selectedCategoryId;
   }) || [];
 
-  // Reset pair selections when category changes
+  // Reset pair selections when category changes manually
   const handleCategoryChange = (value: string) => {
+    const currentCategoryId = form.getValues("categoryId");
     form.setValue("categoryId", value);
-    form.setValue("pair1Id", "");
-    form.setValue("pair2Id", "");
+    
+    // Only reset pairs if the category is actually changing (not initial load)
+    if (currentCategoryId && currentCategoryId !== value) {
+      form.setValue("pair1Id", "");
+      form.setValue("pair2Id", "");
+    }
   };
 
   return (
@@ -235,23 +240,35 @@ export default function EditScheduledMatchModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Pareja 1</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={pairsLoading}
+                  >
                     <FormControl>
                       <SelectTrigger data-testid="select-edit-pair1">
-                        <SelectValue placeholder="Seleccionar pareja 1" />
+                        <SelectValue placeholder={pairsLoading ? "Cargando parejas..." : "Seleccionar pareja 1"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {filteredPairs.map((pair) => (
-                        <SelectItem 
-                          key={pair.id} 
-                          value={pair.id}
-                          disabled={pair.id === form.watch("pair2Id")}
-                          data-testid={`option-edit-pair1-${pair.id}`}
-                        >
-                          {getPairLabel(pair)}
-                        </SelectItem>
-                      ))}
+                      {pairsLoading ? (
+                        <div className="p-2 text-sm text-muted-foreground">Cargando...</div>
+                      ) : filteredPairs.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground">
+                          {selectedCategoryId ? "No hay parejas en esta categoría" : "No hay parejas disponibles"}
+                        </div>
+                      ) : (
+                        filteredPairs.map((pair) => (
+                          <SelectItem 
+                            key={pair.id} 
+                            value={pair.id}
+                            disabled={pair.id === form.watch("pair2Id")}
+                            data-testid={`option-edit-pair1-${pair.id}`}
+                          >
+                            {getPairLabel(pair)}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -266,23 +283,35 @@ export default function EditScheduledMatchModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Pareja 2</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={pairsLoading}
+                  >
                     <FormControl>
                       <SelectTrigger data-testid="select-edit-pair2">
-                        <SelectValue placeholder="Seleccionar pareja 2" />
+                        <SelectValue placeholder={pairsLoading ? "Cargando parejas..." : "Seleccionar pareja 2"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {filteredPairs.map((pair) => (
-                        <SelectItem 
-                          key={pair.id} 
-                          value={pair.id}
-                          disabled={pair.id === form.watch("pair1Id")}
-                          data-testid={`option-edit-pair2-${pair.id}`}
-                        >
-                          {getPairLabel(pair)}
-                        </SelectItem>
-                      ))}
+                      {pairsLoading ? (
+                        <div className="p-2 text-sm text-muted-foreground">Cargando...</div>
+                      ) : filteredPairs.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground">
+                          {selectedCategoryId ? "No hay parejas en esta categoría" : "No hay parejas disponibles"}
+                        </div>
+                      ) : (
+                        filteredPairs.map((pair) => (
+                          <SelectItem 
+                            key={pair.id} 
+                            value={pair.id}
+                            disabled={pair.id === form.watch("pair1Id")}
+                            data-testid={`option-edit-pair2-${pair.id}`}
+                          >
+                            {getPairLabel(pair)}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
