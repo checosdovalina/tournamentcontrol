@@ -270,8 +270,8 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
                 <FormItem>
                   <FormLabel>Cancha (opcional)</FormLabel>
                   <Select 
-                    onValueChange={field.onChange} 
-                    value={field.value || ""}
+                    onValueChange={(value) => field.onChange(value === "none" ? undefined : value)} 
+                    value={field.value || "none"}
                   >
                     <FormControl>
                       <SelectTrigger data-testid="select-court">
@@ -279,7 +279,7 @@ export default function ScheduleMatchModal({ open, onOpenChange, tournamentId, s
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="" data-testid="option-court-none">Sin asignar (auto)</SelectItem>
+                      <SelectItem value="none" data-testid="option-court-none">Sin asignar (auto)</SelectItem>
                       {courts?.map((court) => (
                         <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
                           {court.name}
