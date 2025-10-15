@@ -128,6 +128,11 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
     setCourtSelectionOpen(true);
   };
 
+  const isPlayerPresent = (match: ScheduledMatchWithDetails, playerId: string) => {
+    const playerData = match.players.find(p => p.playerId === playerId);
+    return playerData?.isPresent === true;
+  };
+
   const formatWaitTime = (players: any[]) => {
     const checkInTimes = players
       .filter(p => p.checkInTime)
@@ -216,9 +221,15 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
                         <span className="font-medium" data-testid={`match-pair1-${index + 1}`}>
                           {match.pair1.player1.name} / {match.pair1.player2.name}
                         </span>
-                        <Badge variant="default" className="bg-green-600 text-xs">
-                          ✓ Listos
-                        </Badge>
+                        {isPlayerPresent(match, match.pair1.player1.id) && isPlayerPresent(match, match.pair1.player2.id) ? (
+                          <Badge variant="default" className="bg-green-600 text-xs">
+                            ✓ Listos
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 text-xs">
+                            Esperando
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4 text-muted-foreground" />
@@ -226,9 +237,15 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
                         <span className="font-medium" data-testid={`match-pair2-${index + 1}`}>
                           {match.pair2.player1.name} / {match.pair2.player2.name}
                         </span>
-                        <Badge variant="default" className="bg-green-600 text-xs">
-                          ✓ Listos
-                        </Badge>
+                        {isPlayerPresent(match, match.pair2.player1.id) && isPlayerPresent(match, match.pair2.player2.id) ? (
+                          <Badge variant="default" className="bg-green-600 text-xs">
+                            ✓ Listos
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 text-xs">
+                            Esperando
+                          </Badge>
+                        )}
                       </div>
                       {match.category && (
                         <Badge variant="outline" className="text-xs">
