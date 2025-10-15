@@ -92,8 +92,11 @@ export default function EditScheduledMatchModal({
     mutationFn: async (data: FormData) => {
       if (!match) throw new Error("No match to update");
       
+      // Ensure day is a valid Date object
+      const dayDate = data.day instanceof Date ? data.day : new Date(data.day);
+      
       const payload = {
-        day: format(data.day, "yyyy-MM-dd"),
+        day: format(dayDate, "yyyy-MM-dd"),
         plannedTime: data.plannedTime,
         pair1Id: data.pair1Id,
         pair2Id: data.pair2Id,
