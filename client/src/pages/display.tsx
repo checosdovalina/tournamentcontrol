@@ -364,7 +364,7 @@ export default function Display() {
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
-                      <div className="animate-scroll-vertical space-y-3">
+                      <div key="upcoming-carousel" className="animate-scroll-vertical space-y-3">
                         {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
                           <NextMatchCard key={match.id} match={match} />
                         ))}
@@ -399,7 +399,7 @@ export default function Display() {
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
-                      <div className="animate-scroll-vertical space-y-3">
+                      <div key="current-carousel" className="animate-scroll-vertical space-y-3">
                         {currentMatches.map((match: any) => (
                           <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
                         ))}
@@ -434,7 +434,7 @@ export default function Display() {
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
-                      <div className="animate-scroll-vertical space-y-3">
+                      <div key="results-carousel" className="animate-scroll-vertical space-y-3">
                         {recentResults.map((result: any) => (
                           <ResultCard key={result.id} result={result} formatResultScore={formatResultScore} />
                         ))}
