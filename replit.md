@@ -11,8 +11,9 @@ Built as a full-stack web application, it provides:
 - **Live Score Capture**: Real-time point-by-point score tracking with automatic game/set calculation
 - **Public Display**: Real-time tournament information for participants and spectators with live score updates and advertisement rotation
 - **Advertisement Module**: Commercial content management with time-based scheduling, automatic rotation, and multi-format support (images/videos)
+- **Guest Score Capture**: QR-based unauthenticated score tracking system allowing players to update match scores via unique access tokens
 
-Last Updated: October 15, 2025 - Added scheduled match editing functionality for non-playing/non-completed matches with loading states for pair selection; disabled check-in buttons for playing and completed matches; implemented court reassignment for active matches and waiting list with pre-selection capability during match creation. Previously: Changed display filter for scheduled matches from 4 hours to 8 hours (480 minutes); added monthly calendar view for scheduled matches with visual grid (7x6), day indicators showing match counts via badges, responsive navigation (previous/next month, today button), Sheet drawer for day details with all matches and controls, and timezone-safe date filtering using ISO strings to prevent boundary date omissions in negative offset zones
+Last Updated: October 15, 2025 - Added QR-based guest score capture system: each match generates a unique accessToken, QR codes are displayed in current matches menu, guests can scan and update scores without authentication via /score/:token route. System includes server-side score validation (isSetComplete rules), automatic winner calculation, and match completion endpoint with security guards (status validation, winner verification, idempotency). Previously: Added scheduled match editing functionality for non-playing/non-completed matches with loading states for pair selection; disabled check-in buttons for playing and completed matches; implemented court reassignment for active matches and waiting list with pre-selection capability during match creation
 
 ## User Preferences
 
@@ -50,6 +51,7 @@ Preferred communication style: Simple, everyday language.
 - Players: `/api/players/*`
 - Pairs: `/api/pairs/*`
 - Matches: `/api/matches/*`
+- Public Match Endpoints (no auth): `/api/matches/public/:token` (GET), `/api/matches/public/:token/score` (PATCH), `/api/matches/public/:token/complete` (POST)
 - Results: `/api/results/*`
 - Stats: `/api/stats/*`
 - Advertisements: `/api/advertisements/*` (CRUD with time-based filtering)
