@@ -709,7 +709,6 @@ export class DatabaseStorage implements IStorage {
       pairIds.add(m.pair2Id);
       if (m.categoryId) categoryIds.add(m.categoryId);
       if (m.courtId) courtIds.add(m.courtId);
-      if (m.preAssignedCourtId) courtIds.add(m.preAssignedCourtId);
     });
 
     // Batch fetch all related data
@@ -767,7 +766,6 @@ export class DatabaseStorage implements IStorage {
 
       const category = match.categoryId ? categoriesMap.get(match.categoryId) : undefined;
       const court = match.courtId ? courtsMap.get(match.courtId) : undefined;
-      const preAssignedCourt = match.preAssignedCourtId ? courtsMap.get(match.preAssignedCourtId) : undefined;
       const matchPlayers = matchPlayersMap.get(match.id) || [];
 
       matchesWithDetails.push({
@@ -776,7 +774,6 @@ export class DatabaseStorage implements IStorage {
         pair2: { ...pair2, player1: player2_1, player2: player2_2 },
         category,
         court,
-        preAssignedCourt,
         players: matchPlayers.map(mp => ({ ...mp, player: playersMap.get(mp.playerId)! })),
       });
     }
@@ -811,7 +808,6 @@ export class DatabaseStorage implements IStorage {
       pairIds.add(m.pair2Id);
       if (m.categoryId) categoryIds.add(m.categoryId);
       if (m.courtId) courtIds.add(m.courtId);
-      if (m.preAssignedCourtId) courtIds.add(m.preAssignedCourtId);
     });
 
     // Batch fetch all related data
@@ -869,7 +865,6 @@ export class DatabaseStorage implements IStorage {
 
       const category = match.categoryId ? categoriesMap.get(match.categoryId) : undefined;
       const court = match.courtId ? courtsMap.get(match.courtId) : undefined;
-      const preAssignedCourt = match.preAssignedCourtId ? courtsMap.get(match.preAssignedCourtId) : undefined;
       const matchPlayers = matchPlayersMap.get(match.id) || [];
 
       matchesWithDetails.push({
@@ -878,7 +873,6 @@ export class DatabaseStorage implements IStorage {
         pair2: { ...pair2, player1: player2_1, player2: player2_2 },
         category,
         court,
-        preAssignedCourt,
         players: matchPlayers.map(mp => ({ ...mp, player: playersMap.get(mp.playerId)! })),
       });
     }

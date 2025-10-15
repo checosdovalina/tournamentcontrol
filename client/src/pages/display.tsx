@@ -63,11 +63,6 @@ export default function Display() {
     return diffMinutes <= 1440;
   });
 
-  // Carousel rotation indices
-  const [upcomingIndex, setUpcomingIndex] = useState(0);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [resultsIndex, setResultsIndex] = useState(0);
-
   // Stable keys for carousels based on item count (prevents animation restart on data updates)
   const upcomingCount = useMemo(() => 
     scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length,
@@ -75,35 +70,6 @@ export default function Display() {
   );
   const currentCount = useMemo(() => currentMatches.length, [currentMatches]);
   const resultsCount = useMemo(() => recentResults.length, [recentResults]);
-
-  // Rotate carousels every 3 seconds
-  useEffect(() => {
-    const upcomingMatches = scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled');
-    if (upcomingMatches.length > 1) {
-      const interval = setInterval(() => {
-        setUpcomingIndex(prev => (prev + 1) % upcomingMatches.length);
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [scheduledMatches]);
-
-  useEffect(() => {
-    if (currentMatches.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentIndex(prev => (prev + 1) % currentMatches.length);
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [currentMatches]);
-
-  useEffect(() => {
-    if (recentResults.length > 1) {
-      const interval = setInterval(() => {
-        setResultsIndex(prev => (prev + 1) % recentResults.length);
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [recentResults]);
 
   const { data: banners = [] } = useQuery<any[]>({
     queryKey: ["/api/banners", tournament?.id],
@@ -384,28 +350,28 @@ export default function Display() {
                 </h2>
                 
                 <div className="flex-1 overflow-hidden relative" data-testid="next-matches-list">
-                  {(() => {
-                    const upcomingMatches = scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled');
-                    if (upcomingMatches.length === 0) {
-                      return (
-                        <div className="text-white/60 text-center py-12">
-                          No hay partidos programados
-                        </div>
-                      );
-                    }
-                    if (upcomingMatches.length === 1) {
-                      return (
-                        <div className="space-y-3">
-                          <NextMatchCard match={upcomingMatches[0]} />
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="space-y-3 transition-opacity duration-500">
-                        <NextMatchCard match={upcomingMatches[upcomingIndex]} />
+                  {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length === 0 ? (
+                    <div className="text-white/60 text-center py-12">
+                      No hay partidos programados
+                    </div>
+                  ) : scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length <= 2 ? (
+                    <div className="space-y-3">
+                      {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
+                        <NextMatchCard key={match.id} match={match} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="h-full overflow-hidden">
+                      <div key={`upcoming-${upcomingCount}`} className="animate-scroll-vertical space-y-3">
+                        {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
+                          <NextMatchCard key={match.id} match={match} />
+                        ))}
+                        {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
+                          <NextMatchCard key={`${match.id}-dup`} match={match} />
+                        ))}
                       </div>
-                    );
-                  })()}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -423,13 +389,22 @@ export default function Display() {
                     <div className="text-white/60 text-center py-12">
                       No hay partidos en curso
                     </div>
-                  ) : currentMatches.length === 1 ? (
+                  ) : currentMatches.length <= 2 ? (
                     <div className="space-y-3">
-                      <MatchCard match={currentMatches[0]} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                      {currentMatches.map((match: any) => (
+                        <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                      ))}
                     </div>
                   ) : (
-                    <div className="space-y-3 transition-opacity duration-500">
-                      <MatchCard match={currentMatches[currentIndex]} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                    <div className="h-full overflow-hidden">
+                      <div key={`current-${currentCount}`} className="animate-scroll-vertical space-y-3">
+                        {currentMatches.map((match: any) => (
+                          <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                        ))}
+                        {currentMatches.map((match: any) => (
+                          <MatchCard key={`${match.id}-dup`} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -449,13 +424,22 @@ export default function Display() {
                     <div className="text-white/60 text-center py-12">
                       No hay resultados recientes
                     </div>
-                  ) : recentResults.length === 1 ? (
+                  ) : recentResults.length <= 2 ? (
                     <div className="space-y-3">
-                      <ResultCard result={recentResults[0]} formatResultScore={formatResultScore} />
+                      {recentResults.map((result: any) => (
+                        <ResultCard key={result.id} result={result} formatResultScore={formatResultScore} />
+                      ))}
                     </div>
                   ) : (
-                    <div className="space-y-3 transition-opacity duration-500">
-                      <ResultCard result={recentResults[resultsIndex]} formatResultScore={formatResultScore} />
+                    <div className="h-full overflow-hidden">
+                      <div key={`results-${resultsCount}`} className="animate-scroll-vertical space-y-3">
+                        {recentResults.map((result: any) => (
+                          <ResultCard key={result.id} result={result} formatResultScore={formatResultScore} />
+                        ))}
+                        {recentResults.map((result: any) => (
+                          <ResultCard key={`${result.id}-dup`} result={result} formatResultScore={formatResultScore} />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -638,9 +622,6 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
 // Next Match Card Component
 function NextMatchCard({ match }: any) {
   const getStatusBadge = () => {
-    if (match.preAssignedCourt) {
-      return <span className="text-white bg-amber-600/80 text-sm px-2 py-1 rounded">⏳ Pre-asignada</span>;
-    }
     if (match.status === 'assigned' && match.court) {
       return <span className="text-white bg-purple-600/80 text-sm px-2 py-1 rounded">Cancha asignada</span>;
     }
@@ -669,21 +650,9 @@ function NextMatchCard({ match }: any) {
               {match.court.name}
             </span>
           )}
-          {match.preAssignedCourt && (
-            <span className="text-white/80 text-base font-medium">
-              {match.preAssignedCourt.name}
-            </span>
-          )}
           {getStatusBadge()}
         </div>
       </div>
-      {match.preAssignedCourt && (
-        <div className="mb-2">
-          <span className="text-amber-400 text-sm bg-amber-500/20 px-2 py-1 rounded border border-amber-500/30">
-            Cancha pre-asignada: {match.preAssignedCourt.name} - Esperando liberación
-          </span>
-        </div>
-      )}
       {match.category && (
         <div className="mb-2">
           <span className="text-white/60 text-sm bg-white/10 px-2 py-1 rounded">

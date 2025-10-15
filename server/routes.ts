@@ -964,8 +964,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         score: finalScore
       });
 
-      // Get court info before updating
-      const court = await storage.getCourt(match.courtId);
+      // Make court available
+      await storage.updateCourt(match.courtId, { isAvailable: true });
 
       // Update scheduled match to completed if it exists
       const allScheduledMatches = await storage.getAllScheduledMatches();
@@ -976,30 +976,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
           outcome: 'normal'
         });
         broadcastUpdate({ type: "scheduled_match_updated", data: { id: scheduledMatch.id } });
-      }
-
-      // Check for pre-assigned match and activate it
-      if (court?.preAssignedScheduledMatchId) {
-        const preAssignedMatch = await storage.getScheduledMatch(court.preAssignedScheduledMatchId);
-        
-        if (preAssignedMatch && preAssignedMatch.status === 'ready') {
-          // Activate the pre-assigned match
-          await storage.updateScheduledMatch(preAssignedMatch.id, { status: 'assigned' });
-          await storage.updateCourt(match.courtId, { 
-            isAvailable: false, 
-            preAssignedScheduledMatchId: null 
-          });
-          broadcastUpdate({ type: "pre_assigned_match_activated", data: preAssignedMatch });
-        } else {
-          // If pre-assigned match is not ready, just make court available
-          await storage.updateCourt(match.courtId, { 
-            isAvailable: true, 
-            preAssignedScheduledMatchId: null 
-          });
-        }
-      } else {
-        // Make court available normally
-        await storage.updateCourt(match.courtId, { isAvailable: true });
       }
 
       // Broadcast result
@@ -2589,14 +2565,19 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         return res.status(404).json({ message: "Scheduled match not found" });
       }
       
-      // Check if court exists
+      // Check if court exists and is available
       const court = await storage.getCourt(courtId);
       if (!court) {
         return res.status(404).json({ message: "Court not found" });
       }
       
+      if (!court.isAvailable) {
+        return res.status(400).json({ 
+          message: "Esta cancha no está disponible",
+        });
+      }
+      
       // Check if court is already assigned to another active scheduled match
-      // ONLY block if court is available (not in use) - allow pre-assignment for courts in use
       const allScheduledMatches = await storage.getScheduledMatchesByTournament(currentMatch.tournamentId);
       const courtConflict = allScheduledMatches.find(m => 
         m.id !== id && // Exclude current match
@@ -2605,9 +2586,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         m.status !== 'completed'
       );
       
-      // Only reject if court is available (normal assignment conflict)
-      // For occupied courts, we'll handle pre-assignment logic below
-      if (courtConflict && court.isAvailable) {
+      if (courtConflict) {
         return res.status(400).json({ 
           message: "Esta cancha ya está asignada a otro partido activo",
         });
@@ -2640,40 +2619,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         }
       }
       
-      // NEW: Allow pre-assignment for courts in use
-      if (!court.isAvailable) {
-        // Check if court already has a pre-assignment
-        if (court.preAssignedScheduledMatchId && court.preAssignedScheduledMatchId !== id) {
-          return res.status(400).json({ 
-            message: "Esta cancha ya tiene un partido pre-asignado. Espera a que se complete el partido actual.",
-          });
-        }
-        
-        // Pre-assign the court (doesn't change match status to 'assigned')
-        await storage.updateCourt(courtId, { preAssignedScheduledMatchId: id });
-        
-        // Update scheduled match with court info but keep status as 'ready'
-        const preAssignedMatch = await storage.updateScheduledMatch(id, { 
-          courtId: courtId 
-        });
-        
-        res.json({ 
-          ...preAssignedMatch, 
-          isPreAssigned: true,
-          message: "Cancha pre-asignada. El partido iniciará automáticamente cuando la cancha esté libre."
-        });
-        broadcastUpdate({ type: "court_pre_assigned", data: preAssignedMatch });
-        return;
-      }
-      
-      // Normal assignment for available courts
       const match = await storage.manualAssignCourt(id, courtId);
       
       if (!match) {
         return res.status(404).json({ message: "Failed to assign court" });
       }
       
-      res.json({ ...match, isPreAssigned: false });
+      res.json(match);
       broadcastUpdate({ type: "court_manually_assigned", data: match });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to assign court", error: error.message });
@@ -2707,22 +2659,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       
       if (!scheduledMatch.courtId) {
         return res.status(400).json({ message: "No court assigned to this match" });
-      }
-      
-      // Check if match is pre-assigned (court is still in use)
-      const court = await storage.getCourt(scheduledMatch.courtId);
-      if (court?.preAssignedScheduledMatchId === id) {
-        return res.status(400).json({ 
-          message: "Este partido está pre-asignado. Espera a que termine el partido actual en esta cancha.",
-          isPreAssigned: true
-        });
-      }
-      
-      // Verify court is actually available if match status is 'assigned'
-      if (scheduledMatch.status === "assigned" && court && !court.isAvailable) {
-        return res.status(400).json({ 
-          message: "La cancha no está disponible en este momento.",
-        });
       }
       
       // Create match "playing"

@@ -32,7 +32,6 @@ The backend uses **Node.js** with **Express.js**. **Express-session** with **con
 -   **Auto-Assignment Logic**: Server-side FIFO algorithm for fair court allocation.
 -   **Timeout Processor Date Handling**: Uses timezone-safe date calculation by extracting date components (getFullYear, getMonth, getDate) from match.day and combining with plannedTime to create local Date objects, preventing premature timeout evaluation caused by UTC/local timezone offsets.
 -   **Timeout Processor Retroactive Protection**: Skips matches created AFTER their timeout period to prevent immediate cancellation of retroactively scheduled matches. The timeout (15 minutes after planned time) only applies to matches that existed BEFORE the timeout expired. This allows scheduling past matches without auto-cancellation.
--   **Court Pre-Assignment System**: Allows admins to pre-assign courts that are currently in use. Courts have a `preAssignedScheduledMatchId` field to track pre-assignments. When a match completes, the system automatically activates any pre-assigned match by changing its status from 'ready' to 'assigned' and keeping the court occupied. The UI disables the "Start Match" button for pre-assigned matches until the court becomes available. Only one pre-assignment per court is allowed to prevent conflicts.
 
 ## External Dependencies
 
