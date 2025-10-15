@@ -961,7 +961,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                               let matchDuration = 0;
                               
                               if (!isAvailable) {
-                                const currentMatch = currentMatches.find(m => m.courtId === court.id && m.status === "in_progress");
+                                const currentMatch = currentMatches.find(m => m.courtId === court.id && m.status === "playing");
                                 if (currentMatch) {
                                   matchDuration = Math.floor((Date.now() - new Date(currentMatch.startTime).getTime()) / (1000 * 60));
                                   canPreAssign = matchDuration >= 40;
