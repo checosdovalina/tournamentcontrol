@@ -93,6 +93,17 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     enabled: !!tournamentId,
   });
 
+  const { data: currentMatches = [] } = useQuery<any[]>({
+    queryKey: ["/api/matches/current", tournamentId],
+    queryFn: async () => {
+      if (!tournamentId) return [];
+      const response = await fetch(`/api/matches/current/${tournamentId}`);
+      return response.json();
+    },
+    enabled: !!tournamentId,
+    staleTime: 0,
+  });
+
   // Group matches by date
   const matchesByDate = useMemo(() => {
     const grouped = new Map<string, ScheduledMatchWithDetails[]>();
@@ -944,11 +955,29 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                             <SelectValue placeholder="Seleccionar cancha..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {courts?.filter(c => c.isAvailable).map((court) => (
-                              <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
-                                {court.name}
-                              </SelectItem>
-                            ))}
+                            {courts?.map((court) => {
+                              const isAvailable = court.isAvailable;
+                              let canPreAssign = false;
+                              let matchDuration = 0;
+                              
+                              if (!isAvailable) {
+                                const currentMatch = currentMatches.find(m => m.courtId === court.id && m.status === "in_progress");
+                                if (currentMatch) {
+                                  matchDuration = Math.floor((Date.now() - new Date(currentMatch.startTime).getTime()) / (1000 * 60));
+                                  canPreAssign = matchDuration >= 40;
+                                }
+                              }
+
+                              if (!isAvailable && !canPreAssign) return null;
+
+                              return (
+                                <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
+                                  {court.name}
+                                  {canPreAssign && ` (Pre-asignar - ${matchDuration} min)`}
+                                  {isAvailable && " (Disponible)"}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </div>
