@@ -2229,6 +2229,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       
+      console.log('[PATCH scheduled-match] ID:', id);
+      console.log('[PATCH scheduled-match] Updates:', JSON.stringify(updates, null, 2));
+      
       const match = await storage.getScheduledMatch(id);
       if (!match) {
         return res.status(404).json({ message: "Scheduled match not found" });
@@ -2256,9 +2259,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Scheduled match not found" });
       }
       
+      console.log('[PATCH scheduled-match] Success');
       res.json(updatedMatch);
       broadcastUpdate({ type: "scheduled_match_updated", data: updatedMatch });
     } catch (error: any) {
+      console.error('[PATCH scheduled-match] Error:', error);
       res.status(500).json({ message: "Failed to update scheduled match", error: error.message });
     }
   });
