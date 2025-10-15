@@ -2251,14 +2251,16 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         }
       };
       
-      // Filter for matches where at least one pair is confirmed (≥2 players checked in), no court assigned yet, and scheduled for today
+      // Filter for matches where at least one pair is confirmed (both players of one pair checked in), no court assigned yet, and scheduled for today
       const readyMatches = allMatches.filter(match => {
-        // Check if pair1 is confirmed (both players present)
-        const pair1Present = match.pair1?.player1?.isPresent && match.pair1?.player2?.isPresent;
-        // Check if pair2 is confirmed (both players present)
-        const pair2Present = match.pair2?.player1?.isPresent && match.pair2?.player2?.isPresent;
-        // At least one pair must be confirmed
-        const atLeastOnePairReady = pair1Present || pair2Present;
+        // Count players present per pair using match.players array
+        const pair1CheckIns = match.players.filter(p => p.pairId === match.pair1Id && p.isPresent).length;
+        const pair2CheckIns = match.players.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
+        
+        // At least one COMPLETE pair must be confirmed (both players = 2)
+        const pair1Complete = pair1CheckIns === 2;
+        const pair2Complete = pair2CheckIns === 2;
+        const atLeastOnePairReady = pair1Complete || pair2Complete;
         
         const matchDateStr = getDateStr(match.day);
         const isToday = matchDateStr === todayStr;

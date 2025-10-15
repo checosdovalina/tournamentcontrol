@@ -55,8 +55,8 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
           const pair1CheckIns = checkInRecords.filter(p => p.pairId === match.pair1Id && p.isPresent).length;
           const pair2CheckIns = checkInRecords.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
           
-          const pair1Confirmed = pair1CheckIns >= 1; // At least 1 player from pair 1
-          const pair2Confirmed = pair2CheckIns >= 1; // At least 1 player from pair 2
+          const pair1Confirmed = pair1CheckIns === 2; // Both players from pair 1 must be present
+          const pair2Confirmed = pair2CheckIns === 2; // Both players from pair 2 must be present
           
           // CASE 1: Both pairs absent → CANCELLED
           if (!pair1Confirmed && !pair2Confirmed) {
