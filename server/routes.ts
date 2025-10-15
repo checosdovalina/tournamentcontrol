@@ -897,6 +897,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint to complete match - no authentication required
+  app.post("/api/matches/public/:token/complete", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const { winnerId, score } = req.body;
+
+      // Find match by access token
+      const match = await storage.getMatchByAccessToken(token);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+
+      // Validate match is still playing (also prevents duplicate completion)
+      if (match.status !== "playing") {
+        return res.status(400).json({ message: "Match is already finished or not in playing state" });
+      }
+
+      // Use the score from request or from match
+      const finalScore = score || match.score;
+
+      // Validate score is complete and calculate winner server-side
+      const isSetComplete = (set: number[]) => {
+        return (set[0] >= 6 && set[0] - set[1] >= 2) || 
+               (set[1] >= 6 && set[1] - set[0] >= 2) ||
+               (set[0] === 7 && set[1] === 6) ||
+               (set[1] === 7 && set[0] === 6);
+      };
+
+      const setsWon = [0, 0];
+      if (finalScore?.sets) {
+        finalScore.sets.forEach((set: number[]) => {
+          if (isSetComplete(set)) {
+            if (set[0] > set[1]) setsWon[0]++;
+            else if (set[1] > set[0]) setsWon[1]++;
+          }
+        });
+      }
+
+      // Validate that one team has won 2 complete sets
+      if (setsWon[0] < 2 && setsWon[1] < 2) {
+        return res.status(400).json({ message: "Match is not complete - no team has won 2 sets" });
+      }
+
+      // Calculate the actual winner server-side
+      const actualWinnerId = setsWon[0] >= 2 ? match.pair1Id : match.pair2Id;
+
+      // If winnerId provided, validate it matches
+      if (winnerId && winnerId !== actualWinnerId) {
+        return res.status(400).json({ message: "Provided winner does not match score" });
+      }
+
+      // Create result with server-calculated winner
+      const result = await storage.createResult({
+        matchId: match.id,
+        winnerId: actualWinnerId,
+        score: finalScore
+      });
+
+      // Update match status to finished
+      const updatedMatch = await storage.updateMatch(match.id, { 
+        status: "finished",
+        score: finalScore
+      });
+
+      // Make court available
+      await storage.updateCourt(match.courtId, { isAvailable: true });
+
+      // Broadcast result
+      broadcastUpdate({ type: "result_recorded", data: result });
+      
+      res.json({ match: updatedMatch, result });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to complete match", error: error.message });
+    }
+  });
+
   app.get("/api/matches/current/:tournamentId", async (req, res) => {
     try {
       const { tournamentId } = req.params;

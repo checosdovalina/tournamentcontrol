@@ -80,6 +80,37 @@ export default function GuestScore() {
     },
   });
 
+  const completeMatchMutation = useMutation({
+    mutationFn: async (winnerId: string) => {
+      const response = await fetch(`/api/matches/public/${token}/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ winnerId, score: liveScore }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to complete match");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Partido finalizado",
+        description: "El partido se ha completado exitosamente",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/matches/public", token] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al finalizar partido",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Check if we're in tiebreak
   const isInTiebreak = () => {
     const currentSetIndex = liveScore.currentSet - 1;
@@ -174,6 +205,47 @@ export default function GuestScore() {
       setLiveScore(newScore);
       updateScoreMutation.mutate(newScore);
     }
+  };
+
+  // Check if a set is complete
+  const isSetComplete = (set: number[]) => {
+    // Must win at least 6 games with 2-game lead, or 7-6 (tiebreak)
+    return (set[0] >= 6 && set[0] - set[1] >= 2) || 
+           (set[1] >= 6 && set[1] - set[0] >= 2) ||
+           (set[0] === 7 && set[1] === 6) ||
+           (set[1] === 7 && set[0] === 6);
+  };
+
+  // Check if match is complete (one team won 2 sets)
+  const isMatchComplete = () => {
+    const setsWon = [0, 0];
+    
+    liveScore.sets.forEach((set: number[]) => {
+      // Only count completed sets
+      if (isSetComplete(set)) {
+        if (set[0] > set[1]) setsWon[0]++;
+        else if (set[1] > set[0]) setsWon[1]++;
+      }
+    });
+    
+    return setsWon[0] >= 2 || setsWon[1] >= 2;
+  };
+
+  // Get the winner ID
+  const getWinnerId = () => {
+    const setsWon = [0, 0];
+    
+    liveScore.sets.forEach((set: number[]) => {
+      // Only count completed sets
+      if (isSetComplete(set)) {
+        if (set[0] > set[1]) setsWon[0]++;
+        else if (set[1] > set[0]) setsWon[1]++;
+      }
+    });
+    
+    if (setsWon[0] >= 2) return match.pair1Id;
+    if (setsWon[1] >= 2) return match.pair2Id;
+    return null;
   };
 
   if (isLoading) {
@@ -310,6 +382,27 @@ export default function GuestScore() {
                     </div>
                   </div>
                 </div>
+
+                {/* Complete Match Button */}
+                {isMatchComplete() && (
+                  <div className="mt-6 pt-6 border-t">
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      onClick={() => {
+                        const winnerId = getWinnerId();
+                        if (winnerId) {
+                          completeMatchMutation.mutate(winnerId);
+                        }
+                      }}
+                      disabled={completeMatchMutation.isPending}
+                      data-testid="button-complete-match"
+                    >
+                      <Trophy className="h-5 w-5 mr-2" />
+                      {completeMatchMutation.isPending ? "Finalizando..." : "Finalizar Partido"}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
