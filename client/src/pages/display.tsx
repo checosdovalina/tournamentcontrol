@@ -716,7 +716,7 @@ function ResultCard({ result, formatResultScore }: any) {
       </div>
       
       {(isDefaultWin || isCancelled) && outcomeReason ? (
-        <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-3 mb-2">
+        <div className="p-3 mb-2">
           <p className="text-yellow-400 font-bold text-sm text-center tracking-wide">
             {outcomeReason}
           </p>
