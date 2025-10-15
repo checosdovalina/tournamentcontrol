@@ -20,25 +20,26 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
           continue;
         }
         
+        // Only process matches that are ready or assigned (have players waiting)
+        if (match.status !== 'ready' && match.status !== 'assigned') {
+          continue;
+        }
+        
         // Skip if no planned time
         if (!match.plannedTime) {
           continue;
         }
         
-        // Extract date from match.day preserving the calendar date
-        let matchDayStr: string;
-        if (typeof match.day === 'string') {
-          matchDayStr = match.day.slice(0, 10);
-        } else if (match.day instanceof Date) {
-          matchDayStr = match.day.toISOString().slice(0, 10);
-        } else {
-          matchDayStr = String(match.day).slice(0, 10);
-        }
+        // Extract date components from match.day in the server's local timezone
+        const matchDay = typeof match.day === 'string' ? new Date(match.day) : match.day;
+        const year = matchDay.getFullYear();
+        const month = matchDay.getMonth(); // 0-indexed
+        const dayOfMonth = matchDay.getDate();
         
         const [hours, minutes] = match.plannedTime.split(':').map(Number);
         
-        // Create match datetime in local timezone
-        const matchDateTime = new Date(`${matchDayStr}T${match.plannedTime}:00`);
+        // Create match datetime using local date components + planned time
+        const matchDateTime = new Date(year, month, dayOfMonth, hours, minutes, 0);
         
         const timeoutThreshold = new Date(matchDateTime.getTime() + TOLERANCE_MINUTES * 60 * 1000);
         
