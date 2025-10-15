@@ -40,6 +40,7 @@ export const courts = pgTable("courts", {
   name: text("name").notNull(),
   clubId: varchar("club_id").notNull(),
   isAvailable: boolean("is_available").default(true),
+  preAssignedScheduledMatchId: varchar("pre_assigned_scheduled_match_id"), // For pre-assigning courts in use
   createdAt: timestamp("created_at").defaultNow(),
 });
 
