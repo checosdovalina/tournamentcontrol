@@ -967,6 +967,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       // Make court available
       await storage.updateCourt(match.courtId, { isAvailable: true });
 
+      // Update scheduled match to completed if it exists
+      const allScheduledMatches = await storage.getAllScheduledMatches();
+      const scheduledMatch = allScheduledMatches.find(sm => sm.matchId === match.id);
+      if (scheduledMatch && scheduledMatch.status !== 'completed') {
+        await storage.updateScheduledMatch(scheduledMatch.id, {
+          status: 'completed',
+          outcome: 'normal'
+        });
+        broadcastUpdate({ type: "scheduled_match_updated", data: { id: scheduledMatch.id } });
+      }
+
       // Broadcast result
       broadcastUpdate({ type: "result_recorded", data: result });
       
