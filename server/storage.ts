@@ -121,6 +121,7 @@ export interface IStorage {
   
   // Matches
   getMatch(id: string): Promise<Match | undefined>;
+  getMatchByAccessToken(token: string): Promise<MatchWithDetails | undefined>;
   getMatches(): Promise<Match[]>;
   getCurrentMatches(tournamentId: string): Promise<MatchWithDetails[]>;
   createMatch(match: InsertMatch): Promise<Match>;

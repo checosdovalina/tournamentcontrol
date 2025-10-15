@@ -848,6 +848,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Matches routes
+  // Public endpoint - no authentication required
+  app.get("/api/matches/public/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const match = await storage.getMatchByAccessToken(token);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+      
+      res.json(match);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get match", error: error.message });
+    }
+  });
+
   app.get("/api/matches/current/:tournamentId", async (req, res) => {
     try {
       const { tournamentId } = req.params;

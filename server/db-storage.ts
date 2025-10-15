@@ -483,6 +483,37 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
+  async getMatchByAccessToken(token: string): Promise<MatchWithDetails | undefined> {
+    const matchResult = await db
+      .select()
+      .from(matches)
+      .where(eq(matches.accessToken, token))
+      .limit(1);
+
+    if (!matchResult[0]) return undefined;
+
+    const match = matchResult[0];
+    const court = await this.getCourt(match.courtId);
+    const pair1 = await this.getPair(match.pair1Id);
+    const pair2 = await this.getPair(match.pair2Id);
+
+    if (!court || !pair1 || !pair2) return undefined;
+
+    const player1_1 = await this.getPlayer(pair1.player1Id);
+    const player1_2 = await this.getPlayer(pair1.player2Id);
+    const player2_1 = await this.getPlayer(pair2.player1Id);
+    const player2_2 = await this.getPlayer(pair2.player2Id);
+
+    if (!player1_1 || !player1_2 || !player2_1 || !player2_2) return undefined;
+
+    return {
+      ...match,
+      court,
+      pair1: { ...pair1, player1: player1_1, player2: player1_2 },
+      pair2: { ...pair2, player1: player2_1, player2: player2_2 },
+    };
+  }
+
   async createMatch(match: InsertMatch): Promise<Match> {
     const result = await db.insert(matches).values(match).returning();
     return result[0];
