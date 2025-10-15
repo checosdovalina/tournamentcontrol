@@ -138,6 +138,7 @@ export interface IStorage {
   
   // Scheduled Matches
   getScheduledMatch(id: string): Promise<ScheduledMatch | undefined>;
+  getAllScheduledMatches(): Promise<ScheduledMatch[]>;
   getScheduledMatchesByTournament(tournamentId: string): Promise<ScheduledMatchWithDetails[]>;
   getScheduledMatchesByDay(tournamentId: string, day: Date): Promise<ScheduledMatchWithDetails[]>;
   createScheduledMatch(scheduledMatch: InsertScheduledMatch): Promise<ScheduledMatch>;
@@ -969,6 +970,10 @@ export class MemStorage implements IStorage {
 
   async getScheduledMatch(id: string): Promise<ScheduledMatch | undefined> {
     return this.scheduledMatches.get(id);
+  }
+
+  async getAllScheduledMatches(): Promise<ScheduledMatch[]> {
+    return Array.from(this.scheduledMatches.values());
   }
 
   async getScheduledMatchesByTournament(tournamentId: string): Promise<ScheduledMatchWithDetails[]> {

@@ -29,7 +29,7 @@ interface ExtendedWebSocket extends WebSocket {
   userId?: string;
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<{ server: Server, broadcastUpdate: (message: any) => void, storage: typeof storage }> {
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
     if (!req.session?.userId) {
@@ -2802,5 +2802,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
     clearInterval(interval);
   });
 
-  return httpServer;
+  return { server: httpServer, broadcastUpdate, storage };
 }

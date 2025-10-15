@@ -3,6 +3,7 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { Pool } from "@neondatabase/serverless";
 import { registerRoutes } from "./routes";
+import { startTimeoutProcessor } from "./timeout-processor";
 import { setupVite, serveStatic, log } from "./vite";
 import { mkdir } from "fs/promises";
 import { join } from "path";
@@ -103,7 +104,10 @@ async function ensureUploadDirectories() {
   // Create upload directories before starting server
   await ensureUploadDirectories();
 
-  const server = await registerRoutes(app);
+  const { server, broadcastUpdate, storage } = await registerRoutes(app);
+  
+  // Start timeout processor for scheduled matches
+  startTimeoutProcessor(storage, broadcastUpdate);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

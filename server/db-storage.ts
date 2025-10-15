@@ -660,6 +660,10 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getAllScheduledMatches(): Promise<ScheduledMatch[]> {
+    return await db.select().from(scheduledMatches);
+  }
+
   async getScheduledMatchesByTournament(tournamentId: string): Promise<ScheduledMatchWithDetails[]> {
     const matches = await db
       .select()
