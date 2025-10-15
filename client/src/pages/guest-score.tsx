@@ -54,7 +54,18 @@ export default function GuestScore() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ score }),
       });
-      if (!response.ok) throw new Error("Failed to update score");
+      
+      const contentType = response.headers.get("content-type");
+      
+      if (!response.ok) {
+        if (contentType?.includes("application/json")) {
+          const error = await response.json();
+          throw new Error(error.message || "Failed to update score");
+        } else {
+          throw new Error(`Server error: ${response.status}`);
+        }
+      }
+      
       return response.json();
     },
     onSuccess: () => {
