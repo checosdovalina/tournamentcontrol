@@ -2594,6 +2594,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       
       let isPreAssignment = false;
       
+      console.log(`[Pre-assignment check] Court ${courtId} isAvailable: ${court.isAvailable}`);
+      
       // If court is not available, check if we can pre-assign (40+ min match)
       if (!court.isAvailable) {
         // Find current match on this court
@@ -2603,13 +2605,18 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
           m.status === 'playing'
         );
         
+        console.log(`[Pre-assignment check] Current match on court: ${currentCourtMatch ? currentCourtMatch.id : 'none'}, status: ${currentCourtMatch?.status}`);
+        
         if (currentCourtMatch && currentCourtMatch.startTime) {
           const matchDurationMs = Date.now() - currentCourtMatch.startTime.getTime();
           const matchDurationMin = matchDurationMs / (1000 * 60);
           
+          console.log(`[Pre-assignment check] Match duration: ${matchDurationMin.toFixed(1)} minutes`);
+          
           if (matchDurationMin >= 40) {
             // Allow pre-assignment
             isPreAssignment = true;
+            console.log(`[Pre-assignment check] PRE-ASSIGNMENT ALLOWED - Match has been playing for ${matchDurationMin.toFixed(1)} minutes`);
           } else {
             const remainingMin = Math.ceil(40 - matchDurationMin);
             return res.status(400).json({ 
@@ -2626,6 +2633,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       
       // Check if court is already assigned to another active scheduled match
       // Skip this check if we're doing a pre-assignment (court is busy with ongoing match)
+      console.log(`[Conflict check] isPreAssignment: ${isPreAssignment}, checking scheduled match conflicts...`);
+      
       if (!isPreAssignment) {
         const allScheduledMatches = await storage.getScheduledMatchesByTournament(currentMatch.tournamentId);
         const courtConflict = allScheduledMatches.find(m => 
@@ -2635,11 +2644,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
           m.status !== 'completed'
         );
         
+        console.log(`[Conflict check] Court conflict found: ${courtConflict ? `YES (match ${courtConflict.id})` : 'NO'}`);
+        
         if (courtConflict) {
           return res.status(400).json({ 
             message: "Esta cancha ya está asignada a otro partido activo",
           });
         }
+      } else {
+        console.log(`[Conflict check] SKIPPED - This is a pre-assignment`);
       }
       
       // Check for conflicts if time is specified
