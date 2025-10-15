@@ -81,9 +81,41 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
   const handleCancellation = async (storage: IStorage, match: any, broadcastUpdate: (data: any) => void) => {
     log(`[Timeout Processor] Cancelling match ${match.id} - both pairs absent`);
     
-    // Update scheduled match to cancelled
+    // Create a cancelled match record with no winner
+    const cancelledMatch = await storage.createMatch({
+      tournamentId: match.tournamentId,
+      courtId: match.courtId || '',
+      pair1Id: match.pair1Id,
+      pair2Id: match.pair2Id,
+      categoryId: match.categoryId,
+      format: match.format,
+      status: 'finished',
+      score: {
+        sets: [[0, 0]],
+        currentSet: 0,
+        currentPoints: [0, 0],
+      },
+      winnerId: null,
+      accessToken: randomUUID(),
+      notes: 'Partido cancelado - ambas parejas ausentes',
+    });
+    
+    // Create result record for cancelled match (no winner)
+    await storage.createResult({
+      matchId: cancelledMatch.id,
+      winnerId: null,
+      loserId: null,
+      score: {
+        sets: [[0, 0]],
+        currentSet: 0,
+        currentPoints: [0, 0],
+      },
+    });
+    
+    // Update scheduled match to completed with cancelled outcome
     const updatedMatch = await storage.updateScheduledMatch(match.id, {
-      status: 'cancelled',
+      status: 'completed',
+      matchId: cancelledMatch.id,
       outcome: 'cancelled',
       outcomeReason: 'PARTIDO CANCELADO - Ambas parejas ausentes',
     });
@@ -93,8 +125,9 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
       await storage.updateCourt(match.courtId, { isAvailable: true });
     }
     
-    // Broadcast update
+    // Broadcast updates
     broadcastUpdate({ type: 'match_cancelled', data: updatedMatch });
+    broadcastUpdate({ type: 'match_finished', data: cancelledMatch });
     
     log(`[Timeout Processor] Match ${match.id} cancelled successfully`);
   };

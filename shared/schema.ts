@@ -83,8 +83,8 @@ export const matches = pgTable("matches", {
 export const results = pgTable("results", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   matchId: varchar("match_id").notNull(),
-  winnerId: varchar("winner_id").notNull(),
-  loserId: varchar("loser_id").notNull(),
+  winnerId: varchar("winner_id"), // Nullable for cancelled matches
+  loserId: varchar("loser_id"), // Nullable for cancelled matches
   score: json("score").notNull(),
   duration: integer("duration"), // minutes
   createdAt: timestamp("created_at").defaultNow(),

@@ -553,22 +553,34 @@ export class DatabaseStorage implements IStorage {
       const court = await this.getCourt(row.match.courtId);
       const pair1 = await this.getPair(row.match.pair1Id);
       const pair2 = await this.getPair(row.match.pair2Id);
-      const winner = await this.getPair(row.result.winnerId);
-      const loser = await this.getPair(row.result.loserId);
+      
+      // For cancelled matches, winnerId and loserId may be null
+      const winner = row.result.winnerId ? await this.getPair(row.result.winnerId) : null;
+      const loser = row.result.loserId ? await this.getPair(row.result.loserId) : null;
 
-      if (!court || !pair1 || !pair2 || !winner || !loser) continue;
+      if (!court || !pair1 || !pair2) continue;
 
       const pair1_p1 = await this.getPlayer(pair1.player1Id);
       const pair1_p2 = await this.getPlayer(pair1.player2Id);
       const pair2_p1 = await this.getPlayer(pair2.player1Id);
       const pair2_p2 = await this.getPlayer(pair2.player2Id);
-      const winner_p1 = await this.getPlayer(winner.player1Id);
-      const winner_p2 = await this.getPlayer(winner.player2Id);
-      const loser_p1 = await this.getPlayer(loser.player1Id);
-      const loser_p2 = await this.getPlayer(loser.player2Id);
 
-      if (!pair1_p1 || !pair1_p2 || !pair2_p1 || !pair2_p2 || !winner_p1 || !winner_p2 || !loser_p1 || !loser_p2)
-        continue;
+      if (!pair1_p1 || !pair1_p2 || !pair2_p1 || !pair2_p2) continue;
+
+      // For cancelled matches, use pair1 as both winner and loser (they'll be shown differently in UI based on outcome)
+      const winnerWithPlayers = winner ? {
+        ...winner,
+        player1: await this.getPlayer(winner.player1Id),
+        player2: await this.getPlayer(winner.player2Id),
+      } : { ...pair1, player1: pair1_p1, player2: pair1_p2 };
+
+      const loserWithPlayers = loser ? {
+        ...loser,
+        player1: await this.getPlayer(loser.player1Id),
+        player2: await this.getPlayer(loser.player2Id),
+      } : { ...pair2, player1: pair2_p1, player2: pair2_p2 };
+
+      if (!winnerWithPlayers.player1 || !winnerWithPlayers.player2 || !loserWithPlayers.player1 || !loserWithPlayers.player2) continue;
 
       resultDetails.push({
         ...row.result,
@@ -578,8 +590,8 @@ export class DatabaseStorage implements IStorage {
           pair1: { ...pair1, player1: pair1_p1, player2: pair1_p2 },
           pair2: { ...pair2, player1: pair2_p1, player2: pair2_p2 },
         },
-        winner: { ...winner, player1: winner_p1, player2: winner_p2 },
-        loser: { ...loser, player1: loser_p1, player2: loser_p2 },
+        winner: winnerWithPlayers as any,
+        loser: loserWithPlayers as any,
         scheduledMatch: row.scheduledMatch || undefined,
       });
     }
@@ -610,22 +622,34 @@ export class DatabaseStorage implements IStorage {
       const court = await this.getCourt(row.match.courtId);
       const pair1 = await this.getPair(row.match.pair1Id);
       const pair2 = await this.getPair(row.match.pair2Id);
-      const winner = await this.getPair(row.result.winnerId);
-      const loser = await this.getPair(row.result.loserId);
+      
+      // For cancelled matches, winnerId and loserId may be null
+      const winner = row.result.winnerId ? await this.getPair(row.result.winnerId) : null;
+      const loser = row.result.loserId ? await this.getPair(row.result.loserId) : null;
 
-      if (!court || !pair1 || !pair2 || !winner || !loser) continue;
+      if (!court || !pair1 || !pair2) continue;
 
       const pair1_p1 = await this.getPlayer(pair1.player1Id);
       const pair1_p2 = await this.getPlayer(pair1.player2Id);
       const pair2_p1 = await this.getPlayer(pair2.player1Id);
       const pair2_p2 = await this.getPlayer(pair2.player2Id);
-      const winner_p1 = await this.getPlayer(winner.player1Id);
-      const winner_p2 = await this.getPlayer(winner.player2Id);
-      const loser_p1 = await this.getPlayer(loser.player1Id);
-      const loser_p2 = await this.getPlayer(loser.player2Id);
 
-      if (!pair1_p1 || !pair1_p2 || !pair2_p1 || !pair2_p2 || !winner_p1 || !winner_p2 || !loser_p1 || !loser_p2)
-        continue;
+      if (!pair1_p1 || !pair1_p2 || !pair2_p1 || !pair2_p2) continue;
+
+      // For cancelled matches, use pair1 as both winner and loser (they'll be shown differently in UI based on outcome)
+      const winnerWithPlayers = winner ? {
+        ...winner,
+        player1: await this.getPlayer(winner.player1Id),
+        player2: await this.getPlayer(winner.player2Id),
+      } : { ...pair1, player1: pair1_p1, player2: pair1_p2 };
+
+      const loserWithPlayers = loser ? {
+        ...loser,
+        player1: await this.getPlayer(loser.player1Id),
+        player2: await this.getPlayer(loser.player2Id),
+      } : { ...pair2, player1: pair2_p1, player2: pair2_p2 };
+
+      if (!winnerWithPlayers.player1 || !winnerWithPlayers.player2 || !loserWithPlayers.player1 || !loserWithPlayers.player2) continue;
 
       resultDetails.push({
         ...row.result,
@@ -635,8 +659,8 @@ export class DatabaseStorage implements IStorage {
           pair1: { ...pair1, player1: pair1_p1, player2: pair1_p2 },
           pair2: { ...pair2, player1: pair2_p1, player2: pair2_p2 },
         },
-        winner: { ...winner, player1: winner_p1, player2: winner_p2 },
-        loser: { ...loser, player1: loser_p1, player2: loser_p2 },
+        winner: winnerWithPlayers as any,
+        loser: loserWithPlayers as any,
       });
     }
     return resultDetails;
