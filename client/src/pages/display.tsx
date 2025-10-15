@@ -89,6 +89,11 @@ export default function Display() {
     refetchInterval: 10000,
   });
 
+  const { data: courts = [] } = useQuery<any[]>({
+    queryKey: ["/api/courts"],
+    refetchInterval: 3000,
+  });
+
   useWebSocket();
 
   // Create a time key that changes only when day or minute changes (not every second)
@@ -392,17 +397,17 @@ export default function Display() {
                   ) : currentMatches.length <= 2 ? (
                     <div className="space-y-3">
                       {currentMatches.map((match: any) => (
-                        <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                        <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} courts={courts} scheduledMatches={scheduledMatches} />
                       ))}
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
                       <div key={`current-${currentCount}`} className="animate-scroll-vertical space-y-3">
                         {currentMatches.map((match: any) => (
-                          <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                          <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} courts={courts} scheduledMatches={scheduledMatches} />
                         ))}
                         {currentMatches.map((match: any) => (
-                          <MatchCard key={`${match.id}-dup`} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
+                          <MatchCard key={`${match.id}-dup`} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} courts={courts} scheduledMatches={scheduledMatches} />
                         ))}
                       </div>
                     </div>
@@ -583,16 +588,29 @@ function FullscreenAdDisplay({ ad }: { ad: any }) {
 }
 
 // Match Card Component
-function MatchCard({ match, formatMatchDuration, formatScore }: any) {
+function MatchCard({ match, formatMatchDuration, formatScore, courts, scheduledMatches }: any) {
+  // Check if this court has a pre-assigned match waiting
+  const court = courts?.find((c: any) => c.id === match.courtId);
+  const preAssignedMatch = scheduledMatches?.find((sm: any) => 
+    sm.id === court?.preAssignedScheduledMatchId && sm.preAssignedAt
+  );
+
   return (
     <div 
       className="bg-white/5 rounded-xl p-4 border border-white/10"
       data-testid={`match-card-${match.court.name.toLowerCase().replace(' ', '-')}`}
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="px-3 py-1 bg-destructive/80 text-white rounded-lg font-bold text-lg">
-          {match.court.name}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 bg-destructive/80 text-white rounded-lg font-bold text-lg">
+            {match.court.name}
+          </span>
+          {preAssignedMatch && (
+            <span className="px-2 py-1 bg-orange-600/80 text-white rounded text-xs font-medium">
+              Siguiente en fila
+            </span>
+          )}
+        </div>
         <span className="text-white/60 text-base">
           {formatMatchDuration(match.startTime)}
         </span>
@@ -623,6 +641,10 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
 function NextMatchCard({ match }: any) {
   const getStatusBadge = () => {
     if (match.status === 'assigned' && match.court) {
+      // Check if it's a pre-assignment
+      if (match.preAssignedAt) {
+        return <span className="text-white bg-orange-600/80 text-sm px-2 py-1 rounded">🕐 Pre-asignada</span>;
+      }
       return <span className="text-white bg-purple-600/80 text-sm px-2 py-1 rounded">Cancha asignada</span>;
     }
     if (match.status === 'ready') {

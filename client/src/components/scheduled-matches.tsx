@@ -959,15 +959,30 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                 {/* Start Match Control */}
                 {match.status === 'assigned' && (userRole === 'admin' || userRole === 'scorekeeper') && (
                   <div className="border-t pt-4">
-                    <Button
-                      onClick={() => startMatchMutation.mutate(match.id)}
-                      disabled={startMatchMutation.isPending}
-                      className="w-full bg-green-600 hover:bg-green-700"
-                      data-testid={`button-start-match-${match.id}`}
-                    >
-                      <Users className="w-4 h-4 mr-2" />
-                      {startMatchMutation.isPending ? "Iniciando..." : "Iniciar Partido"}
-                    </Button>
+                    {(() => {
+                      const isPreAssigned = !!match.preAssignedAt;
+                      const assignedCourt = courts?.find(c => c.id === match.courtId);
+                      const courtStillBusy = isPreAssigned && assignedCourt && !assignedCourt.isAvailable;
+                      
+                      return (
+                        <>
+                          <Button
+                            onClick={() => startMatchMutation.mutate(match.id)}
+                            disabled={startMatchMutation.isPending || courtStillBusy}
+                            className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            data-testid={`button-start-match-${match.id}`}
+                          >
+                            <Users className="w-4 h-4 mr-2" />
+                            {startMatchMutation.isPending ? "Iniciando..." : "Iniciar Partido"}
+                          </Button>
+                          {courtStillBusy && (
+                            <p className="text-sm text-orange-500 mt-2 text-center">
+                              ⏳ Cancha pre-asignada. Esperando que termine el partido actual.
+                            </p>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
               </CardContent>
