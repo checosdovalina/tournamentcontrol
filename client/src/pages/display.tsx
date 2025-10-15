@@ -622,6 +622,9 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
 // Next Match Card Component
 function NextMatchCard({ match }: any) {
   const getStatusBadge = () => {
+    if (match.preAssignedCourt) {
+      return <span className="text-white bg-amber-600/80 text-sm px-2 py-1 rounded">⏳ Pre-asignada</span>;
+    }
     if (match.status === 'assigned' && match.court) {
       return <span className="text-white bg-purple-600/80 text-sm px-2 py-1 rounded">Cancha asignada</span>;
     }
@@ -650,9 +653,21 @@ function NextMatchCard({ match }: any) {
               {match.court.name}
             </span>
           )}
+          {match.preAssignedCourt && (
+            <span className="text-white/80 text-base font-medium">
+              {match.preAssignedCourt.name}
+            </span>
+          )}
           {getStatusBadge()}
         </div>
       </div>
+      {match.preAssignedCourt && (
+        <div className="mb-2">
+          <span className="text-amber-400 text-sm bg-amber-500/20 px-2 py-1 rounded border border-amber-500/30">
+            Cancha pre-asignada: {match.preAssignedCourt.name} - Esperando liberación
+          </span>
+        </div>
+      )}
       {match.category && (
         <div className="mb-2">
           <span className="text-white/60 text-sm bg-white/10 px-2 py-1 rounded">

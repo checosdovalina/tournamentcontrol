@@ -330,6 +330,7 @@ export type ScheduledMatchWithDetails = ScheduledMatch & {
   pair2: PairWithPlayers;
   category?: Category;
   court?: Court;
+  preAssignedCourt?: Court;
   players: (ScheduledMatchPlayer & {
     player: Player;
   })[];
