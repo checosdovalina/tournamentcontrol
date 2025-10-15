@@ -2306,6 +2306,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const day = String(now.getDate()).padStart(2, '0');
       const todayStr = `${year}-${month}-${day}`;
       
+      console.log('DEBUG - Match day string:', matchDayStr);
+      console.log('DEBUG - Today string:', todayStr);
+      console.log('DEBUG - Comparison result (matchDayStr < todayStr):', matchDayStr < todayStr);
+      
       if (matchDayStr < todayStr) {
         return res.status(400).json({ 
           message: "No se pueden crear partidos en fechas pasadas. Seleccione hoy o una fecha futura." 
