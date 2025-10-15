@@ -2643,7 +2643,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       }
       
       // Check for conflicts if time is specified
-      if (currentMatch.plannedTime) {
+      // Skip this check if we're doing a pre-assignment (court is busy with ongoing match)
+      if (currentMatch.plannedTime && !isPreAssignment) {
         const existingMatches = await storage.getScheduledMatchesByDay(
           currentMatch.tournamentId,
           currentMatch.day
