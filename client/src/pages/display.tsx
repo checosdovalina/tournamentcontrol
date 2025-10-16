@@ -268,7 +268,7 @@ export default function Display() {
             {tournament?.tournamentLogoUrl ? (
               <img src={tournament.tournamentLogoUrl} alt="Logo Torneo" className="h-16 w-auto object-contain tv-display-logo" />
             ) : (
-              <img src="https://i.imgur.com/vNo1IPO.png" alt="PLAYDOIT" className="h-16 w-auto tv-display-logo" />
+              <img src={courtflowLogo} alt="CourtFlow" className="h-16 w-auto tv-display-logo" />
             )}
             <div className="text-white">
               <h1 className="text-2xl font-bold">CourtFlow</h1>
@@ -474,7 +474,7 @@ export default function Display() {
             <div className="flex-1 overflow-hidden">
               {activeBanners.length > 0 ? (
                 <div className="relative">
-                  <div className="flex space-x-8" style={{ animation: 'marquee 60s linear infinite' }}>
+                  <div className="flex space-x-8" style={{ animation: 'marquee 40s linear infinite' }}>
                     {/* Duplicate sponsors multiple times for seamless loop with all logos visible */}
                     {[...activeBanners, ...activeBanners, ...activeBanners, ...activeBanners, ...activeBanners, ...activeBanners].map((banner: any, idx: number) => (
                       <div key={`${banner.id}-${idx}`} className="h-16 flex items-center flex-shrink-0">
