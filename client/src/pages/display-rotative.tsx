@@ -62,9 +62,6 @@ export default function DisplayRotative() {
     const diffMinutes = Math.floor((now.getTime() - resultTime.getTime()) / (1000 * 60));
     return diffMinutes <= 1440;
   }).slice(0, 8);
-  
-  console.log('[DISPLAY ROTATIVE] All results:', allResults.length);
-  console.log('[DISPLAY ROTATIVE] Recent results (24h):', recentResults.length);
 
   const { data: banners = [] } = useQuery<any[]>({
     queryKey: ["/api/banners", tournament?.id],
@@ -162,7 +159,6 @@ export default function DisplayRotative() {
   }, [activeAds.length, upcomingMatches.length, recentResults.length]);
 
   const formatScore = (match: any) => {
-    console.log('[FORMAT SCORE] Match sets:', match.sets);
     if (!match.sets || match.sets.length === 0) return "0-0";
     return match.sets.map((set: any) => 
       `${set.pair1Score || 0}-${set.pair2Score || 0}`
@@ -299,9 +295,9 @@ export default function DisplayRotative() {
 
 // Current Matches Screen Component
 function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], formatScore: (match: any) => string }) {
-  console.log('[CURRENT MATCHES] First match:', matches[0]);
-  console.log('[CURRENT MATCHES] Pair1:', matches[0]?.pair1);
-  console.log('[CURRENT MATCHES] Player1:', matches[0]?.pair1?.player1);
+  if (matches.length > 0) {
+    console.log('[CURRENT MATCH DATA]', JSON.stringify(matches[0], null, 2));
+  }
   
   if (matches.length === 0) {
     return (

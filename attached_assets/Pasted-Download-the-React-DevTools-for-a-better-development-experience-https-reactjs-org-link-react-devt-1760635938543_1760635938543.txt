@@ -1,0 +1,82 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+use-websocket.ts:20 WebSocket connected
+use-websocket.ts:83 WebSocket message: {type: 'connected', timestamp: '2025-10-16T17:31:24.133Z'}
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 0
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 0
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
+display-rotative.tsx:66 [DISPLAY ROTATIVE] All results: 10
+display-rotative.tsx:67 [DISPLAY ROTATIVE] Recent results (24h): 8
+5display-rotative.tsx:165 [FORMAT SCORE] Match sets: undefined
