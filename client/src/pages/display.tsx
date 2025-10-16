@@ -474,7 +474,7 @@ export default function Display() {
             <div className="flex-1 overflow-hidden">
               {activeBanners.length > 0 ? (
                 <div className="relative">
-                  <div className="flex space-x-8" style={{ animation: 'marquee 40s linear infinite' }}>
+                  <div className="flex space-x-8" style={{ animation: 'marquee 30s linear infinite' }}>
                     {/* Duplicate sponsors multiple times for seamless loop with all logos visible */}
                     {[...activeBanners, ...activeBanners, ...activeBanners, ...activeBanners, ...activeBanners, ...activeBanners].map((banner: any, idx: number) => (
                       <div key={`${banner.id}-${idx}`} className="h-16 flex items-center flex-shrink-0">
