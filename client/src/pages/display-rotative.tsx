@@ -324,13 +324,13 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
   const visibleMatches = matches.slice(currentPage * cardsPerPage, (currentPage + 1) * cardsPerPage);
 
   return (
-    <div className="h-full p-8 flex flex-col overflow-hidden">
-      <div className="mb-6 flex items-center justify-between flex-shrink-0">
+    <div className="h-full p-4 flex flex-col overflow-hidden">
+      <div className="mb-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-3">
-          <div className="h-12 w-12 rounded-full bg-[#10B981] flex items-center justify-center animate-pulse">
-            <Activity className="h-6 w-6 text-white" />
+          <div className="h-10 w-10 rounded-full bg-[#10B981] flex items-center justify-center animate-pulse">
+            <Activity className="h-5 w-5 text-white" />
           </div>
-          <h2 className="text-4xl font-bold text-white">Partidos en Curso</h2>
+          <h2 className="text-3xl font-bold text-white">Partidos en Curso</h2>
         </div>
         {totalPages > 1 && (
           <div className="flex items-center space-x-2">
@@ -347,7 +347,7 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-3 h-full">
+        <div className="grid grid-cols-2 gap-2 h-full">
           {visibleMatches.map((match: any) => (
             <div key={match.id} className="bg-[#1F2937] rounded-xl p-3 border-2 border-[#10B981] h-fit">
               <div className="flex justify-between items-center mb-2">
@@ -413,13 +413,13 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
   const visibleMatches = matches.slice(currentPage * cardsPerPage, (currentPage + 1) * cardsPerPage);
 
   return (
-    <div className="h-full p-8 flex flex-col overflow-hidden">
-      <div className="mb-6 flex items-center justify-between flex-shrink-0">
+    <div className="h-full p-4 flex flex-col overflow-hidden">
+      <div className="mb-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-3">
-          <div className="h-12 w-12 rounded-full bg-[#2563EB] flex items-center justify-center">
-            <Clock className="h-6 w-6 text-white" />
+          <div className="h-10 w-10 rounded-full bg-[#2563EB] flex items-center justify-center">
+            <Clock className="h-5 w-5 text-white" />
           </div>
-          <h2 className="text-4xl font-bold text-white">Próximos Partidos</h2>
+          <h2 className="text-3xl font-bold text-white">Próximos Partidos</h2>
         </div>
         {totalPages > 1 && (
           <div className="flex items-center space-x-2">
@@ -436,7 +436,7 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-3 h-full">
+        <div className="grid grid-cols-2 gap-2 h-full">
           {visibleMatches.map((match: any, idx: number) => (
             <div key={match.id} className="bg-gradient-to-br from-[#1F2937] to-[#111827] rounded-xl p-3 border-2 border-[#374151] relative overflow-hidden h-fit">
               <div className="absolute top-2 right-2 bg-[#2563EB] text-white w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold">
@@ -518,13 +518,13 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
   const visibleResults = results.slice(currentPage * cardsPerPage, (currentPage + 1) * cardsPerPage);
 
   return (
-    <div className="h-full p-8 flex flex-col overflow-hidden">
-      <div className="mb-6 flex items-center justify-between flex-shrink-0">
+    <div className="h-full p-4 flex flex-col overflow-hidden">
+      <div className="mb-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-3">
-          <div className="h-12 w-12 rounded-full bg-[#F59E0B] flex items-center justify-center">
-            <Trophy className="h-6 w-6 text-white" />
+          <div className="h-10 w-10 rounded-full bg-[#F59E0B] flex items-center justify-center">
+            <Trophy className="h-5 w-5 text-white" />
           </div>
-          <h2 className="text-4xl font-bold text-white">Resultados Recientes</h2>
+          <h2 className="text-3xl font-bold text-white">Resultados Recientes</h2>
         </div>
         {totalPages > 1 && (
           <div className="flex items-center space-x-2">
@@ -541,7 +541,7 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-3 h-full">
+        <div className="grid grid-cols-2 gap-2 h-full">
           {visibleResults.map((result: any) => (
             <div key={result.id} className="bg-[#1F2937] rounded-xl p-3 border-2 border-[#374151] h-fit">
               <div className="flex justify-between items-start mb-2">
