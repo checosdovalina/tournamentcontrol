@@ -26,6 +26,13 @@ export default function DisplayRotative() {
 
   const { data: currentMatches = [] } = useQuery<any[]>({
     queryKey: ["/api/matches/current", tournament?.id],
+    queryFn: async () => {
+      if (!tournament?.id) return [];
+      const response = await fetch(`/api/matches/current/${tournament.id}`);
+      const data = await response.json();
+      console.log('[DISPLAY ROTATIVE] Current matches data:', data);
+      return data;
+    },
     enabled: !!tournament?.id,
     refetchInterval: 2000,
     staleTime: 0,
