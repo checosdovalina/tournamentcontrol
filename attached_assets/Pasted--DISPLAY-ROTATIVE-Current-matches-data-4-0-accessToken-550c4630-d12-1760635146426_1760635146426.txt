@@ -1,0 +1,76 @@
+[DISPLAY ROTATIVE] Current matches data: 
+(4) [{…}, {…}, {…}, {…}]
+0
+: 
+accessToken
+: 
+"550c4630-d128-4f93-b51b-9dc838ab5f51"
+categoryId
+: 
+"d805c955-aba6-47aa-b161-91b29f29c917"
+court
+: 
+{id: '4c9f478e-4ce6-41b0-b1e5-734aa044262d', name: 'Cancha - PLAYDOIT', clubId: '06caf906-c816-4c52-9fc2-8254d36cffe3', isAvailable: false, preAssignedScheduledMatchId: '8c153cde-1fd3-4f38-b5d4-fec3aac8cca8', …}
+courtId
+: 
+"4c9f478e-4ce6-41b0-b1e5-734aa044262d"
+createdAt
+: 
+"2025-10-15T21:50:48.005Z"
+endTime
+: 
+null
+format
+: 
+"best_of_3"
+id
+: 
+"6e3c9325-b0e2-4d50-82e0-5749c052f667"
+notes
+: 
+null
+pair1
+: 
+{id: 'ca1a1aaf-cbee-44ef-b64a-8cd4ca2b5e85', player1Id: '592e2cde-ec59-46cf-814c-379d9efdeb7b', player2Id: '80ae23b0-62a9-4fdd-81bd-64fbe1ff1933', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', categoryId: 'd805c955-aba6-47aa-b161-91b29f29c917', …}
+pair1Id
+: 
+"ca1a1aaf-cbee-44ef-b64a-8cd4ca2b5e85"
+pair2
+: 
+{id: 'cc8da2b9-ab52-4d82-aaad-2410e55db042', player1Id: '6a5288d3-71fe-4b64-972d-a432b7e1bc29', player2Id: '792ce397-c14b-46b4-b087-6d178d130317', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', categoryId: 'd805c955-aba6-47aa-b161-91b29f29c917', …}
+pair2Id
+: 
+"cc8da2b9-ab52-4d82-aaad-2410e55db042"
+score
+: 
+null
+startTime
+: 
+"2025-10-15T21:50:48.005Z"
+status
+: 
+"playing"
+tournamentId
+: 
+"d5017921-d966-48e6-a0ac-b7c9cb95050d"
+winnerId
+: 
+null
+[[Prototype]]
+: 
+Object
+1
+: 
+{id: '3235e9ca-5253-40dc-bee7-23607644f168', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', courtId: 'c714b2c8-4019-421b-b1df-a4ed19d3469f', pair1Id: 'c9470123-3ba7-4e35-8879-4eeb8f1b9eb4', pair2Id: '15a701e6-60cf-41da-9754-f26a0132cde6', …}
+2
+: 
+{id: '272c2462-855c-4c65-900b-d9a969e8378d', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', courtId: '89dbe403-60bc-4256-b515-4381587a472c', pair1Id: '91f90c12-fabd-451e-a21d-c8dcf7a8ff05', pair2Id: '0f08b4b6-54eb-400e-ad28-fa9884a7b9dc', …}
+3
+: 
+{id: 'c1ef5564-c483-47ab-97f2-a54e9a279fa4', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', courtId: 'aa9615ab-227f-4979-a244-92b4d2f6e355', pair1Id: '504aab81-b8b8-44c9-8cf6-62e1fe4b3e22', pair2Id: '260d89ff-cfbf-4e17-9820-44daee43d0a7', …}
+length
+: 
+4
+[[Prototype]]
+: 
+Array(0)
