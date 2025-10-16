@@ -347,30 +347,30 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-4 h-full">
+        <div className="grid grid-cols-2 gap-3 h-full">
           {visibleMatches.map((match: any) => (
-            <div key={match.id} className="bg-[#1F2937] rounded-2xl p-4 border-2 border-[#10B981] h-fit">
-              <div className="flex justify-between items-center mb-3">
-                <div className="bg-[#3B82F6] text-white px-3 py-1 rounded-lg font-bold text-sm">
+            <div key={match.id} className="bg-[#1F2937] rounded-xl p-3 border-2 border-[#10B981] h-fit">
+              <div className="flex justify-between items-center mb-2">
+                <div className="bg-[#3B82F6] text-white px-2 py-1 rounded text-xs font-bold">
                   {match.court?.name || 'Sin cancha'}
                 </div>
-                <div className="text-[#10B981] font-bold text-base">EN VIVO</div>
+                <div className="text-[#10B981] font-bold text-sm">EN VIVO</div>
               </div>
               
-              <div className="bg-[#111827] rounded-xl p-3 mb-2">
-                <div className="text-[#9CA3AF] text-xs mb-1">{match.category?.name}</div>
-                <div className="text-white text-lg font-bold truncate">
+              <div className="bg-[#111827] rounded-lg p-2 mb-1.5">
+                <div className="text-[#9CA3AF] text-xs mb-0.5">{match.category?.name}</div>
+                <div className="text-white text-sm font-bold truncate">
                   {match.pair1?.player1?.name} / {match.pair1?.player2?.name}
                 </div>
               </div>
               
-              <div className="text-center my-2">
-                <div className="text-[#F59E0B] text-2xl font-bold">{formatScore(match)}</div>
+              <div className="text-center my-1.5">
+                <div className="text-[#F59E0B] text-xl font-bold">{formatScore(match)}</div>
               </div>
               
-              <div className="bg-[#111827] rounded-xl p-3">
-                <div className="text-[#9CA3AF] text-xs mb-1">{match.category?.name}</div>
-                <div className="text-white text-lg font-bold truncate">
+              <div className="bg-[#111827] rounded-lg p-2">
+                <div className="text-[#9CA3AF] text-xs mb-0.5">{match.category?.name}</div>
+                <div className="text-white text-sm font-bold truncate">
                   {match.pair2?.player1?.name} / {match.pair2?.player2?.name}
                 </div>
               </div>
@@ -436,46 +436,46 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-4 h-full">
+        <div className="grid grid-cols-2 gap-3 h-full">
           {visibleMatches.map((match: any, idx: number) => (
-            <div key={match.id} className="bg-gradient-to-br from-[#1F2937] to-[#111827] rounded-2xl p-4 border-2 border-[#374151] relative overflow-hidden h-fit">
-              <div className="absolute top-3 right-3 bg-[#2563EB] text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold">
+            <div key={match.id} className="bg-gradient-to-br from-[#1F2937] to-[#111827] rounded-xl p-3 border-2 border-[#374151] relative overflow-hidden h-fit">
+              <div className="absolute top-2 right-2 bg-[#2563EB] text-white w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold">
                 #{idx + 1}
               </div>
               
-              <div className="mb-3 pr-14">
-                <div className="text-[#F59E0B] font-bold text-lg mb-1">
+              <div className="mb-2 pr-12">
+                <div className="text-[#F59E0B] font-bold text-base mb-0.5">
                   {match.plannedTime || 'Por definir'}
                 </div>
                 <div className="text-[#9CA3AF] text-xs">{match.category?.name}</div>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="bg-[#111827] rounded-lg p-2">
-                  <div className="text-white font-bold text-base truncate">
+                  <div className="text-white font-bold text-sm truncate">
                     {match.pair1?.player1?.name} / {match.pair1?.player2?.name}
                   </div>
                 </div>
                 
-                <div className="text-center text-[#6B7280] font-bold text-sm">VS</div>
+                <div className="text-center text-[#6B7280] font-bold text-xs">VS</div>
                 
                 <div className="bg-[#111827] rounded-lg p-2">
-                  <div className="text-white font-bold text-base truncate">
+                  <div className="text-white font-bold text-sm truncate">
                     {match.pair2?.player1?.name} / {match.pair2?.player2?.name}
                   </div>
                 </div>
               </div>
               
               {match.court ? (
-                <div className="mt-3 bg-[#10B981] text-white px-2 py-1 rounded-lg text-center font-semibold text-sm">
+                <div className="mt-2 bg-[#10B981] text-white px-2 py-1 rounded text-center font-semibold text-xs">
                   ✓ Asignado: {match.court.name}
                 </div>
               ) : match.status === 'pre_assigned' ? (
-                <div className="mt-3 bg-[#F59E0B] text-white px-2 py-1 rounded-lg text-center font-semibold text-sm">
+                <div className="mt-2 bg-[#F59E0B] text-white px-2 py-1 rounded text-center font-semibold text-xs">
                   ⏳ Pre-asignado
                 </div>
               ) : (
-                <div className="mt-3 bg-[#6B7280] text-white px-2 py-1 rounded-lg text-center font-semibold text-sm">
+                <div className="mt-2 bg-[#6B7280] text-white px-2 py-1 rounded text-center font-semibold text-xs">
                   ⏱ En espera
                 </div>
               )}
@@ -541,44 +541,44 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-4 h-full">
+        <div className="grid grid-cols-2 gap-3 h-full">
           {visibleResults.map((result: any) => (
-            <div key={result.id} className="bg-[#1F2937] rounded-2xl p-4 border-2 border-[#374151] h-fit">
-              <div className="flex justify-between items-start mb-3">
-                <div className="bg-[#2563EB] text-white px-3 py-1 rounded-lg text-sm font-semibold">
-                  {result.match?.category?.name}
+            <div key={result.id} className="bg-[#1F2937] rounded-xl p-3 border-2 border-[#374151] h-fit">
+              <div className="flex justify-between items-start mb-2">
+                <div className="bg-[#2563EB] text-white px-2 py-0.5 rounded text-xs font-semibold">
+                  {result.category?.name || result.match?.category?.name || 'Sin categoría'}
                 </div>
                 <div className="text-[#6B7280] text-xs">
                   {new Date(result.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
               
-              <div className={`rounded-lg p-3 mb-2 ${result.winnerId === result.match?.pair1?.id ? 'bg-[#10B981]/20 border-2 border-[#10B981]' : 'bg-[#111827]'}`}>
+              <div className={`rounded-lg p-2 mb-1.5 ${result.winnerId === result.match?.pair1?.id ? 'bg-[#10B981]/20 border-2 border-[#10B981]' : 'bg-[#111827]'}`}>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="text-white text-base font-bold truncate">
+                    <div className="text-white text-sm font-bold truncate">
                       {result.match?.pair1?.player1?.name} / {result.match?.pair1?.player2?.name}
                     </div>
                   </div>
                   {result.winnerId === result.match?.pair1?.id && (
-                    <Trophy className="h-6 w-6 text-[#10B981] flex-shrink-0" />
+                    <Trophy className="h-4 w-4 text-[#10B981] flex-shrink-0" />
                   )}
                 </div>
               </div>
               
-              <div className="text-center my-2">
-                <div className="text-[#F59E0B] text-xl font-bold">{formatScore(result)}</div>
+              <div className="text-center my-1.5">
+                <div className="text-[#F59E0B] text-lg font-bold">{formatScore(result)}</div>
               </div>
               
-              <div className={`rounded-lg p-3 ${result.winnerId === result.match?.pair2?.id ? 'bg-[#10B981]/20 border-2 border-[#10B981]' : 'bg-[#111827]'}`}>
+              <div className={`rounded-lg p-2 ${result.winnerId === result.match?.pair2?.id ? 'bg-[#10B981]/20 border-2 border-[#10B981]' : 'bg-[#111827]'}`}>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="text-white text-base font-bold truncate">
+                    <div className="text-white text-sm font-bold truncate">
                       {result.match?.pair2?.player1?.name} / {result.match?.pair2?.player2?.name}
                     </div>
                   </div>
                   {result.winnerId === result.match?.pair2?.id && (
-                    <Trophy className="h-6 w-6 text-[#10B981] flex-shrink-0" />
+                    <Trophy className="h-4 w-4 text-[#10B981] flex-shrink-0" />
                   )}
                 </div>
               </div>
