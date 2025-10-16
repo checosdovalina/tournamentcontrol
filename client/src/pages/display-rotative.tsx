@@ -324,21 +324,21 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
   const visibleMatches = matches.slice(currentPage * cardsPerPage, (currentPage + 1) * cardsPerPage);
 
   return (
-    <div className="h-full p-4 flex flex-col overflow-hidden">
-      <div className="mb-3 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 rounded-full bg-[#10B981] flex items-center justify-center animate-pulse">
-            <Activity className="h-5 w-5 text-white" />
+    <div className="h-full p-3 flex flex-col overflow-hidden">
+      <div className="mb-2 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center space-x-2">
+          <div className="h-8 w-8 rounded-full bg-[#10B981] flex items-center justify-center animate-pulse">
+            <Activity className="h-4 w-4 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-white">Partidos en Curso</h2>
+          <h2 className="text-2xl font-bold text-white">Partidos en Curso</h2>
         </div>
         {totalPages > 1 && (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5">
             {Array.from({ length: totalPages }).map((_, idx) => (
               <div
                 key={idx}
-                className={`h-2 rounded-full transition-all ${
-                  idx === currentPage ? 'w-8 bg-[#10B981]' : 'w-2 bg-[#374151]'
+                className={`h-1.5 rounded-full transition-all ${
+                  idx === currentPage ? 'w-6 bg-[#10B981]' : 'w-1.5 bg-[#374151]'
                 }`}
               />
             ))}
@@ -347,28 +347,28 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-2 h-full">
+        <div className="grid grid-cols-2 gap-1.5 h-full">
           {visibleMatches.map((match: any) => (
-            <div key={match.id} className="bg-[#1F2937] rounded-xl p-3 border-2 border-[#10B981] h-fit">
-              <div className="flex justify-between items-center mb-2">
-                <div className="bg-[#3B82F6] text-white px-2 py-1 rounded text-xs font-bold">
+            <div key={match.id} className="bg-[#1F2937] rounded-lg p-2 border border-[#10B981] h-fit">
+              <div className="flex justify-between items-center mb-1.5">
+                <div className="bg-[#3B82F6] text-white px-1.5 py-0.5 rounded text-xs font-bold">
                   {match.court?.name || 'Sin cancha'}
                 </div>
-                <div className="text-[#10B981] font-bold text-sm">EN VIVO</div>
+                <div className="text-[#10B981] font-bold text-xs">EN VIVO</div>
               </div>
               
-              <div className="bg-[#111827] rounded-lg p-2 mb-1.5">
+              <div className="bg-[#111827] rounded p-1.5 mb-1">
                 <div className="text-[#9CA3AF] text-xs mb-0.5">{match.category?.name}</div>
                 <div className="text-white text-sm font-bold truncate">
                   {match.pair1?.player1?.name} / {match.pair1?.player2?.name}
                 </div>
               </div>
               
-              <div className="text-center my-1.5">
-                <div className="text-[#F59E0B] text-xl font-bold">{formatScore(match)}</div>
+              <div className="text-center my-1">
+                <div className="text-[#F59E0B] text-lg font-bold">{formatScore(match)}</div>
               </div>
               
-              <div className="bg-[#111827] rounded-lg p-2">
+              <div className="bg-[#111827] rounded p-1.5">
                 <div className="text-[#9CA3AF] text-xs mb-0.5">{match.category?.name}</div>
                 <div className="text-white text-sm font-bold truncate">
                   {match.pair2?.player1?.name} / {match.pair2?.player2?.name}
@@ -413,21 +413,21 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
   const visibleMatches = matches.slice(currentPage * cardsPerPage, (currentPage + 1) * cardsPerPage);
 
   return (
-    <div className="h-full p-4 flex flex-col overflow-hidden">
-      <div className="mb-3 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 rounded-full bg-[#2563EB] flex items-center justify-center">
-            <Clock className="h-5 w-5 text-white" />
+    <div className="h-full p-3 flex flex-col overflow-hidden">
+      <div className="mb-2 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center space-x-2">
+          <div className="h-8 w-8 rounded-full bg-[#2563EB] flex items-center justify-center">
+            <Clock className="h-4 w-4 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-white">Próximos Partidos</h2>
+          <h2 className="text-2xl font-bold text-white">Próximos Partidos</h2>
         </div>
         {totalPages > 1 && (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5">
             {Array.from({ length: totalPages }).map((_, idx) => (
               <div
                 key={idx}
-                className={`h-2 rounded-full transition-all ${
-                  idx === currentPage ? 'w-8 bg-[#2563EB]' : 'w-2 bg-[#374151]'
+                className={`h-1.5 rounded-full transition-all ${
+                  idx === currentPage ? 'w-6 bg-[#2563EB]' : 'w-1.5 bg-[#374151]'
                 }`}
               />
             ))}
@@ -436,22 +436,22 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-2 h-full">
+        <div className="grid grid-cols-2 gap-1.5 h-full">
           {visibleMatches.map((match: any, idx: number) => (
-            <div key={match.id} className="bg-gradient-to-br from-[#1F2937] to-[#111827] rounded-xl p-3 border-2 border-[#374151] relative overflow-hidden h-fit">
-              <div className="absolute top-2 right-2 bg-[#2563EB] text-white w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold">
+            <div key={match.id} className="bg-gradient-to-br from-[#1F2937] to-[#111827] rounded-lg p-2 border border-[#374151] relative overflow-hidden h-fit">
+              <div className="absolute top-1.5 right-1.5 bg-[#2563EB] text-white w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold">
                 #{idx + 1}
               </div>
               
-              <div className="mb-2 pr-12">
-                <div className="text-[#F59E0B] font-bold text-base mb-0.5">
+              <div className="mb-1.5 pr-10">
+                <div className="text-[#F59E0B] font-bold text-sm mb-0.5">
                   {match.plannedTime || 'Por definir'}
                 </div>
                 <div className="text-[#9CA3AF] text-xs">{match.category?.name}</div>
               </div>
               
-              <div className="space-y-1.5">
-                <div className="bg-[#111827] rounded-lg p-2">
+              <div className="space-y-1">
+                <div className="bg-[#111827] rounded p-1.5">
                   <div className="text-white font-bold text-sm truncate">
                     {match.pair1?.player1?.name} / {match.pair1?.player2?.name}
                   </div>
@@ -459,7 +459,7 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
                 
                 <div className="text-center text-[#6B7280] font-bold text-xs">VS</div>
                 
-                <div className="bg-[#111827] rounded-lg p-2">
+                <div className="bg-[#111827] rounded p-1.5">
                   <div className="text-white font-bold text-sm truncate">
                     {match.pair2?.player1?.name} / {match.pair2?.player2?.name}
                   </div>
@@ -467,15 +467,15 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
               </div>
               
               {match.court ? (
-                <div className="mt-2 bg-[#10B981] text-white px-2 py-1 rounded text-center font-semibold text-xs">
+                <div className="mt-1.5 bg-[#10B981] text-white px-1.5 py-0.5 rounded text-center font-semibold text-xs">
                   ✓ Asignado: {match.court.name}
                 </div>
               ) : match.status === 'pre_assigned' ? (
-                <div className="mt-2 bg-[#F59E0B] text-white px-2 py-1 rounded text-center font-semibold text-xs">
+                <div className="mt-1.5 bg-[#F59E0B] text-white px-1.5 py-0.5 rounded text-center font-semibold text-xs">
                   ⏳ Pre-asignado
                 </div>
               ) : (
-                <div className="mt-2 bg-[#6B7280] text-white px-2 py-1 rounded text-center font-semibold text-xs">
+                <div className="mt-1.5 bg-[#6B7280] text-white px-1.5 py-0.5 rounded text-center font-semibold text-xs">
                   ⏱ En espera
                 </div>
               )}
@@ -518,21 +518,21 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
   const visibleResults = results.slice(currentPage * cardsPerPage, (currentPage + 1) * cardsPerPage);
 
   return (
-    <div className="h-full p-4 flex flex-col overflow-hidden">
-      <div className="mb-3 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 rounded-full bg-[#F59E0B] flex items-center justify-center">
-            <Trophy className="h-5 w-5 text-white" />
+    <div className="h-full p-3 flex flex-col overflow-hidden">
+      <div className="mb-2 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center space-x-2">
+          <div className="h-8 w-8 rounded-full bg-[#F59E0B] flex items-center justify-center">
+            <Trophy className="h-4 w-4 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-white">Resultados Recientes</h2>
+          <h2 className="text-2xl font-bold text-white">Resultados Recientes</h2>
         </div>
         {totalPages > 1 && (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5">
             {Array.from({ length: totalPages }).map((_, idx) => (
               <div
                 key={idx}
-                className={`h-2 rounded-full transition-all ${
-                  idx === currentPage ? 'w-8 bg-[#F59E0B]' : 'w-2 bg-[#374151]'
+                className={`h-1.5 rounded-full transition-all ${
+                  idx === currentPage ? 'w-6 bg-[#F59E0B]' : 'w-1.5 bg-[#374151]'
                 }`}
               />
             ))}
@@ -541,11 +541,11 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-2 h-full">
+        <div className="grid grid-cols-2 gap-1.5 h-full">
           {visibleResults.map((result: any) => (
-            <div key={result.id} className="bg-[#1F2937] rounded-xl p-3 border-2 border-[#374151] h-fit">
-              <div className="flex justify-between items-start mb-2">
-                <div className="bg-[#2563EB] text-white px-2 py-0.5 rounded text-xs font-semibold">
+            <div key={result.id} className="bg-[#1F2937] rounded-lg p-2 border border-[#374151] h-fit">
+              <div className="flex justify-between items-start mb-1.5">
+                <div className="bg-[#2563EB] text-white px-1.5 py-0.5 rounded text-xs font-semibold">
                   {result.category?.name || result.match?.category?.name || 'Sin categoría'}
                 </div>
                 <div className="text-[#6B7280] text-xs">
@@ -553,7 +553,7 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
                 </div>
               </div>
               
-              <div className={`rounded-lg p-2 mb-1.5 ${result.winnerId === result.match?.pair1?.id ? 'bg-[#10B981]/20 border-2 border-[#10B981]' : 'bg-[#111827]'}`}>
+              <div className={`rounded p-1.5 mb-1 ${result.winnerId === result.match?.pair1?.id ? 'bg-[#10B981]/20 border border-[#10B981]' : 'bg-[#111827]'}`}>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="text-white text-sm font-bold truncate">
@@ -561,16 +561,16 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
                     </div>
                   </div>
                   {result.winnerId === result.match?.pair1?.id && (
-                    <Trophy className="h-4 w-4 text-[#10B981] flex-shrink-0" />
+                    <Trophy className="h-3.5 w-3.5 text-[#10B981] flex-shrink-0" />
                   )}
                 </div>
               </div>
               
-              <div className="text-center my-1.5">
-                <div className="text-[#F59E0B] text-lg font-bold">{formatScore(result)}</div>
+              <div className="text-center my-1">
+                <div className="text-[#F59E0B] text-base font-bold">{formatScore(result)}</div>
               </div>
               
-              <div className={`rounded-lg p-2 ${result.winnerId === result.match?.pair2?.id ? 'bg-[#10B981]/20 border-2 border-[#10B981]' : 'bg-[#111827]'}`}>
+              <div className={`rounded p-1.5 ${result.winnerId === result.match?.pair2?.id ? 'bg-[#10B981]/20 border border-[#10B981]' : 'bg-[#111827]'}`}>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="text-white text-sm font-bold truncate">
@@ -578,7 +578,7 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
                     </div>
                   </div>
                   {result.winnerId === result.match?.pair2?.id && (
-                    <Trophy className="h-4 w-4 text-[#10B981] flex-shrink-0" />
+                    <Trophy className="h-3.5 w-3.5 text-[#10B981] flex-shrink-0" />
                   )}
                 </div>
               </div>
