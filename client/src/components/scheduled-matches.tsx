@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil, Repeat } from "lucide-react";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
 import EditScheduledMatchModal from "@/components/modals/edit-scheduled-match-modal";
 import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/schema";
@@ -403,6 +403,24 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     },
   });
 
+  const reactivateMatchMutation = useMutation({
+    mutationFn: async (matchId: string) => {
+      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/reactivate`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/results/recent"] });
+      toast({ title: "Partido reactivado", description: "El partido ha sido reactivado y puede ser jugado nuevamente" });
+    },
+    onError: (error: any) => {
+      const errorMessage = error.message || "";
+      const messageParts = errorMessage.split(": ");
+      const message = messageParts.length > 1 ? messageParts.slice(1).join(": ") : "No se pudo reactivar el partido";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    },
+  });
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "scheduled":
@@ -413,6 +431,8 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
         return <Badge className="bg-blue-600 hover:bg-blue-700 text-sm" data-testid={`badge-status-assigned`}>Cancha Asignada</Badge>;
       case "playing":
         return <Badge className="bg-orange-600 hover:bg-orange-700 text-sm" data-testid={`badge-status-playing`}>En Juego</Badge>;
+      case "completed":
+        return <Badge className="bg-gray-600 hover:bg-gray-700 text-sm" data-testid={`badge-status-completed`}>Completado</Badge>;
       default:
         return <Badge variant="outline" className="text-sm" data-testid={`badge-status-${status}`}>{status}</Badge>;
     }
@@ -797,6 +817,21 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                   
                   {userRole === 'admin' && (
                     <div className="flex gap-1">
+                      {/* Reactivate Button - Only for completed matches */}
+                      {match.status === "completed" && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-green-600"
+                          onClick={() => reactivateMatchMutation.mutate(match.id)}
+                          disabled={reactivateMatchMutation.isPending}
+                          data-testid={`button-reactivate-match-${match.id}`}
+                          title="Reactivar partido"
+                        >
+                          <Repeat className="h-4 w-4" />
+                        </Button>
+                      )}
+                      
                       {/* Edit Button - Only for non-playing/completed matches */}
                       {match.status !== "playing" && match.status !== "completed" && (
                         <Button 

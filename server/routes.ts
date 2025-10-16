@@ -2782,6 +2782,49 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
+  // Reactivate a completed match
+  app.post("/api/scheduled-matches/:id/reactivate", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const scheduledMatch = await storage.getScheduledMatch(id);
+      
+      if (!scheduledMatch) {
+        return res.status(404).json({ message: "Scheduled match not found" });
+      }
+      
+      if (scheduledMatch.status !== "completed") {
+        return res.status(400).json({ message: "Only completed matches can be reactivated" });
+      }
+      
+      // Find and delete associated result if exists
+      if (scheduledMatch.matchId) {
+        const results = await storage.getResults();
+        const associatedResult = results.find(r => r.matchId === scheduledMatch.matchId);
+        if (associatedResult) {
+          await storage.deleteResult(associatedResult.id);
+        }
+      }
+      
+      // Reset scheduled match status to scheduled
+      const updatedMatch = await storage.updateScheduledMatch(id, { 
+        status: "scheduled",
+        matchId: null,
+        courtId: null
+      });
+      
+      // Reset all players check-in status
+      const players = await storage.getScheduledMatchPlayers(id);
+      for (const player of players) {
+        await storage.resetPlayerStatus(id, player.playerId);
+      }
+      
+      broadcastUpdate({ type: "match_reactivated", data: updatedMatch });
+      res.json(updatedMatch);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to reactivate match", error: error.message });
+    }
+  });
+
   // Assign court and start match in one step (for waiting list)
   app.post("/api/scheduled-matches/:id/assign-and-start", requireAuth, async (req, res) => {
     try {
