@@ -258,6 +258,9 @@ export default function Display() {
   const activeBanners = banners
     .filter((banner: any) => banner.isActive)
     .sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0));
+  
+  // Debug: log banner count
+  console.log(`[DISPLAY] Total banners loaded: ${banners.length}, Active banners: ${activeBanners.length}`);
 
   return (
     <div className="fixed inset-0 z-50">
