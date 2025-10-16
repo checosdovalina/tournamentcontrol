@@ -546,7 +546,7 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
             <div key={result.id} className="bg-[#1F2937] rounded-lg p-2 border border-[#374151] h-fit">
               <div className="flex justify-between items-start mb-1.5">
                 <div className="bg-[#2563EB] text-white px-1.5 py-0.5 rounded text-xs font-semibold">
-                  {result.category?.name || result.match?.category?.name || 'Sin categoría'}
+                  {result.match?.category?.name || 'Sin categoría'}
                 </div>
                 <div className="text-[#6B7280] text-xs">
                   {new Date(result.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
