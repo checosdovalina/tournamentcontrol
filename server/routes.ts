@@ -2812,14 +2812,21 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         courtId: null
       });
       
+      if (!updatedMatch) {
+        return res.status(500).json({ message: "Failed to update scheduled match" });
+      }
+      
       // Reset all players check-in status
       const players = await storage.getScheduledMatchPlayers(id);
       for (const player of players) {
         await storage.resetPlayerStatus(id, player.playerId);
       }
       
-      broadcastUpdate({ type: "match_reactivated", data: updatedMatch });
-      res.json(updatedMatch);
+      // Get the updated match with full details
+      const reactivatedMatch = await storage.getScheduledMatch(id);
+      
+      broadcastUpdate({ type: "match_reactivated", data: reactivatedMatch });
+      res.json(reactivatedMatch);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to reactivate match", error: error.message });
     }
