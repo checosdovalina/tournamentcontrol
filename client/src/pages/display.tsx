@@ -30,6 +30,12 @@ export default function Display() {
     refetchInterval: 2000,
     staleTime: 0,
   });
+  
+  useEffect(() => {
+    if (currentMatches?.length > 0) {
+      console.log('[DISPLAY ORIGINAL] Current matches:', currentMatches[0]);
+    }
+  }, [currentMatches]);
 
   const { data: allScheduledMatches = [] } = useQuery<any[]>({
     queryKey: ["/api/scheduled-matches/today", tournament?.id],
