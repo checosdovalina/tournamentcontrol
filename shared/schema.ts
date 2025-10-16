@@ -310,6 +310,7 @@ export type InsertScheduledMatchPlayer = z.infer<typeof insertScheduledMatchPlay
 // Extended types for UI
 export type MatchWithDetails = Match & {
   court: Court;
+  category?: Category;
   pair1: Pair & {
     player1: Player;
     player2: Player;

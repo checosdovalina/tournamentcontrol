@@ -47,7 +47,7 @@ export default function DisplayRotative() {
 
   const upcomingMatches = allScheduledMatches.filter((m: any) => 
     m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled'
-  ).slice(0, 8);
+  ).slice(0, 12);
 
   const { data: allResults = [] } = useQuery<any[]>({
     queryKey: ["/api/results/recent", tournament?.id],
@@ -61,7 +61,7 @@ export default function DisplayRotative() {
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - resultTime.getTime()) / (1000 * 60));
     return diffMinutes <= 1440;
-  }).slice(0, 8);
+  }).slice(0, 12);
 
   const { data: banners = [] } = useQuery<any[]>({
     queryKey: ["/api/banners", tournament?.id],
@@ -296,7 +296,7 @@ export default function DisplayRotative() {
 // Current Matches Screen Component
 function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], formatScore: (match: any) => string }) {
   const [currentPage, setCurrentPage] = useState(0);
-  const cardsPerPage = 4; // 2x2 grid
+  const cardsPerPage = 6; // 2x3 grid
   const totalPages = Math.ceil(matches.length / cardsPerPage);
 
   useEffect(() => {
@@ -347,7 +347,7 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-1.5 h-full">
+        <div className="grid grid-cols-2 gap-x-1.5 gap-y-1 h-full">
           {visibleMatches.map((match: any) => (
             <div key={match.id} className="bg-[#1F2937] rounded-lg p-2 border border-[#10B981] h-fit">
               <div className="flex justify-between items-center mb-1.5">
@@ -385,7 +385,7 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
 // Upcoming Matches Screen Component
 function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
   const [currentPage, setCurrentPage] = useState(0);
-  const cardsPerPage = 4; // 2x2 grid
+  const cardsPerPage = 6; // 2x3 grid
   const totalPages = Math.ceil(matches.length / cardsPerPage);
 
   useEffect(() => {
@@ -436,7 +436,7 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-1.5 h-full">
+        <div className="grid grid-cols-2 gap-x-1.5 gap-y-1 h-full">
           {visibleMatches.map((match: any, idx: number) => (
             <div key={match.id} className="bg-gradient-to-br from-[#1F2937] to-[#111827] rounded-lg p-2 border border-[#374151] relative overflow-hidden h-fit">
               <div className="absolute top-1.5 right-1.5 bg-[#2563EB] text-white w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold">
@@ -490,7 +490,7 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
 // Results Screen Component
 function ResultsScreen({ results, formatScore }: { results: any[], formatScore: (result: any) => string }) {
   const [currentPage, setCurrentPage] = useState(0);
-  const cardsPerPage = 4; // 2x2 grid
+  const cardsPerPage = 6; // 2x3 grid
   const totalPages = Math.ceil(results.length / cardsPerPage);
 
   useEffect(() => {
@@ -541,7 +541,7 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-1.5 h-full">
+        <div className="grid grid-cols-2 gap-x-1.5 gap-y-1 h-full">
           {visibleResults.map((result: any) => (
             <div key={result.id} className="bg-[#1F2937] rounded-lg p-2 border border-[#374151] h-fit">
               <div className="flex justify-between items-start mb-1.5">

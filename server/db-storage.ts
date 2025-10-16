@@ -553,6 +553,7 @@ export class DatabaseStorage implements IStorage {
       const court = await this.getCourt(row.match.courtId);
       const pair1 = await this.getPair(row.match.pair1Id);
       const pair2 = await this.getPair(row.match.pair2Id);
+      const category = row.match.categoryId ? await this.getCategory(row.match.categoryId) : null;
       
       // For cancelled matches, winnerId and loserId may be null
       const winner = row.result.winnerId ? await this.getPair(row.result.winnerId) : null;
@@ -587,6 +588,7 @@ export class DatabaseStorage implements IStorage {
         match: {
           ...row.match,
           court,
+          category: category || undefined,
           pair1: { ...pair1, player1: pair1_p1, player2: pair1_p2 },
           pair2: { ...pair2, player1: pair2_p1, player2: pair2_p2 },
         },
