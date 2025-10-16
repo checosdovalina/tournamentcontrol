@@ -299,6 +299,10 @@ export default function DisplayRotative() {
 
 // Current Matches Screen Component
 function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], formatScore: (match: any) => string }) {
+  console.log('[CURRENT MATCHES] First match:', matches[0]);
+  console.log('[CURRENT MATCHES] Pair1:', matches[0]?.pair1);
+  console.log('[CURRENT MATCHES] Player1:', matches[0]?.pair1?.player1);
+  
   if (matches.length === 0) {
     return (
       <div className="h-full flex items-center justify-center">
