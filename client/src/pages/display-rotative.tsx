@@ -26,13 +26,6 @@ export default function DisplayRotative() {
 
   const { data: currentMatches = [] } = useQuery<any[]>({
     queryKey: ["/api/matches/current", tournament?.id],
-    queryFn: async () => {
-      if (!tournament?.id) return [];
-      const response = await fetch(`/api/matches/current/${tournament.id}`);
-      const data = await response.json();
-      console.log('[DISPLAY ROTATIVE] Current matches data:', data);
-      return data;
-    },
     enabled: !!tournament?.id,
     refetchInterval: 2000,
     staleTime: 0,
@@ -336,7 +329,7 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
             <div className="bg-[#111827] rounded-xl p-4 mb-3">
               <div className="text-[#9CA3AF] text-sm mb-2">{match.category?.name}</div>
               <div className="text-white text-2xl font-bold mb-1">{match.pair1?.name}</div>
-              <div className="text-[#D1D5DB] text-sm">{match.pair1?.player1Name} / {match.pair1?.player2Name}</div>
+              <div className="text-[#D1D5DB] text-sm">{match.pair1?.player1?.name} / {match.pair1?.player2?.name}</div>
             </div>
             
             <div className="text-center my-3">
@@ -346,7 +339,7 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
             <div className="bg-[#111827] rounded-xl p-4">
               <div className="text-[#9CA3AF] text-sm mb-2">{match.category?.name}</div>
               <div className="text-white text-2xl font-bold mb-1">{match.pair2?.name}</div>
-              <div className="text-[#D1D5DB] text-sm">{match.pair2?.player1Name} / {match.pair2?.player2Name}</div>
+              <div className="text-[#D1D5DB] text-sm">{match.pair2?.player1?.name} / {match.pair2?.player2?.name}</div>
             </div>
           </div>
         ))}
@@ -395,14 +388,14 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
             <div className="space-y-3">
               <div className="bg-[#111827] rounded-lg p-3">
                 <div className="text-white font-bold text-lg">{match.pair1?.name}</div>
-                <div className="text-[#D1D5DB] text-sm">{match.pair1?.player1Name} / {match.pair1?.player2Name}</div>
+                <div className="text-[#D1D5DB] text-sm">{match.pair1?.player1?.name} / {match.pair1?.player2?.name}</div>
               </div>
               
               <div className="text-center text-[#6B7280] font-bold">VS</div>
               
               <div className="bg-[#111827] rounded-lg p-3">
                 <div className="text-white font-bold text-lg">{match.pair2?.name}</div>
-                <div className="text-[#D1D5DB] text-sm">{match.pair2?.player1Name} / {match.pair2?.player2Name}</div>
+                <div className="text-[#D1D5DB] text-sm">{match.pair2?.player1?.name} / {match.pair2?.player2?.name}</div>
               </div>
             </div>
             
@@ -455,7 +448,7 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-white text-xl font-bold">{result.pair1?.name}</div>
-                  <div className="text-[#D1D5DB] text-sm">{result.pair1?.player1Name} / {result.pair1?.player2Name}</div>
+                  <div className="text-[#D1D5DB] text-sm">{result.pair1?.player1?.name} / {result.pair1?.player2?.name}</div>
                 </div>
                 {result.winnerPairId === result.pair1?.id && (
                   <Trophy className="h-8 w-8 text-[#10B981]" />
@@ -471,7 +464,7 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-white text-xl font-bold">{result.pair2?.name}</div>
-                  <div className="text-[#D1D5DB] text-sm">{result.pair2?.player1Name} / {result.pair2?.player2Name}</div>
+                  <div className="text-[#D1D5DB] text-sm">{result.pair2?.player1?.name} / {result.pair2?.player2?.name}</div>
                 </div>
                 {result.winnerPairId === result.pair2?.id && (
                   <Trophy className="h-8 w-8 text-[#10B981]" />
