@@ -119,26 +119,30 @@ export default function DisplayRotative() {
   }, []);
 
   // Screen rotation logic: current -> ad -> upcoming -> ad -> results -> ad -> repeat
+  // Only include screens with data and ads between actual content
   useEffect(() => {
     const screens: ScreenType[] = [];
+    const hasAds = activeAds.length > 0;
     
     // Always show current matches
     screens.push('current');
     
-    // Add ad if available
-    if (activeAds.length > 0) screens.push('advertisement');
+    // Add upcoming if there are matches, with ad before it
+    if (upcomingMatches.length > 0) {
+      if (hasAds) screens.push('advertisement');
+      screens.push('upcoming');
+    }
     
-    // Add upcoming if there are matches
-    if (upcomingMatches.length > 0) screens.push('upcoming');
+    // Add results if available, with ad before it
+    if (recentResults.length > 0) {
+      if (hasAds) screens.push('advertisement');
+      screens.push('results');
+    }
     
-    // Add ad if available
-    if (activeAds.length > 0) screens.push('advertisement');
-    
-    // Add results if available
-    if (recentResults.length > 0) screens.push('results');
-    
-    // Add ad if available
-    if (activeAds.length > 0) screens.push('advertisement');
+    // Add final ad before looping back to current (only if we have other content)
+    if (hasAds && screens.length > 1) {
+      screens.push('advertisement');
+    }
 
     let currentIndex = 0;
     const rotationTimer = setInterval(() => {
@@ -346,6 +350,18 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
 
 // Upcoming Matches Screen Component
 function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
+  if (matches.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <Clock className="h-24 w-24 text-[#6B7280] mx-auto mb-6" />
+          <h2 className="text-4xl font-bold text-white mb-3">No hay próximos partidos programados</h2>
+          <p className="text-2xl text-[#9CA3AF]">Los partidos aparecerán aquí cuando sean programados</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full p-8">
       <div className="mb-6 flex items-center space-x-3">
@@ -397,6 +413,18 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
 
 // Results Screen Component
 function ResultsScreen({ results, formatScore }: { results: any[], formatScore: (result: any) => string }) {
+  if (results.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <Trophy className="h-24 w-24 text-[#6B7280] mx-auto mb-6" />
+          <h2 className="text-4xl font-bold text-white mb-3">No hay resultados recientes</h2>
+          <p className="text-2xl text-[#9CA3AF]">Los resultados aparecerán aquí cuando se completen partidos</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full p-8">
       <div className="mb-6 flex items-center space-x-3">
