@@ -47,7 +47,7 @@ export default function DisplayRotative() {
 
   const upcomingMatches = allScheduledMatches.filter((m: any) => 
     m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled'
-  ).slice(0, 12);
+  ).slice(0, 20);
 
   const { data: allResults = [] } = useQuery<any[]>({
     queryKey: ["/api/results/recent", tournament?.id],
@@ -61,7 +61,7 @@ export default function DisplayRotative() {
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - resultTime.getTime()) / (1000 * 60));
     return diffMinutes <= 1440;
-  }).slice(0, 12);
+  }).slice(0, 20);
 
   const { data: banners = [] } = useQuery<any[]>({
     queryKey: ["/api/banners", tournament?.id],
@@ -296,7 +296,7 @@ export default function DisplayRotative() {
 // Current Matches Screen Component
 function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], formatScore: (match: any) => string }) {
   const [currentPage, setCurrentPage] = useState(0);
-  const cardsPerPage = 6; // 2x3 grid
+  const cardsPerPage = 10; // 2x5 grid
   const totalPages = Math.ceil(matches.length / cardsPerPage);
 
   useEffect(() => {
@@ -385,7 +385,7 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
 // Upcoming Matches Screen Component
 function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
   const [currentPage, setCurrentPage] = useState(0);
-  const cardsPerPage = 6; // 2x3 grid
+  const cardsPerPage = 10; // 2x5 grid
   const totalPages = Math.ceil(matches.length / cardsPerPage);
 
   useEffect(() => {
@@ -490,7 +490,7 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
 // Results Screen Component
 function ResultsScreen({ results, formatScore }: { results: any[], formatScore: (result: any) => string }) {
   const [currentPage, setCurrentPage] = useState(0);
-  const cardsPerPage = 6; // 2x3 grid
+  const cardsPerPage = 10; // 2x5 grid
   const totalPages = Math.ceil(results.length / cardsPerPage);
 
   useEffect(() => {
