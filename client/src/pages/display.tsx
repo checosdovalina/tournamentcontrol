@@ -477,9 +477,9 @@ export default function Display() {
             <div className="flex-1 overflow-hidden">
               {activeBanners.length > 0 ? (
                 <div className="relative w-full overflow-hidden">
-                  <div className="flex space-x-8" style={{ animation: 'marquee 45s linear infinite' }}>
+                  <div className="flex space-x-8" style={{ animation: 'marquee 60s linear infinite' }}>
                     {/* Show ALL sponsor logos with smooth rotation */}
-                    {[...activeBanners, ...activeBanners, ...activeBanners, ...activeBanners].map((banner: any, idx: number) => (
+                    {[...activeBanners, ...activeBanners].map((banner: any, idx: number) => (
                       <div key={`sponsor-${banner.id}-${idx}`} className="h-16 flex items-center flex-shrink-0">
                         <img 
                           src={banner.imageUrl} 
