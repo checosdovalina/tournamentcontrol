@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Display from "@/pages/display";
+import DisplayRotative from "@/pages/display-rotative";
 import Login from "@/pages/login";
 import Setup from "@/pages/setup";
 import GuestScore from "@/pages/guest-score";
@@ -52,6 +53,7 @@ function Router() {
         </AuthWrapper>
       )} />
       <Route path="/display" component={Display} />
+      <Route path="/display-rotative" component={DisplayRotative} />
       <Route path="/score/:token" component={GuestScore} />
       <Route path="/login" component={Login} />
       <Route path="/setup" component={Setup} />

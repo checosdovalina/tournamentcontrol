@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock, FileSpreadsheet } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock, FileSpreadsheet, ChevronDown, LayoutGrid, Repeat } from "lucide-react";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
@@ -48,6 +49,10 @@ export default function Dashboard() {
 
   const openFullScreenDisplay = () => {
     setLocation("/display");
+  };
+
+  const openRotativeDisplay = () => {
+    setLocation("/display-rotative");
   };
 
   return (
@@ -192,15 +197,29 @@ export default function Dashboard() {
                   Gestionar Canchas
                 </Button>
               )}
-              <Button 
-                onClick={openFullScreenDisplay}
-                variant="outline"
-                className="inline-flex items-center"
-                data-testid="button-fullscreen-display"
-              >
-                <Tv className="w-4 h-4 mr-2" />
-                Modo Pantalla Completa
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    className="inline-flex items-center"
+                    data-testid="button-fullscreen-display"
+                  >
+                    <Tv className="w-4 h-4 mr-2" />
+                    Modo Pantalla Completa
+                    <ChevronDown className="w-4 h-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={openFullScreenDisplay} className="cursor-pointer">
+                    <LayoutGrid className="w-4 h-4 mr-2" />
+                    Display Clásico
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={openRotativeDisplay} className="cursor-pointer">
+                    <Repeat className="w-4 h-4 mr-2" />
+                    Display Rotativo
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               {user?.user?.role === 'admin' && (
                 <Button 
                   onClick={() => setConfigModalOpen(true)}
