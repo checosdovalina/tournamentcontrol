@@ -1,0 +1,84 @@
+CURRENT MATCH DATA] {
+  "id": "6e3c9325-b0e2-4d50-82e0-5749c052f667",
+  "tournamentId": "d5017921-d966-48e6-a0ac-b7c9cb95050d",
+  "courtId": "4c9f478e-4ce6-41b0-b1e5-734aa044262d",
+  "pair1Id": "ca1a1aaf-cbee-44ef-b64a-8cd4ca2b5e85",
+  "pair2Id": "cc8da2b9-ab52-4d82-aaad-2410e55db042",
+  "categoryId": "d805c955-aba6-47aa-b161-91b29f29c917",
+  "format": "best_of_3",
+  "startTime": "2025-10-15T21:50:48.005Z",
+  "endTime": null,
+  "status": "playing",
+  "score": {
+    "sets": [
+      [
+        0,
+        5
+      ]
+    ],
+    "currentSet": 1,
+    "currentPoints": [
+      0,
+      0
+    ]
+  },
+  "winnerId": null,
+  "accessToken": "550c4630-d128-4f93-b51b-9dc838ab5f51",
+  "notes": null,
+  "createdAt": "2025-10-15T21:50:48.005Z",
+  "court": {
+    "id": "4c9f478e-4ce6-41b0-b1e5-734aa044262d",
+    "name": "Cancha - PLAYDOIT",
+    "clubId": "06caf906-c816-4c52-9fc2-8254d36cffe3",
+    "isAvailable": false,
+    "preAssignedScheduledMatchId": "8c153cde-1fd3-4f38-b5d4-fec3aac8cca8",
+    "createdAt": "2025-10-03T23:23:22.268Z"
+  },
+  "pair1": {
+    "id": "ca1a1aaf-cbee-44ef-b64a-8cd4ca2b5e85",
+    "player1Id": "592e2cde-ec59-46cf-814c-379d9efdeb7b",
+    "player2Id": "80ae23b0-62a9-4fdd-81bd-64fbe1ff1933",
+    "tournamentId": "d5017921-d966-48e6-a0ac-b7c9cb95050d",
+    "categoryId": "d805c955-aba6-47aa-b161-91b29f29c917",
+    "isPresent": true,
+    "isWaiting": false,
+    "waitingSince": "2025-10-15T19:24:06.343Z",
+    "createdAt": "2025-10-14T22:00:05.418Z",
+    "player1": {
+      "id": "592e2cde-ec59-46cf-814c-379d9efdeb7b",
+      "name": "Jorge Ramírez",
+      "clubId": null,
+      "createdAt": "2025-10-11T19:03:34.953Z"
+    },
+    "player2": {
+      "id": "80ae23b0-62a9-4fdd-81bd-64fbe1ff1933",
+      "name": "Marco Rivera",
+      "clubId": null,
+      "createdAt": "2025-10-14T05:47:54.006Z"
+    }
+  },
+  "pair2": {
+    "id": "cc8da2b9-ab52-4d82-aaad-2410e55db042",
+    "player1Id": "6a5288d3-71fe-4b64-972d-a432b7e1bc29",
+    "player2Id": "792ce397-c14b-46b4-b087-6d178d130317",
+    "tournamentId": "d5017921-d966-48e6-a0ac-b7c9cb95050d",
+    "categoryId": "d805c955-aba6-47aa-b161-91b29f29c917",
+    "isPresent": true,
+    "isWaiting": false,
+    "waitingSince": "2025-10-15T19:24:06.436Z",
+    "createdAt": "2025-10-14T22:00:05.484Z",
+    "player1": {
+      "id": "6a5288d3-71fe-4b64-972d-a432b7e1bc29",
+      "name": "Juan López",
+      "clubId": null,
+      "createdAt": "2025-10-14T05:47:52.069Z"
+    },
+    "player2": {
+      "id": "792ce397-c14b-46b4-b087-6d178d130317",
+      "name": "Iván Chávez",
+      "clubId": null,
+      "createdAt": "2025-10-11T19:03:19.492Z"
+    }
+  }
+}
+display-rotative.tsx:299 
