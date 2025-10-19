@@ -2557,6 +2557,23 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         return res.status(404).json({ message: "Partido programado no encontrado" });
       }
       
+      // Check if at least one pair has confirmed (both players present)
+      const pair1 = await storage.getPair(existingMatch.pair1Id);
+      const pair2 = await storage.getPair(existingMatch.pair2Id);
+      
+      if (!pair1 || !pair2) {
+        return res.status(404).json({ message: "Parejas no encontradas" });
+      }
+      
+      const pair1Confirmed = pair1.isPresent === true;
+      const pair2Confirmed = pair2.isPresent === true;
+      
+      if (!pair1Confirmed && !pair2Confirmed) {
+        return res.status(400).json({ 
+          message: "Al menos una pareja debe estar confirmada (ambos jugadores presentes) para asignar una cancha" 
+        });
+      }
+      
       const match = await storage.autoAssignCourt(id);
       
       if (!match) {
@@ -2618,6 +2635,23 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       const currentMatch = await storage.getScheduledMatch(id);
       if (!currentMatch) {
         return res.status(404).json({ message: "Scheduled match not found" });
+      }
+      
+      // Check if at least one pair has confirmed (both players present)
+      const pair1 = await storage.getPair(currentMatch.pair1Id);
+      const pair2 = await storage.getPair(currentMatch.pair2Id);
+      
+      if (!pair1 || !pair2) {
+        return res.status(404).json({ message: "Parejas no encontradas" });
+      }
+      
+      const pair1Confirmed = pair1.isPresent === true;
+      const pair2Confirmed = pair2.isPresent === true;
+      
+      if (!pair1Confirmed && !pair2Confirmed) {
+        return res.status(400).json({ 
+          message: "Al menos una pareja debe estar confirmada (ambos jugadores presentes) para asignar una cancha" 
+        });
       }
       
       // Check if court exists
