@@ -2470,6 +2470,48 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         }
       }
       
+      // Auto-start match if ALL players confirmed AND court assigned
+      if (match && match.status === 'ready' && match.courtId && match.categoryId) {
+        const checkInRecords = await storage.getScheduledMatchPlayers(id);
+        const pair1CheckIns = checkInRecords.filter(p => p.pairId === match!.pair1Id && p.isPresent).length;
+        const pair2CheckIns = checkInRecords.filter(p => p.pairId === match!.pair2Id && p.isPresent).length;
+        
+        const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
+        
+        if (allPlayersConfirmed) {
+          // Create playing match
+          const playingMatch = await storage.createMatch({
+            tournamentId: match.tournamentId,
+            courtId: match.courtId,
+            pair1Id: match.pair1Id,
+            pair2Id: match.pair2Id,
+            categoryId: match.categoryId,
+            format: match.format,
+            accessToken: randomUUID(),
+            status: "playing",
+          });
+          
+          // Update scheduled match status
+          await storage.updateScheduledMatch(id, { 
+            status: "playing",
+            matchId: playingMatch.id 
+          });
+          
+          // Update court and pairs
+          const updatedCourt = await storage.updateCourt(match.courtId, { isAvailable: false });
+          await storage.updatePair(match.pair1Id, { isWaiting: false });
+          await storage.updatePair(match.pair2Id, { isWaiting: false });
+          
+          broadcastUpdate({ type: "match_started", data: playingMatch });
+          if (updatedCourt) {
+            broadcastUpdate({ type: "court_updated", data: updatedCourt });
+          }
+          
+          // Update match reference for response
+          match = await storage.getScheduledMatch(id);
+        }
+      }
+      
       res.json({ player, match });
       broadcastUpdate({ type: "player_checked_in", data: { scheduledMatchId: id, playerId, match } });
       // Trigger waiting list update
