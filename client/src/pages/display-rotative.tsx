@@ -351,14 +351,18 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
           {visibleMatches.map((match: any) => (
             <div key={match.id} className="bg-[#1F2937] rounded-lg p-2 border border-[#10B981] h-fit">
               <div className="flex justify-between items-center mb-1.5">
-                <div className="bg-[#3B82F6] text-white px-1.5 py-0.5 rounded text-xs font-bold">
-                  {match.court?.name || 'Sin cancha'}
+                <div className="flex items-center gap-1">
+                  <div className="bg-[#F59E0B] text-white px-1.5 py-0.5 rounded text-xs font-bold">
+                    {match.category?.name || 'Sin categoría'}
+                  </div>
+                  <div className="bg-[#3B82F6] text-white px-1.5 py-0.5 rounded text-xs font-bold">
+                    {match.court?.name || 'Sin cancha'}
+                  </div>
                 </div>
                 <div className="text-[#10B981] font-bold text-xs">EN VIVO</div>
               </div>
               
               <div className="bg-[#111827] rounded p-1.5 mb-1">
-                <div className="text-[#9CA3AF] text-xs mb-0.5">{match.category?.name}</div>
                 <div className="text-white text-sm font-bold truncate">
                   {match.pair1?.player1?.name} / {match.pair1?.player2?.name}
                 </div>
@@ -369,7 +373,6 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
               </div>
               
               <div className="bg-[#111827] rounded p-1.5">
-                <div className="text-[#9CA3AF] text-xs mb-0.5">{match.category?.name}</div>
                 <div className="text-white text-sm font-bold truncate">
                   {match.pair2?.player1?.name} / {match.pair2?.player2?.name}
                 </div>
@@ -545,8 +548,13 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
           {visibleResults.map((result: any) => (
             <div key={result.id} className="bg-[#1F2937] rounded-lg p-2 border border-[#374151] h-fit">
               <div className="flex justify-between items-start mb-1.5">
-                <div className="bg-[#2563EB] text-white px-1.5 py-0.5 rounded text-xs font-semibold">
-                  {result.match?.category?.name || 'Sin categoría'}
+                <div className="flex items-center gap-1">
+                  <div className="bg-[#F59E0B] text-white px-1.5 py-0.5 rounded text-xs font-semibold">
+                    {result.match?.category?.name || 'Sin categoría'}
+                  </div>
+                  <div className="bg-[#2563EB] text-white px-1.5 py-0.5 rounded text-xs font-semibold">
+                    {result.match?.court?.name || 'Sin cancha'}
+                  </div>
                 </div>
                 <div className="text-[#6B7280] text-xs">
                   {new Date(result.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
