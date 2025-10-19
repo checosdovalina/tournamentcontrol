@@ -602,11 +602,14 @@ function MatchCard({ match, formatMatchDuration, formatScore, courts, scheduledM
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
+          <span className="px-3 py-1 bg-orange-600/80 text-white rounded-lg font-bold text-base">
+            {match.category?.name || 'Sin categoría'}
+          </span>
           <span className="px-3 py-1 bg-destructive/80 text-white rounded-lg font-bold text-lg">
             {match.court.name}
           </span>
           {preAssignedMatch && (
-            <span className="px-2 py-1 bg-orange-600/80 text-white rounded text-xs font-medium">
+            <span className="px-2 py-1 bg-yellow-600/80 text-white rounded text-xs font-medium">
               Siguiente en fila
             </span>
           )}
@@ -705,14 +708,21 @@ function ResultCard({ result, formatResultScore }: any) {
       className="pb-3 border-b border-white/20 last:border-b-0"
       data-testid={`result-${result.id}`}
     >
-      <div className="flex items-center justify-between mb-2 text-white/60 text-sm">
-        <span>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-1 bg-orange-600/80 text-white rounded text-sm font-semibold">
+            {result.match?.category?.name || 'Sin categoría'}
+          </span>
+          <span className="px-2 py-1 bg-blue-600/80 text-white rounded text-sm font-semibold">
+            {result.match?.court?.name || 'Cancha'}
+          </span>
+        </div>
+        <span className="text-white/60 text-sm">
           {result.createdAt ? 
             `Hace ${Math.floor((new Date().getTime() - new Date(result.createdAt).getTime()) / (1000 * 60))} min` : 
             'Reciente'
           }
         </span>
-        <span>{result.match?.court?.name || 'Cancha'}</span>
       </div>
       
       {(isDefaultWin || isCancelled) && outcomeReason ? (
