@@ -37,6 +37,7 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
       startDate: "",
       endDate: "",
       isActive: true,
+      timezone: "America/Santiago",
       tournamentLogoUrl: "",
       clubLogoUrl: "",
       systemLogoUrl: "",
@@ -52,6 +53,7 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
         startDate: tournament?.startDate ? new Date(tournament.startDate).toISOString().split('T')[0] : "",
         endDate: tournament?.endDate ? new Date(tournament.endDate).toISOString().split('T')[0] : "",
         isActive: tournament?.isActive ?? true,
+        timezone: tournament?.timezone || "America/Santiago",
         tournamentLogoUrl: tournament?.tournamentLogoUrl || "",
         clubLogoUrl: tournament?.clubLogoUrl || "",
         systemLogoUrl: tournament?.systemLogoUrl || "",
@@ -138,6 +140,39 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
                           {club.name}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="timezone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Zona Horaria</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-timezone">
+                        <SelectValue placeholder="Seleccionar zona horaria..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="America/Santiago">Chile (Santiago) - UTC-3/-4</SelectItem>
+                      <SelectItem value="America/Argentina/Buenos_Aires">Argentina (Buenos Aires) - UTC-3</SelectItem>
+                      <SelectItem value="America/Sao_Paulo">Brasil (São Paulo) - UTC-3</SelectItem>
+                      <SelectItem value="America/Mexico_City">México (Ciudad de México) - UTC-6/-5</SelectItem>
+                      <SelectItem value="America/Bogota">Colombia (Bogotá) - UTC-5</SelectItem>
+                      <SelectItem value="America/Lima">Perú (Lima) - UTC-5</SelectItem>
+                      <SelectItem value="America/Caracas">Venezuela (Caracas) - UTC-4</SelectItem>
+                      <SelectItem value="America/Montevideo">Uruguay (Montevideo) - UTC-3</SelectItem>
+                      <SelectItem value="America/La_Paz">Bolivia (La Paz) - UTC-4</SelectItem>
+                      <SelectItem value="America/Asuncion">Paraguay (Asunción) - UTC-4/-3</SelectItem>
+                      <SelectItem value="Europe/Madrid">España (Madrid) - UTC+1/+2</SelectItem>
+                      <SelectItem value="America/New_York">EE.UU. Este - UTC-5/-4</SelectItem>
+                      <SelectItem value="America/Los_Angeles">EE.UU. Oeste - UTC-8/-7</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
