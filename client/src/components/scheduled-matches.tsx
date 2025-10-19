@@ -952,55 +952,72 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                 })}
 
                 {/* Court Assignment Controls */}
-                {match.status === 'ready' && (userRole === 'admin' || userRole === 'scorekeeper') && (
-                  <div className="border-t pt-4 space-y-3">
-                    <p className="text-sm font-medium text-green-600">
-                      ✓ Todos los jugadores presentes - Listo para asignar cancha
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button
-                        onClick={() => handleAutoAssign(match.id)}
-                        disabled={autoAssignMutation.isPending}
-                        data-testid={`button-auto-assign-${match.id}`}
-                      >
-                        <Zap className="w-4 h-4 mr-2" />
-                        Asignación Automática
-                      </Button>
-                      <div className="flex gap-2 flex-1">
-                        <Select onValueChange={(courtId) => courtId && handleManualAssign(match.id, courtId)}>
-                          <SelectTrigger className="flex-1" data-testid={`select-court-${match.id}`}>
-                            <SelectValue placeholder="Seleccionar cancha..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {courts?.map((court) => {
-                              const isAvailable = court.isAvailable;
-                              let canPreAssign = false;
-                              let matchDuration = 0;
-                              
-                              if (!isAvailable) {
-                                const currentMatch = currentMatches.find(m => m.courtId === court.id && m.status === "playing");
-                                if (currentMatch) {
-                                  matchDuration = Math.floor((Date.now() - new Date(currentMatch.startTime).getTime()) / (1000 * 60));
-                                  canPreAssign = matchDuration >= 40;
+                {(() => {
+                  // Check if at least one pair is confirmed
+                  const pair1Players = match.players.filter(p => p.pairId === match.pair1Id);
+                  const pair2Players = match.players.filter(p => p.pairId === match.pair2Id);
+                  const pair1Confirmed = pair1Players.length === 2 && pair1Players.every(p => p.isPresent === true);
+                  const pair2Confirmed = pair2Players.length === 2 && pair2Players.every(p => p.isPresent === true);
+                  const atLeastOnePairConfirmed = pair1Confirmed || pair2Confirmed;
+                  const allPlayersConfirmed = pair1Confirmed && pair2Confirmed;
+
+                  if (!atLeastOnePairConfirmed || !(userRole === 'admin' || userRole === 'scorekeeper')) {
+                    return null;
+                  }
+
+                  return (
+                    <div className="border-t pt-4 space-y-3">
+                      <p className="text-sm font-medium text-green-600">
+                        {allPlayersConfirmed 
+                          ? "✓ Todos los jugadores presentes - Listo para asignar cancha"
+                          : "✓ Al menos una pareja confirmada - Puedes asignar cancha"
+                        }
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                          onClick={() => handleAutoAssign(match.id)}
+                          disabled={autoAssignMutation.isPending}
+                          data-testid={`button-auto-assign-${match.id}`}
+                        >
+                          <Zap className="w-4 h-4 mr-2" />
+                          Asignación Automática
+                        </Button>
+                        <div className="flex gap-2 flex-1">
+                          <Select onValueChange={(courtId) => courtId && handleManualAssign(match.id, courtId)}>
+                            <SelectTrigger className="flex-1" data-testid={`select-court-${match.id}`}>
+                              <SelectValue placeholder="Seleccionar cancha..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {courts?.map((court) => {
+                                const isAvailable = court.isAvailable;
+                                let canPreAssign = false;
+                                let matchDuration = 0;
+                                
+                                if (!isAvailable) {
+                                  const currentMatch = currentMatches.find(m => m.courtId === court.id && m.status === "playing");
+                                  if (currentMatch) {
+                                    matchDuration = Math.floor((Date.now() - new Date(currentMatch.startTime).getTime()) / (1000 * 60));
+                                    canPreAssign = matchDuration >= 40;
+                                  }
                                 }
-                              }
 
-                              if (!isAvailable && !canPreAssign) return null;
+                                if (!isAvailable && !canPreAssign) return null;
 
-                              return (
-                                <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
-                                  {court.name}
-                                  {canPreAssign && ` (Pre-asignar - ${matchDuration} min)`}
-                                  {isAvailable && " (Disponible)"}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
+                                return (
+                                  <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
+                                    {court.name}
+                                    {canPreAssign && ` (Pre-asignar - ${matchDuration} min)`}
+                                    {isAvailable && " (Disponible)"}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Pre-assigned court notice */}
                 {match.status === 'assigned' && match.preAssignedAt && (userRole === 'admin' || userRole === 'scorekeeper') && (
