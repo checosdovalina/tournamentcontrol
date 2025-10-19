@@ -2473,7 +2473,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       }
       
       // Auto-start match if ALL players confirmed AND court assigned
-      if (match && match.status === 'ready' && match.courtId && match.categoryId) {
+      // Works with both 'ready' and 'assigned' status
+      if (match && (match.status === 'ready' || match.status === 'assigned') && match.courtId && match.categoryId && !match.preAssignedAt) {
         const checkInRecords = await storage.getScheduledMatchPlayers(id);
         const pair1CheckIns = checkInRecords.filter(p => p.pairId === match!.pair1Id && p.isPresent).length;
         const pair2CheckIns = checkInRecords.filter(p => p.pairId === match!.pair2Id && p.isPresent).length;
@@ -2890,7 +2891,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         }
       }
       
-      let match;
+      let match: any;
       
       if (isPreAssignment) {
         // Pre-assign court (match won't start until current match finishes)
@@ -2921,8 +2922,14 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         
         broadcastUpdate({ type: "court_manually_assigned", data: match });
         
-        // Auto-start match if all players are confirmed (status "ready")
-        if (match.status === "ready" && match.courtId && match.categoryId) {
+        // Auto-start match if all players are confirmed (check again)
+        // Need to verify all 4 players are present since we might have assigned before all confirmed
+        const checkInRecords = await storage.getScheduledMatchPlayers(id);
+        const pair1CheckIns = checkInRecords.filter(p => p.pairId === match.pair1Id && p.isPresent).length;
+        const pair2CheckIns = checkInRecords.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
+        const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
+        
+        if ((match.status === "ready" || match.status === "assigned") && match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt) {
           // Create playing match
           const playingMatch = await storage.createMatch({
             tournamentId: match.tournamentId,

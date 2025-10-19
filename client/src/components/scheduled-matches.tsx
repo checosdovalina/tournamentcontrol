@@ -783,8 +783,107 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
               )}
             </div>
           ) : (
-            <div className="space-y-3 mt-6">
-              {filteredDayMatches.map((match) => (
+            <div className="space-y-6 mt-6">
+              {(() => {
+                // Separate matches into pending and ready groups when showing pending_ready filter or all
+                const showSeparated = statusFilter === 'all' || statusFilter === 'pending_ready';
+                
+                if (showSeparated) {
+                  const pendingMatches = filteredDayMatches.filter(m => getMatchStatus(m) === 'pending');
+                  const readyMatches = filteredDayMatches.filter(m => getMatchStatus(m) === 'ready');
+                  const otherMatches = filteredDayMatches.filter(m => {
+                    const status = getMatchStatus(m);
+                    return status !== 'pending' && status !== 'ready';
+                  });
+                  
+                  return (
+                    <>
+                      {/* Pendientes Section */}
+                      {pendingMatches.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3 pb-2 border-b">
+                            <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
+                            <h3 className="text-lg font-semibold text-foreground">
+                              Pendientes ({pendingMatches.length})
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              - Esperando confirmación de jugadores
+                            </p>
+                          </div>
+                          <div className="space-y-3">
+                            {pendingMatches.map((match) => renderMatchCard(match))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Listos Section */}
+                      {readyMatches.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3 pb-2 border-b">
+                            <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                            <h3 className="text-lg font-semibold text-foreground">
+                              Listos ({readyMatches.length})
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              - Listos para asignar cancha
+                            </p>
+                          </div>
+                          <div className="space-y-3">
+                            {readyMatches.map((match) => renderMatchCard(match))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Other matches (in progress, completed) */}
+                      {otherMatches.length > 0 && (
+                        <div className="space-y-3">
+                          {otherMatches.map((match) => renderMatchCard(match))}
+                        </div>
+                      )}
+                    </>
+                  );
+                } else {
+                  // Show all matches in a single list when using specific status filters
+                  return (
+                    <div className="space-y-3">
+                      {filteredDayMatches.map((match) => renderMatchCard(match))}
+                    </div>
+                  );
+                }
+              })()}
+            </div>
+          )}
+          
+          {/* Match Cards - Inline rendering function */}
+          {false && filteredDayMatches.map((match) => renderMatchCard(match))}
+        </SheetContent>
+      </Sheet>
+
+      {/* Schedule Match Modal */}
+      {userRole === 'admin' && (
+        <ScheduleMatchModal
+          open={scheduleModalOpen}
+          onOpenChange={setScheduleModalOpen}
+          tournamentId={tournamentId}
+          selectedDate={selectedDate || new Date()}
+        />
+      )}
+
+      {/* Edit Match Modal */}
+      {userRole === 'admin' && (
+        <EditScheduledMatchModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          match={matchToEdit}
+          tournamentId={tournamentId}
+        />
+      )}
+    </div>
+  );
+  
+  // Helper function to render a match card
+  function renderMatchCard(match: ScheduledMatchWithDetails) {
+    return (
             <Card key={match.id} data-testid={`card-scheduled-match-${match.id}`}>
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
@@ -1012,6 +1111,15 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                 let canPreAssign = false;
                                 let matchDuration = 0;
                                 
+                                // Check if court is already assigned to another active scheduled match
+                                const assignedToOtherMatch = allTournamentMatches.find(m => 
+                                  m.id !== match.id && // Exclude current match
+                                  m.courtId === court.id && 
+                                  m.status !== 'cancelled' &&
+                                  m.status !== 'completed' &&
+                                  m.status !== 'playing' // Exclude playing matches (they're handled by isAvailable flag)
+                                );
+                                
                                 if (!isAvailable) {
                                   const currentMatch = currentMatches.find(m => m.courtId === court.id && m.status === "playing");
                                   if (currentMatch) {
@@ -1020,8 +1128,10 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                   }
                                 }
 
-                                // Only show available courts or courts that can be pre-assigned
-                                if (!isAvailable && !canPreAssign) return null;
+                                // Hide courts that are:
+                                // 1. Not available AND can't be pre-assigned
+                                // 2. Already assigned to another active scheduled match
+                                if ((!isAvailable && !canPreAssign) || assignedToOtherMatch) return null;
 
                                 return (
                                   <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
