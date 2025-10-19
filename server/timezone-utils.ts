@@ -80,13 +80,14 @@ export function fromTimezone(
   
   const dateStr = `${year}-${monthStr}-${dayStr}T${hoursStr}:${minutesStr}:00`;
   
-  // Strategy: Parse the string as local time, then calculate the offset
-  // between what we want (in target timezone) and what we got (in server timezone)
+  // Strategy: Create two dates - one parsing the string as local (server timezone),
+  // another parsing it as UTC. Then use Intl to find what the target timezone
+  // would display, and calculate the correct offset.
   
-  // Step 1: Parse as if it were in server's local timezone
-  const localDate = new Date(dateStr);
+  // Create a UTC date from the components (this is our "target" time)
+  const utcDate = new Date(Date.UTC(year, month, day, hours, minutes, 0));
   
-  // Step 2: Format that date in the target timezone to see what time it shows there
+  // Format this UTC date in the target timezone to see what local time it represents
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
     year: 'numeric',
@@ -98,7 +99,7 @@ export function fromTimezone(
     hour12: false,
   });
   
-  const parts = formatter.formatToParts(localDate);
+  const parts = formatter.formatToParts(utcDate);
   const getValue = (type: string) => {
     const part = parts.find(p => p.type === type);
     return part ? parseInt(part.value, 10) : 0;
@@ -110,16 +111,18 @@ export function fromTimezone(
   const tzHours = getValue('hour');
   const tzMinutes = getValue('minute');
   
-  // Step 3: Calculate how far off we are
-  const offsetMs = 
-    (year - tzYear) * 365 * 24 * 60 * 60 * 1000 +
-    (month - tzMonth) * 30 * 24 * 60 * 60 * 1000 +
-    (day - tzDay) * 24 * 60 * 60 * 1000 +
-    (hours - tzHours) * 60 * 60 * 1000 +
-    (minutes - tzMinutes) * 60 * 1000;
+  // Calculate the offset in milliseconds
+  // We want: when formatted in target timezone, it should show our input values
+  // We have: a UTC time that when formatted shows (tzYear, tzMonth, tzDay, tzHours, tzMinutes)
+  // We need: a UTC time that when formatted shows (year, month, day, hours, minutes)
   
-  // Step 4: Apply the offset to get the correct UTC time
-  return new Date(localDate.getTime() + offsetMs);
+  // The difference in displayed time tells us the timezone offset
+  const inputTime = Date.UTC(year, month, day, hours, minutes, 0);
+  const displayedTime = Date.UTC(tzYear, tzMonth, tzDay, tzHours, tzMinutes, 0);
+  const offsetMs = inputTime - displayedTime;
+  
+  // Apply the offset to get the correct UTC time
+  return new Date(utcDate.getTime() - offsetMs);
 }
 
 /**
