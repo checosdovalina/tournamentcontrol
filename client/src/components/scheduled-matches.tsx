@@ -152,14 +152,9 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     const filtered = dayMatches?.filter(match => {
       const categoryMatch = selectedCategory === "all" || match.categoryId === selectedCategory;
       
-      // For status filter, combine pending and ready into "pending_ready"
+      // Handle status filtering with separate pending and ready
       const matchStatus = getMatchStatus(match);
-      let statusMatch = statusFilter === "all";
-      if (statusFilter === "pending_ready") {
-        statusMatch = matchStatus === 'pending' || matchStatus === 'ready';
-      } else {
-        statusMatch = statusFilter === "all" || matchStatus === statusFilter;
-      }
+      const statusMatch = statusFilter === "all" || matchStatus === statusFilter;
       
       const timeMatch = timeFilter === "all" || getMatchTimeRange(match) === timeFilter;
       return categoryMatch && statusMatch && timeMatch;
@@ -173,13 +168,14 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     });
   }, [dayMatches, selectedCategory, statusFilter, timeFilter]);
 
-  // Count matches by status for badges (combine pending and ready)
+  // Count matches by status for badges (separate pending and ready)
   const statusCounts = useMemo(() => {
-    const counts = { all: 0, pending_ready: 0, in_progress: 0, completed: 0 };
+    const counts = { all: 0, pending: 0, ready: 0, in_progress: 0, completed: 0 };
     dayMatches.forEach(match => {
       counts.all++;
       const status = getMatchStatus(match);
-      if (status === 'pending' || status === 'ready') counts.pending_ready++;
+      if (status === 'pending') counts.pending++;
+      else if (status === 'ready') counts.ready++;
       else if (status === 'in_progress') counts.in_progress++;
       else if (status === 'completed') counts.completed++;
     });
@@ -679,16 +675,21 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
             <div>
               <label className="text-sm font-medium mb-2 block">Estado del Partido</label>
               <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1">
+                <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 gap-1">
                   <TabsTrigger value="all" className="text-xs px-2" data-testid="tab-status-all">
                     <span className="hidden sm:inline">Todos</span>
                     <span className="sm:hidden">All</span>
                     <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.all}</Badge>
                   </TabsTrigger>
-                  <TabsTrigger value="pending_ready" className="text-xs px-2" data-testid="tab-status-pending-ready">
-                    <span className="hidden sm:inline">Pendiente / Listos</span>
+                  <TabsTrigger value="pending" className="text-xs px-2" data-testid="tab-status-pending">
+                    <span className="hidden sm:inline">Pendiente</span>
                     <span className="sm:hidden">Pend.</span>
-                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.pending_ready}</Badge>
+                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.pending}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="ready" className="text-xs px-2" data-testid="tab-status-ready">
+                    <span className="hidden sm:inline">Listos</span>
+                    <span className="sm:hidden">List.</span>
+                    <Badge variant="secondary" className="ml-1 text-xs">{statusCounts.ready}</Badge>
                   </TabsTrigger>
                   <TabsTrigger value="in_progress" className="text-xs px-2" data-testid="tab-status-in-progress">
                     <span className="hidden sm:inline">En Curso</span>
@@ -950,17 +951,6 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                 title={`${player.player.name}: No se presentó`}
                               >
                                 <X className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant={player.isPresent === null ? "default" : "ghost"}
-                                size="sm"
-                                className={`w-8 h-8 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
-                                onClick={() => handleResetStatus(match.id, player.playerId)}
-                                disabled={match.status === "completed" || match.status === "playing"}
-                                data-testid={`button-pending-${player.playerId}`}
-                                title={`${player.player.name}: Sin confirmar`}
-                              >
-                                <Minus className="w-4 h-4" />
                               </Button>
                             </div>
                           ))}
