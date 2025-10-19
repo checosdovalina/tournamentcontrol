@@ -1,6 +1,7 @@
 import { log } from "./vite";
 import type { IStorage } from "./storage";
 import { randomUUID } from "crypto";
+import { combineDateTimeInTimezone, formatInTimezone } from "./timezone-utils";
 
 export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data: any) => void) {
   // Run check every minute
@@ -16,6 +17,9 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
       const allMatches = await storage.getAllScheduledMatches();
       log(`[Timeout Processor] Found ${allMatches.length} total matches to evaluate`);
       
+      // Group matches by tournament to minimize tournament lookups
+      const tournamentCache = new Map<string, any>();
+      
       for (const match of allMatches) {
         // Skip if already completed, cancelled, or playing
         if (match.status === 'completed' || match.status === 'cancelled' || match.status === 'playing') {
@@ -27,16 +31,21 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
           continue;
         }
         
-        // Extract date components from match.day in the server's local timezone
+        // Get tournament timezone (with caching)
+        let tournament = tournamentCache.get(match.tournamentId);
+        if (!tournament) {
+          tournament = await storage.getTournament(match.tournamentId);
+          if (tournament) {
+            tournamentCache.set(match.tournamentId, tournament);
+          }
+        }
+        
+        // Default to America/Santiago if tournament not found or no timezone set
+        const timezone = tournament?.timezone || 'America/Santiago';
+        
+        // Create match datetime using tournament timezone
         const matchDay = typeof match.day === 'string' ? new Date(match.day) : match.day;
-        const year = matchDay.getFullYear();
-        const month = matchDay.getMonth(); // 0-indexed
-        const dayOfMonth = matchDay.getDate();
-        
-        const [hours, minutes] = match.plannedTime.split(':').map(Number);
-        
-        // Create match datetime using local date components + planned time
-        const matchDateTime = new Date(year, month, dayOfMonth, hours, minutes, 0);
+        const matchDateTime = combineDateTimeInTimezone(matchDay, match.plannedTime, timezone);
         
         const timeoutThreshold = new Date(matchDateTime.getTime() + TOLERANCE_MINUTES * 60 * 1000);
         
@@ -44,12 +53,12 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
         // This prevents immediate cancellation when scheduling past matches
         const matchCreatedAt = typeof match.createdAt === 'string' ? new Date(match.createdAt) : match.createdAt;
         if (matchCreatedAt && matchCreatedAt >= timeoutThreshold) {
-          log(`[Timeout Processor] Match ${match.id}: SKIPPED - created after timeout (created=${matchCreatedAt.toLocaleString()}, timeout=${timeoutThreshold.toLocaleString()})`);
+          log(`[Timeout Processor] Match ${match.id}: SKIPPED - created after timeout (created=${formatInTimezone(matchCreatedAt, timezone)}, timeout=${formatInTimezone(timeoutThreshold, timezone)})`);
           continue;
         }
         
-        // Debug logging
-        log(`[Timeout Processor] Match ${match.id}: planned=${matchDateTime.toLocaleString()}, timeout=${timeoutThreshold.toLocaleString()}, now=${now.toLocaleString()}, overdue=${now >= timeoutThreshold}`);
+        // Debug logging with timezone-aware formatting
+        log(`[Timeout Processor] Match ${match.id} [${timezone}]: planned=${formatInTimezone(matchDateTime, timezone)}, timeout=${formatInTimezone(timeoutThreshold, timezone)}, now=${formatInTimezone(now, timezone)}, overdue=${now >= timeoutThreshold}`);
         
         // Check if we've passed the timeout threshold
         if (now >= timeoutThreshold) {
