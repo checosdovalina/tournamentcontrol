@@ -1441,12 +1441,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         const pair1 = waitingPairs.shift()!;
         const pair2 = waitingPairs.shift()!;
         
-        // Create match
+        // Create match - use pair1's category as the match category
         const match = await storage.createMatch({
           tournamentId,
           courtId: court.id,
           pair1Id: pair1.id,
           pair2Id: pair2.id,
+          categoryId: pair1.categoryId,
           accessToken: randomUUID(),
           status: "playing"
         });
@@ -1512,6 +1513,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         courtId: court.id,
         pair1Id: pair1.id,
         pair2Id: pair2.id,
+        categoryId: pair1.categoryId,
         accessToken: randomUUID(),
         status: "playing"
       });
