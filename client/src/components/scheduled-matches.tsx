@@ -784,21 +784,331 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
             </div>
           ) : (
             <div className="space-y-3 mt-6">
-              {/* TEMPORARY: Simple list rendering until match card JSX is restored */}
               {filteredDayMatches.map((match) => (
-                <div key={match.id} className="border rounded-lg p-4">
-                  <div className="font-medium">{match.plannedTime || "Sin hora"}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {match.pair1?.player1?.name} / {match.pair1?.player2?.name} vs {match.pair2?.player1?.name} / {match.pair2?.player2?.name}
+            <Card key={match.id} data-testid={`card-scheduled-match-${match.id}`}>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-0.5">
+                    <CardTitle className="text-base flex items-center space-x-2">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span data-testid={`text-match-time-${match.id}`}>
+                        {match.plannedTime || "Sin hora"}
+                      </span>
+                      {match.category && (
+                        <Badge variant="outline" className="text-sm" data-testid={`badge-category-${match.id}`}>
+                          {match.category.name}
+                        </Badge>
+                      )}
+                      {match.format && (
+                        <Badge variant="secondary" className="text-sm" data-testid={`badge-format-${match.id}`}>
+                          {match.format}
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <div className="flex items-center space-x-2">
+                      {getStatusBadge(match.status || "scheduled")}
+                      {match.court && (
+                        <Badge variant="secondary" className="text-sm" data-testid={`badge-court-${match.id}`}>
+                          <MapPin className="w-3.5 h-3.5 mr-1" />
+                          {match.court.name}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  {match.category && <div className="text-xs">{match.category.name}</div>}
-                  {match.court && <div className="text-xs text-green-600">Cancha: {match.court.name}</div>}
-                  <div className="text-xs capitalize mt-1">Estado: {match.status}</div>
+                  
+                  {userRole === 'admin' && (
+                    <div className="flex gap-1">
+                      {/* Reactivate Button - Only for completed matches */}
+                      {match.status === "completed" && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-green-600"
+                          onClick={() => reactivateMatchMutation.mutate(match.id)}
+                          disabled={reactivateMatchMutation.isPending}
+                          data-testid={`button-reactivate-match-${match.id}`}
+                          title="Reactivar partido"
+                        >
+                          <Repeat className="h-4 w-4" />
+                        </Button>
+                      )}
+                      
+                      {/* Edit Button - Only for non-playing/completed matches */}
+                      {match.status !== "playing" && match.status !== "completed" && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                          onClick={() => {
+                            setMatchToEdit(match);
+                            setEditModalOpen(true);
+                          }}
+                          data-testid={`button-edit-match-${match.id}`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                      
+                      {/* Delete Button */}
+                      <AlertDialog 
+                        open={deleteDialogOpen === match.id} 
+                        onOpenChange={(open) => {
+                          if (!deleteMatchMutation.isPending) {
+                            setDeleteDialogOpen(open ? match.id : null);
+                          }
+                        }}
+                      >
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                            data-testid={`button-delete-match-${match.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar partido programado?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción no se puede deshacer. Se eliminará el partido programado para{" "}
+                              {match.pair1.player1.name}/{match.pair1.player2.name} vs{" "}
+                              {match.pair2.player1.name}/{match.pair2.player2.name}.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel disabled={deleteMatchMutation.isPending}>Cancelar</AlertDialogCancel>
+                            <Button
+                              onClick={() => deleteMatchMutation.mutate(match.id)}
+                              className="bg-destructive hover:bg-destructive/90"
+                              disabled={deleteMatchMutation.isPending}
+                              data-testid={`button-confirm-delete-${match.id}`}
+                            >
+                              {deleteMatchMutation.isPending ? "Eliminando..." : "Eliminar"}
+                            </Button>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
                 </div>
+              </CardHeader>
+
+              <CardContent className="space-y-3 pt-2">
+                {/* Compact Pair View */}
+                {[
+                  { pairId: match.pair1Id, pair: match.pair1, label: "Pareja 1" },
+                  { pairId: match.pair2Id, pair: match.pair2, label: "Pareja 2" }
+                ].map(({ pairId, pair, label }) => {
+                  const pairPlayers = match.players.filter(p => p.pairId === pairId);
+                  const allPresent = pairPlayers.every(p => p.isPresent === true);
+                  const anyAbsent = pairPlayers.some(p => p.isPresent === false);
+                  
+                  return (
+                    <div key={pairId} className="border rounded-md p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm font-medium text-muted-foreground">{label}:</span>
+                          <span className="font-medium" data-testid={`text-${label.toLowerCase().replace(' ', '')}-name-${match.id}`}>
+                            {pair.player1.name} / {pair.player2.name}
+                          </span>
+                          {allPresent && (
+                            <Badge variant="default" className="bg-green-600 text-xs ml-2">
+                              ✓ Confirmados
+                            </Badge>
+                          )}
+                          {anyAbsent && (
+                            <Badge variant="destructive" className="text-xs ml-2">
+                              Ausente
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <div className="flex gap-1">
+                          {pairPlayers.map((player) => (
+                            <div key={player.playerId} className="flex gap-1" data-testid={`player-controls-${player.playerId}`}>
+                              <Button
+                                variant={player.isPresent === true ? "default" : "ghost"}
+                                size="sm"
+                                className={`w-8 h-8 p-0 ${player.isPresent === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                                onClick={() => handleCheckIn(match.id, player.playerId)}
+                                disabled={match.status === "completed" || match.status === "playing"}
+                                data-testid={`button-present-${player.playerId}`}
+                                title={`${player.player.name}: Marcar como presente`}
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant={player.isPresent === false ? "default" : "ghost"}
+                                size="sm"
+                                className={`w-8 h-8 p-0 ${player.isPresent === false ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                                onClick={() => handleCheckOut(match.id, player.playerId)}
+                                disabled={match.status === "completed" || match.status === "playing"}
+                                data-testid={`button-absent-${player.playerId}`}
+                                title={`${player.player.name}: No se presentó`}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant={player.isPresent === null ? "default" : "ghost"}
+                                size="sm"
+                                className={`w-8 h-8 p-0 ${player.isPresent === null ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
+                                onClick={() => handleResetStatus(match.id, player.playerId)}
+                                disabled={match.status === "completed" || match.status === "playing"}
+                                data-testid={`button-pending-${player.playerId}`}
+                                title={`${player.player.name}: Sin confirmar`}
+                              >
+                                <Minus className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Court Assignment Controls */}
+                {(() => {
+                  // Check if at least one pair is confirmed
+                  const pair1Players = match.players.filter(p => p.pairId === match.pair1Id);
+                  const pair2Players = match.players.filter(p => p.pairId === match.pair2Id);
+                  const pair1Confirmed = pair1Players.length === 2 && pair1Players.every(p => p.isPresent === true);
+                  const pair2Confirmed = pair2Players.length === 2 && pair2Players.every(p => p.isPresent === true);
+                  const atLeastOnePairConfirmed = pair1Confirmed || pair2Confirmed;
+                  const allPlayersConfirmed = pair1Confirmed && pair2Confirmed;
+
+                  if (!atLeastOnePairConfirmed || !(userRole === 'admin' || userRole === 'scorekeeper')) {
+                    return null;
+                  }
+
+                  return (
+                    <div className="border-t pt-4 space-y-3">
+                      <p className="text-sm font-medium text-green-600">
+                        {allPlayersConfirmed 
+                          ? "✓ Todos los jugadores presentes - Listo para asignar cancha"
+                          : "✓ Al menos una pareja confirmada - Puedes asignar cancha"
+                        }
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                          onClick={() => handleAutoAssign(match.id)}
+                          disabled={autoAssignMutation.isPending}
+                          data-testid={`button-auto-assign-${match.id}`}
+                        >
+                          <Zap className="w-4 h-4 mr-2" />
+                          Asignación Automática
+                        </Button>
+                        <div className="flex gap-2 flex-1">
+                          <Select onValueChange={(courtId) => courtId && handleManualAssign(match.id, courtId)}>
+                            <SelectTrigger className="flex-1" data-testid={`select-court-${match.id}`}>
+                              <SelectValue placeholder="Seleccionar cancha..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {courts?.map((court) => {
+                                const isAvailable = court.isAvailable;
+                                let canPreAssign = false;
+                                let matchDuration = 0;
+                                
+                                if (!isAvailable) {
+                                  const currentMatch = currentMatches.find(m => m.courtId === court.id && m.status === "playing");
+                                  if (currentMatch) {
+                                    matchDuration = Math.floor((Date.now() - new Date(currentMatch.startTime).getTime()) / (1000 * 60));
+                                    canPreAssign = matchDuration >= 40;
+                                  }
+                                }
+
+                                // Only show available courts or courts that can be pre-assigned
+                                if (!isAvailable && !canPreAssign) return null;
+
+                                return (
+                                  <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
+                                    {court.name}
+                                    {canPreAssign && ` (Pre-asignar - ${matchDuration} min)`}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* DQF Button - Admin only, when pendingDqf is true */}
+                {match.pendingDqf && userRole === 'admin' && (
+                  <div className="border-t pt-4 space-y-3 bg-red-50 dark:bg-red-950 p-4 rounded-md">
+                    <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                      ⚠️ Descalificación pendiente - Solo una pareja se presentó después del tiempo límite
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs text-muted-foreground">
+                        Pareja presente: {match.defaultWinnerPairId === match.pair1Id 
+                          ? `${match.pair1.player1.name} / ${match.pair1.player2.name}`
+                          : `${match.pair2.player1.name} / ${match.pair2.player2.name}`
+                        }
+                      </p>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            disabled={executeDqfMutation.isPending}
+                            data-testid={`button-dqf-${match.id}`}
+                          >
+                            {executeDqfMutation.isPending ? "Ejecutando..." : "Descalificar Pareja Ausente (DQF)"}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Confirmar descalificación?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción descalificará a la pareja ausente y dará la victoria por default a la pareja presente. 
+                              El partido se marcará como completado.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel data-testid={`button-cancel-dqf-${match.id}`}>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => executeDqfMutation.mutate(match.id)}
+                              className="bg-destructive hover:bg-destructive/90"
+                              disabled={executeDqfMutation.isPending}
+                              data-testid={`button-confirm-dqf-${match.id}`}
+                            >
+                              {executeDqfMutation.isPending ? "Ejecutando..." : "Confirmar DQF"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                )}
+
+                {/* Pre-assigned court notice */}
+                {match.status === 'assigned' && match.preAssignedAt && (userRole === 'admin' || userRole === 'scorekeeper') && (
+                  <div className="border-t pt-4">
+                    {(() => {
+                      const assignedCourt = courts?.find(c => c.id === match.courtId);
+                      const courtStillBusy = assignedCourt && !assignedCourt.isAvailable;
+                      
+                      if (courtStillBusy) {
+                        return (
+                          <p className="text-sm text-orange-500 text-center">
+                            ⏳ Cancha pre-asignada. El partido iniciará automáticamente cuando termine el partido actual.
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
               ))}
             </div>
           )}
-          
         </SheetContent>
       </Sheet>
 
