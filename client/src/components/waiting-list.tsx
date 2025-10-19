@@ -81,13 +81,13 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
       setSelectedMatchId(null);
       
       toast({
-        title: "Partido iniciado",
-        description: data.message || "El partido ha comenzado exitosamente",
+        title: "Cancha asignada",
+        description: data.message || "La cancha ha sido asignada exitosamente",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error al iniciar partido",
+        title: "Error al asignar cancha",
         description: error.message,
         variant: "destructive",
       });
@@ -309,12 +309,12 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
             <DialogTitle>
               {readyMatches.find(m => m.id === selectedMatchId)?.courtId 
                 ? "Reasignar Cancha" 
-                : "Seleccionar Cancha e Iniciar Partido"}
+                : "Asignar Cancha"}
             </DialogTitle>
             <DialogDescription>
               {readyMatches.find(m => m.id === selectedMatchId)?.courtId 
                 ? "Elige una nueva cancha para reasignar el partido"
-                : "Elige una cancha disponible para asignar e iniciar el partido inmediatamente"}
+                : "Elige una cancha disponible. El partido se iniciará automáticamente cuando todos los jugadores confirmen su asistencia."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 mt-4">
