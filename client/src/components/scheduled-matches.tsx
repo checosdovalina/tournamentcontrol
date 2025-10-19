@@ -1001,13 +1001,13 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                   }
                                 }
 
+                                // Only show available courts or courts that can be pre-assigned
                                 if (!isAvailable && !canPreAssign) return null;
 
                                 return (
                                   <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
                                     {court.name}
                                     {canPreAssign && ` (Pre-asignar - ${matchDuration} min)`}
-                                    {isAvailable && " (Disponible)"}
                                   </SelectItem>
                                 );
                               })}
