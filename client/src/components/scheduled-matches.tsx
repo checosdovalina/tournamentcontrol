@@ -403,6 +403,25 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     },
   });
 
+  const executeDqfMutation = useMutation({
+    mutationFn: async (matchId: string) => {
+      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/dqf`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/results/recent"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
+      toast({ title: "Descalificación ejecutada", description: "La pareja ausente ha sido descalificada" });
+    },
+    onError: (error: any) => {
+      const errorMessage = error.message || "";
+      const messageParts = errorMessage.split(": ");
+      const message = messageParts.length > 1 ? messageParts.slice(1).join(": ") : "No se pudo ejecutar la descalificación";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    },
+  });
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "scheduled":
@@ -1018,6 +1037,54 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                     </div>
                   );
                 })()}
+
+                {/* DQF Button - Admin only, when pendingDqf is true */}
+                {match.pendingDqf && userRole === 'admin' && (
+                  <div className="border-t pt-4 space-y-3 bg-red-50 dark:bg-red-950 p-4 rounded-md">
+                    <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                      ⚠️ Descalificación pendiente - Solo una pareja se presentó después del tiempo límite
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs text-muted-foreground">
+                        Pareja presente: {match.defaultWinnerPairId === match.pair1Id 
+                          ? `${match.pair1.player1.name} / ${match.pair1.player2.name}`
+                          : `${match.pair2.player1.name} / ${match.pair2.player2.name}`
+                        }
+                      </p>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            disabled={executeDqfMutation.isPending}
+                            data-testid={`button-dqf-${match.id}`}
+                          >
+                            {executeDqfMutation.isPending ? "Ejecutando..." : "Descalificar Pareja Ausente (DQF)"}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Confirmar descalificación?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción descalificará a la pareja ausente y dará la victoria por default a la pareja presente. 
+                              El partido se marcará como completado.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel data-testid={`button-cancel-dqf-${match.id}`}>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => executeDqfMutation.mutate(match.id)}
+                              className="bg-destructive hover:bg-destructive/90"
+                              disabled={executeDqfMutation.isPending}
+                              data-testid={`button-confirm-dqf-${match.id}`}
+                            >
+                              {executeDqfMutation.isPending ? "Ejecutando..." : "Confirmar DQF"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                )}
 
                 {/* Pre-assigned court notice */}
                 {match.status === 'assigned' && match.preAssignedAt && (userRole === 'admin' || userRole === 'scorekeeper') && (
