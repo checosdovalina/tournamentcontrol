@@ -405,7 +405,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const executeDqfMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/dqf`, {});
+      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/dqf`, { tournamentId });
       return response.json();
     },
     onSuccess: () => {
