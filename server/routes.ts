@@ -2934,7 +2934,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
-  // Assign court and start match in one step (for waiting list)
+  // Assign court and optionally start match (for waiting list)
   app.post("/api/scheduled-matches/:id/assign-and-start", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
@@ -2947,6 +2947,23 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       const scheduledMatch = await storage.getScheduledMatch(id);
       if (!scheduledMatch) {
         return res.status(404).json({ message: "Scheduled match not found" });
+      }
+      
+      // Check if at least one pair has confirmed (both players present)
+      const pair1 = await storage.getPair(scheduledMatch.pair1Id);
+      const pair2 = await storage.getPair(scheduledMatch.pair2Id);
+      
+      if (!pair1 || !pair2) {
+        return res.status(404).json({ message: "Parejas no encontradas" });
+      }
+      
+      const pair1Confirmed = pair1.isPresent === true;
+      const pair2Confirmed = pair2.isPresent === true;
+      
+      if (!pair1Confirmed && !pair2Confirmed) {
+        return res.status(400).json({ 
+          message: "Al menos una pareja debe estar confirmada (ambos jugadores presentes) para asignar una cancha" 
+        });
       }
       
       // Verify court is available
@@ -2971,39 +2988,54 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       }
       
       // Assign court
-      await storage.manualAssignCourt(id, courtId);
+      const assignedMatch = await storage.manualAssignCourt(id, courtId);
       
-      // Create playing match
-      const match = await storage.createMatch({
-        tournamentId: scheduledMatch.tournamentId,
-        courtId: courtId,
-        pair1Id: scheduledMatch.pair1Id,
-        pair2Id: scheduledMatch.pair2Id,
-        categoryId: scheduledMatch.categoryId,
-        format: scheduledMatch.format,
-        accessToken: randomUUID(),
-        status: "playing",
-      });
-      
-      // Update scheduled match status
-      await storage.updateScheduledMatch(id, { 
-        status: "playing",
-        matchId: match.id,
-        courtId: courtId
-      });
-      
-      // Update court and pairs
-      const updatedCourt = await storage.updateCourt(courtId, { isAvailable: false });
-      await storage.updatePair(scheduledMatch.pair1Id, { isWaiting: false });
-      await storage.updatePair(scheduledMatch.pair2Id, { isWaiting: false });
-      
-      broadcastUpdate({ type: "match_started", data: match });
-      if (updatedCourt) {
-        broadcastUpdate({ type: "court_updated", data: updatedCourt });
+      if (!assignedMatch) {
+        return res.status(500).json({ message: "Failed to assign court" });
       }
-      res.json({ match, message: `Partido iniciado en cancha ${court.name}` });
+      
+      broadcastUpdate({ type: "court_manually_assigned", data: assignedMatch });
+      
+      // Auto-start match if all players are confirmed (status "ready")
+      if (assignedMatch.status === "ready" && assignedMatch.categoryId) {
+        // Create playing match
+        const match = await storage.createMatch({
+          tournamentId: scheduledMatch.tournamentId,
+          courtId: courtId,
+          pair1Id: scheduledMatch.pair1Id,
+          pair2Id: scheduledMatch.pair2Id,
+          categoryId: scheduledMatch.categoryId,
+          format: scheduledMatch.format,
+          accessToken: randomUUID(),
+          status: "playing",
+        });
+        
+        // Update scheduled match status
+        await storage.updateScheduledMatch(id, { 
+          status: "playing",
+          matchId: match.id,
+          courtId: courtId
+        });
+        
+        // Update court and pairs
+        const updatedCourt = await storage.updateCourt(courtId, { isAvailable: false });
+        await storage.updatePair(scheduledMatch.pair1Id, { isWaiting: false });
+        await storage.updatePair(scheduledMatch.pair2Id, { isWaiting: false });
+        
+        broadcastUpdate({ type: "match_started", data: match });
+        if (updatedCourt) {
+          broadcastUpdate({ type: "court_updated", data: updatedCourt });
+        }
+        res.json({ match, message: `Partido iniciado automáticamente en cancha ${court.name}` });
+      } else {
+        // Just assigned court, did not auto-start
+        res.json({ 
+          match: assignedMatch, 
+          message: `Cancha ${court.name} asignada. El partido se iniciará automáticamente cuando todos los jugadores confirmen.` 
+        });
+      }
     } catch (error: any) {
-      res.status(500).json({ message: "Failed to assign and start match", error: error.message });
+      res.status(500).json({ message: "Failed to assign court", error: error.message });
     }
   });
 
