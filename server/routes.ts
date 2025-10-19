@@ -2566,7 +2566,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       broadcastUpdate({ type: "court_auto_assigned", data: match });
       
       // Auto-start match if all players are confirmed (status "ready")
-      if (match.status === "ready" && match.courtId) {
+      if (match.status === "ready" && match.courtId && match.categoryId) {
         // Create playing match
         const playingMatch = await storage.createMatch({
           tournamentId: match.tournamentId,
@@ -2749,7 +2749,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         broadcastUpdate({ type: "court_manually_assigned", data: match });
         
         // Auto-start match if all players are confirmed (status "ready")
-        if (match.status === "ready") {
+        if (match.status === "ready" && match.courtId && match.categoryId) {
           // Create playing match
           const playingMatch = await storage.createMatch({
             tournamentId: match.tournamentId,

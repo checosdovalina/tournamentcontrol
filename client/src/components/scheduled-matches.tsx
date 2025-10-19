@@ -364,24 +364,6 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     },
   });
 
-  const startMatchMutation = useMutation({
-    mutationFn: async (matchId: string) => {
-      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/start`, { tournamentId });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
-      toast({ title: "Partido iniciado", description: "El partido está ahora en curso" });
-    },
-    onError: (error: any) => {
-      // Extract message from error format "404: {message}"
-      const errorMessage = error.message || "";
-      const messageParts = errorMessage.split(": ");
-      const message = messageParts.length > 1 ? messageParts.slice(1).join(": ") : "No se pudo iniciar el partido";
-      toast({ title: "Error", description: message, variant: "destructive" });
-    },
-  });
 
   const deleteMatchMutation = useMutation({
     mutationFn: async (matchId: string) => {
@@ -1020,32 +1002,21 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                   </div>
                 )}
 
-                {/* Start Match Control */}
-                {match.status === 'assigned' && (userRole === 'admin' || userRole === 'scorekeeper') && (
+                {/* Pre-assigned court notice */}
+                {match.status === 'assigned' && match.preAssignedAt && (userRole === 'admin' || userRole === 'scorekeeper') && (
                   <div className="border-t pt-4">
                     {(() => {
-                      const isPreAssigned = !!match.preAssignedAt;
                       const assignedCourt = courts?.find(c => c.id === match.courtId);
-                      const courtStillBusy = isPreAssigned && assignedCourt && !assignedCourt.isAvailable;
+                      const courtStillBusy = assignedCourt && !assignedCourt.isAvailable;
                       
-                      return (
-                        <>
-                          <Button
-                            onClick={() => startMatchMutation.mutate(match.id)}
-                            disabled={startMatchMutation.isPending || courtStillBusy}
-                            className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            data-testid={`button-start-match-${match.id}`}
-                          >
-                            <Users className="w-4 h-4 mr-2" />
-                            {startMatchMutation.isPending ? "Iniciando..." : "Iniciar Partido"}
-                          </Button>
-                          {courtStillBusy && (
-                            <p className="text-sm text-orange-500 mt-2 text-center">
-                              ⏳ Cancha pre-asignada. Esperando que termine el partido actual.
-                            </p>
-                          )}
-                        </>
-                      );
+                      if (courtStillBusy) {
+                        return (
+                          <p className="text-sm text-orange-500 text-center">
+                            ⏳ Cancha pre-asignada. El partido iniciará automáticamente cuando termine el partido actual.
+                          </p>
+                        );
+                      }
+                      return null;
                     })()}
                   </div>
                 )}
