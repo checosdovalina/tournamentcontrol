@@ -166,6 +166,7 @@ export const scheduledMatches = pgTable("scheduled_matches", {
   outcome: text("outcome").default("normal"), // normal, default, cancelled
   outcomeReason: text("outcome_reason"), // Display message (e.g., "PARTIDO GANADO POR DEFAULT", "PARTIDO CANCELADO")
   defaultWinnerPairId: varchar("default_winner_pair_id"), // Pair that won by default (nullable)
+  pendingDqf: boolean("pending_dqf").default(false), // True when waiting for admin to manually DQF a pair after timeout
   preAssignedAt: timestamp("pre_assigned_at"), // When the court was pre-assigned (40+ min match in progress)
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),

@@ -67,13 +67,13 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
           if (!pair1Confirmed && !pair2Confirmed) {
             await handleCancellation(storage, match, broadcastUpdate);
           }
-          // CASE 2: Only pair1 present → pair1 wins by default
+          // CASE 2: Only pair1 present → mark pending DQF (admin decides)
           else if (pair1Confirmed && !pair2Confirmed) {
-            await handleDefault(storage, match, match.pair1Id, broadcastUpdate);
+            await handlePendingDqf(storage, match, match.pair1Id, broadcastUpdate);
           }
-          // CASE 3: Only pair2 present → pair2 wins by default
+          // CASE 3: Only pair2 present → mark pending DQF (admin decides)
           else if (!pair1Confirmed && pair2Confirmed) {
-            await handleDefault(storage, match, match.pair2Id, broadcastUpdate);
+            await handlePendingDqf(storage, match, match.pair2Id, broadcastUpdate);
           }
           // CASE 4: Both pairs present → do nothing (normal game)
         }
@@ -142,6 +142,21 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
     broadcastUpdate({ type: 'match_finished', data: cancelledMatch });
     
     log(`[Timeout Processor] Match ${match.id} cancelled successfully`);
+  };
+
+  const handlePendingDqf = async (storage: IStorage, match: any, presentPairId: string, broadcastUpdate: (data: any) => void) => {
+    log(`[Timeout Processor] Match ${match.id} marked as pending DQF - present pair: ${presentPairId}`);
+    
+    // Update scheduled match to mark it as pending DQF
+    const updatedMatch = await storage.updateScheduledMatch(match.id, {
+      pendingDqf: true,
+      defaultWinnerPairId: presentPairId, // Track which pair is present (potential winner)
+    });
+    
+    // Broadcast update so admin UI can show DQF button
+    broadcastUpdate({ type: 'match_pending_dqf', data: updatedMatch });
+    
+    log(`[Timeout Processor] Match ${match.id} marked as pending DQF successfully`);
   };
 
   const handleDefault = async (storage: IStorage, match: any, winnerPairId: string, broadcastUpdate: (data: any) => void) => {
