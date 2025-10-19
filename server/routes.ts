@@ -2590,6 +2590,101 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
+  // Execute DQF (Disqualification) for a match pending admin decision
+  app.post("/api/scheduled-matches/:id/dqf", requireTournamentRole('admin'), async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const match = await storage.getScheduledMatch(id);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Partido programado no encontrado" });
+      }
+      
+      if (!match.pendingDqf) {
+        return res.status(400).json({ message: "Este partido no está pendiente de descalificación" });
+      }
+      
+      if (!match.defaultWinnerPairId) {
+        return res.status(400).json({ message: "No se puede determinar el ganador por default" });
+      }
+      
+      const winnerPairId = match.defaultWinnerPairId;
+      const loserPairId = winnerPairId === match.pair1Id ? match.pair2Id : match.pair1Id;
+      
+      // Get courtId - use assigned court or get first available court
+      let courtId = match.courtId;
+      if (!courtId) {
+        const courts = await storage.getCourts();
+        courtId = courts[0]?.id || 'unknown';
+      }
+      
+      // Create default score: 6-3, 6-3
+      const defaultScore = {
+        sets: winnerPairId === match.pair1Id ? [[6, 3], [6, 3]] : [[3, 6], [3, 6]],
+        currentSet: 3,
+        currentPoints: [0, 0],
+      };
+      
+      // Create match record with finished status
+      const createdMatch = await storage.createMatch({
+        tournamentId: match.tournamentId,
+        courtId,
+        pair1Id: match.pair1Id,
+        pair2Id: match.pair2Id,
+        categoryId: match.categoryId,
+        format: match.format,
+        status: 'finished',
+        score: defaultScore,
+        winnerId: winnerPairId,
+        accessToken: randomUUID(),
+        notes: 'Descalificado por administrador - pareja contraria ausente',
+      });
+      
+      // Create result record
+      await storage.createResult({
+        matchId: createdMatch.id,
+        winnerId: winnerPairId,
+        loserId: loserPairId,
+        score: defaultScore,
+      });
+      
+      // Update scheduled match to completed and clear pendingDqf
+      const updatedMatch = await storage.updateScheduledMatch(id, {
+        status: 'completed',
+        matchId: createdMatch.id,
+        outcome: 'default',
+        outcomeReason: 'PARTIDO GANADO POR DEFAULT (DQF)',
+        pendingDqf: false,
+      });
+      
+      // Free court if assigned
+      if (match.courtId) {
+        await storage.updateCourt(match.courtId, { isAvailable: true });
+        
+        // Handle pre-assigned match if exists
+        const court = await storage.getCourt(match.courtId);
+        if (court?.preAssignedScheduledMatchId) {
+          await storage.updateScheduledMatch(court.preAssignedScheduledMatchId, {
+            preAssignedAt: null,
+          });
+          await storage.updateCourt(match.courtId, {
+            preAssignedScheduledMatchId: null,
+          });
+          broadcastUpdate({ type: "match_enabled_from_preassign", data: { matchId: court.preAssignedScheduledMatchId } });
+        }
+      }
+      
+      // Broadcast updates
+      broadcastUpdate({ type: 'match_dqf_executed', data: updatedMatch });
+      broadcastUpdate({ type: 'match_finished', data: createdMatch });
+      
+      res.json({ match: updatedMatch, result: createdMatch });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to execute DQF", error: error.message });
+    }
+  });
+
   // Auto-assign court to a ready match
   app.post("/api/scheduled-matches/:id/auto-assign", requireAuth, async (req, res) => {
     try {
