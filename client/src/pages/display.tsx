@@ -602,9 +602,6 @@ function MatchCard({ match, formatMatchDuration, formatScore, courts, scheduledM
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 bg-orange-600/80 text-white rounded-lg font-bold text-base">
-            {match.category?.name || 'Sin categoría'}
-          </span>
           <span className="px-3 py-1 bg-destructive/80 text-white rounded-lg font-bold text-lg">
             {match.court.name}
           </span>

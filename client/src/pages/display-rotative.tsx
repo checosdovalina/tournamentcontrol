@@ -352,9 +352,6 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
             <div key={match.id} className="bg-[#1F2937] rounded-lg p-2 border border-[#10B981] h-fit">
               <div className="flex justify-between items-center mb-1.5">
                 <div className="flex items-center gap-1">
-                  <div className="bg-[#F59E0B] text-white px-1.5 py-0.5 rounded text-xs font-bold">
-                    {match.category?.name || 'Sin categoría'}
-                  </div>
                   <div className="bg-[#3B82F6] text-white px-1.5 py-0.5 rounded text-xs font-bold">
                     {match.court?.name || 'Sin cancha'}
                   </div>

@@ -72,19 +72,16 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
           const pair1Confirmed = pair1CheckIns === 2; // Both players from pair 1 must be present
           const pair2Confirmed = pair2CheckIns === 2; // Both players from pair 2 must be present
           
-          // CASE 1: Both pairs absent → CANCELLED
-          if (!pair1Confirmed && !pair2Confirmed) {
-            await handleCancellation(storage, match, broadcastUpdate);
-          }
-          // CASE 2: Only pair1 present → mark pending DQF (admin decides)
-          else if (pair1Confirmed && !pair2Confirmed) {
+          // CASE 1: Only pair1 present → mark pending DQF (admin decides)
+          if (pair1Confirmed && !pair2Confirmed) {
             await handlePendingDqf(storage, match, match.pair1Id, broadcastUpdate);
           }
-          // CASE 3: Only pair2 present → mark pending DQF (admin decides)
+          // CASE 2: Only pair2 present → mark pending DQF (admin decides)
           else if (!pair1Confirmed && pair2Confirmed) {
             await handlePendingDqf(storage, match, match.pair2Id, broadcastUpdate);
           }
-          // CASE 4: Both pairs present → do nothing (normal game)
+          // CASE 3: Both pairs present → do nothing (normal game)
+          // CASE 4: Both pairs absent → do nothing (no auto-cancellation)
         }
       }
     } catch (error: any) {
