@@ -2563,8 +2563,42 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         return res.status(400).json({ message: "No hay canchas disponibles. Todas las canchas están ocupadas por partidos en curso." });
       }
       
-      res.json(match);
       broadcastUpdate({ type: "court_auto_assigned", data: match });
+      
+      // Auto-start match if all players are confirmed (status "ready")
+      if (match.status === "ready" && match.courtId) {
+        // Create playing match
+        const playingMatch = await storage.createMatch({
+          tournamentId: match.tournamentId,
+          courtId: match.courtId,
+          pair1Id: match.pair1Id,
+          pair2Id: match.pair2Id,
+          categoryId: match.categoryId,
+          format: match.format,
+          accessToken: randomUUID(),
+          status: "playing",
+        });
+        
+        // Update scheduled match status
+        await storage.updateScheduledMatch(id, { 
+          status: "playing",
+          matchId: playingMatch.id 
+        });
+        
+        // Update court and pairs
+        const updatedCourt = await storage.updateCourt(match.courtId, { isAvailable: false });
+        await storage.updatePair(match.pair1Id, { isWaiting: false });
+        await storage.updatePair(match.pair2Id, { isWaiting: false });
+        
+        broadcastUpdate({ type: "match_started", data: playingMatch });
+        if (updatedCourt) {
+          broadcastUpdate({ type: "court_updated", data: updatedCourt });
+        }
+        
+        res.json(playingMatch);
+      } else {
+        res.json(match);
+      }
     } catch (error: any) {
       res.status(500).json({ message: "Failed to auto-assign court", error: error.message });
     }
@@ -2712,8 +2746,42 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
           return res.status(404).json({ message: "Failed to assign court" });
         }
         
-        res.json(match);
         broadcastUpdate({ type: "court_manually_assigned", data: match });
+        
+        // Auto-start match if all players are confirmed (status "ready")
+        if (match.status === "ready") {
+          // Create playing match
+          const playingMatch = await storage.createMatch({
+            tournamentId: match.tournamentId,
+            courtId: match.courtId,
+            pair1Id: match.pair1Id,
+            pair2Id: match.pair2Id,
+            categoryId: match.categoryId,
+            format: match.format,
+            accessToken: randomUUID(),
+            status: "playing",
+          });
+          
+          // Update scheduled match status
+          await storage.updateScheduledMatch(id, { 
+            status: "playing",
+            matchId: playingMatch.id 
+          });
+          
+          // Update court and pairs
+          const updatedCourt = await storage.updateCourt(match.courtId, { isAvailable: false });
+          await storage.updatePair(match.pair1Id, { isWaiting: false });
+          await storage.updatePair(match.pair2Id, { isWaiting: false });
+          
+          broadcastUpdate({ type: "match_started", data: playingMatch });
+          if (updatedCourt) {
+            broadcastUpdate({ type: "court_updated", data: updatedCourt });
+          }
+          
+          res.json(playingMatch);
+        } else {
+          res.json(match);
+        }
       }
     } catch (error: any) {
       res.status(500).json({ message: "Failed to assign court", error: error.message });
