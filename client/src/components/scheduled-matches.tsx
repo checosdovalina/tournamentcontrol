@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil, Repeat, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil, Repeat } from "lucide-react";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
 import EditScheduledMatchModal from "@/components/modals/edit-scheduled-match-modal";
 import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/schema";
@@ -33,7 +33,6 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [startingMatchId, setStartingMatchId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Query for all scheduled matches in the tournament
@@ -361,28 +360,6 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     },
   });
 
-  const startMatchMutation = useMutation({
-    mutationFn: async (matchId: string) => {
-      setStartingMatchId(matchId);
-      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/start-match`, {});
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
-      toast({ title: "Partido iniciado", description: "El partido ha comenzado exitosamente" });
-      setStartingMatchId(null);
-    },
-    onError: (error: any) => {
-      const errorMessage = error.message || "";
-      const messageParts = errorMessage.split(": ");
-      const message = messageParts.length > 1 ? messageParts.slice(1).join(": ") : "No se pudo iniciar el partido";
-      toast({ title: "Error", description: message, variant: "destructive" });
-      setStartingMatchId(null);
-    },
-  });
-
 
   const deleteMatchMutation = useMutation({
     mutationFn: async (matchId: string) => {
@@ -476,10 +453,6 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const handleManualAssign = (matchId: string, courtId: string) => {
     manualAssignMutation.mutate({ matchId, courtId });
-  };
-
-  const handleStartMatch = (matchId: string) => {
-    startMatchMutation.mutate(matchId);
   };
 
   const handleDayClick = (day: Date) => {
@@ -1103,56 +1076,6 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                     </div>
                   </div>
                 )}
-
-                {/* Manual Start Button - for matches that are ready but didn't auto-start */}
-                {(() => {
-                  const pair1Players = match.players.filter(p => p.pairId === match.pair1Id);
-                  const pair2Players = match.players.filter(p => p.pairId === match.pair2Id);
-                  const pair1Confirmed = pair1Players.length === 2 && pair1Players.every(p => p.isPresent === true);
-                  const pair2Confirmed = pair2Players.length === 2 && pair2Players.every(p => p.isPresent === true);
-                  const allPlayersConfirmed = pair1Confirmed && pair2Confirmed;
-
-                  // Show button if:
-                  // - All players are confirmed
-                  // - Court is assigned
-                  // - Not pre-assigned
-                  // - No pending DQF
-                  // - Match is not already playing or completed
-                  // - User is admin or scorekeeper
-                  const shouldShowStartButton = 
-                    allPlayersConfirmed &&
-                    match.courtId &&
-                    !match.preAssignedAt &&
-                    !match.pendingDqf &&
-                    match.status !== 'playing' &&
-                    match.status !== 'completed' &&
-                    (userRole === 'admin' || userRole === 'scorekeeper');
-
-                  if (!shouldShowStartButton) return null;
-
-                  const isStarting = startingMatchId === match.id;
-                  
-                  return (
-                    <div className="border-t pt-4 space-y-3 bg-green-50 dark:bg-green-950 p-4 rounded-md">
-                      <p className="text-sm font-medium text-green-600 dark:text-green-400">
-                        ✓ El partido está listo para comenzar
-                      </p>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          handleStartMatch(match.id);
-                        }}
-                        disabled={isStarting || startMatchMutation.isPending}
-                        className="w-full bg-green-600 hover:bg-green-700"
-                        data-testid={`button-start-match-${match.id}`}
-                      >
-                        <Play className="w-4 h-4 mr-2" />
-                        {isStarting ? "Iniciando..." : "Iniciar Partido"}
-                      </Button>
-                    </div>
-                  );
-                })()}
 
                 {/* Pre-assigned court notice */}
                 {match.status === 'assigned' && match.preAssignedAt && (userRole === 'admin' || userRole === 'scorekeeper') && (

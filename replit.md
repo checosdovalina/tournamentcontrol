@@ -35,7 +35,7 @@ The backend uses **Node.js** with **Express.js**. **Express-session** with **con
 -   **Timeout Processor Retroactive Protection**: Skips matches created AFTER their timeout period to prevent immediate cancellation of retroactively scheduled matches. The timeout (15 minutes after planned time) only applies to matches that existed BEFORE the timeout expired. This allows scheduling past matches without auto-cancellation.
 -   **Admin-Controlled DQF System**: When the timeout processor (15 minutes after planned time) detects that only one pair has completed check-in (both players present), instead of automatically awarding a default win, it marks the scheduled match with `pendingDqf: true` and stores the present pair in `defaultWinnerPairId`. Admin users see a DQF button in the programming calendar view, allowing them to manually decide whether to disqualify the absent pair. This provides human oversight for potentially contentious disqualification decisions. When both pairs are absent, the match is still automatically cancelled without admin intervention.
 -   **Court Pre-Assignment System**: When a court has been occupied for 40+ minutes, the next match can be pre-assigned to that court. The pre-assigned match cannot start until the current match completes, preventing conflicts while optimizing court utilization. The display shows "Pre-asignada" status, and the programming view disables the "Iniciar Partido" button until the court is freed. Upon match completion, the pre-assigned match is automatically enabled and ready to start.
--   **Automatic Match Starting with Manual Override**: Matches auto-start when all conditions are met (all 4 players confirmed + court assigned + categoryId exists + not pre-assigned + no pending DQF). Auto-start triggers during: (1) court assignment to a ready match, (2) last player check-in on a match with assigned court. For edge cases where auto-start doesn't trigger (e.g., court assigned before all players confirmed, or vice versa), a **Manual Start Button** appears in the programming calendar for admin/scorekeeper users, allowing them to manually start matches that are fully ready but stuck in "assigned" status. The manual start endpoint (`POST /api/scheduled-matches/:id/start-match`) validates all readiness conditions and requires admin or scorekeeper authorization for the tournament.
+-   **Fully Automatic Match Starting**: All match starts are completely automatic. When a scheduled match meets all conditions (all 4 players confirmed + court assigned + categoryId exists + not pre-assigned), the match auto-starts immediately. This happens in two scenarios: (1) when court is assigned to a ready match (waiting list assignment), (2) when the last player confirms check-in on a match with assigned court. No manual "Iniciar Partido" buttons exist anywhere in the system.
 -   **Display Rotative Responsive Design**: Cards are fully responsive with scroll support (`overflow-y-auto`) and dynamic sizing (`h-fit`). Uses flexbox layouts to prevent content clipping on any screen size. Shows court assignment status (assigned/pre-assigned/waiting) for upcoming matches. Match data structure: scores accessed via `match.score.sets` (array format `[pair1Score, pair2Score]`), results accessed via `result.match.pair1/pair2` (nested structure), player names via `pair.player1.name / pair.player2.name`.
 
 ## External Dependencies
@@ -87,24 +87,7 @@ The backend uses **Node.js** with **Express.js**. **Express-session** with **con
 
 ### Environment Variables (Required for Deployment)
 -   `DATABASE_URL`
--   `SESSION_SECRET` - **CRITICAL**: Must be set to a strong, random value in production. The application falls back to 'default-secret-key' in development, but this is insecure for production use and will compromise session security.
+-   `SESSION_SECRET`
 -   `DEFAULT_OBJECT_STORAGE_BUCKET_ID`
 -   `PUBLIC_OBJECT_SEARCH_PATHS`
 -   `PRIVATE_OBJECT_DIR`
-
-## Security Considerations
-
-### Session Secret
-The application uses `SESSION_SECRET` environment variable to sign session cookies. In `server/index.ts`, the code falls back to `'default-secret-key'` if this variable is not set:
-
-```javascript
-secret: process.env.SESSION_SECRET || 'default-secret-key'
-```
-
-**⚠️ Production Warning**: The default value is only suitable for development. In production:
-1. Set a strong, random `SESSION_SECRET` (minimum 32 characters, use cryptographically secure random generation)
-2. Never commit the secret to version control
-3. Rotate the secret periodically
-4. Keep it confidential
-
-Without a proper session secret, attackers can forge session cookies and impersonate users.

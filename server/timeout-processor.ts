@@ -1,7 +1,7 @@
 import { log } from "./vite";
 import type { IStorage } from "./storage";
 import { randomUUID } from "crypto";
-import { combineDateTimeInTimezone, formatInTimezone, fromTimezone } from "./timezone-utils";
+import { combineDateTimeInTimezone, formatInTimezone } from "./timezone-utils";
 
 export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data: any) => void) {
   // Run check every minute
@@ -44,24 +44,8 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
         const timezone = tournament?.timezone || 'America/Santiago';
         
         // Create match datetime using tournament timezone
-        // IMPORTANT: Extract date components directly to avoid timezone interpretation issues
-        // The 'day' field is stored as timestamp without timezone, so we need to treat it
-        // as representing midnight in the tournament's timezone, not UTC
-        const dayStr = typeof match.day === 'string' ? match.day : match.day.toISOString();
-        const [yearStr, monthStr, dayOfMonthStr] = dayStr.split('T')[0].split('-');
-        const year = parseInt(yearStr, 10);
-        const month = parseInt(monthStr, 10) - 1; // 0-indexed
-        const dayOfMonth = parseInt(dayOfMonthStr, 10);
-        const [hours, minutes] = match.plannedTime.split(':').map(Number);
-        
-        // Create the datetime directly in the tournament timezone
-        const matchDateTime = fromTimezone(year, month, dayOfMonth, hours, minutes, timezone);
-        
-        // DEBUG for specific matches
-        if (match.id === 'ea331415-6494-46a0-ad95-74c7f2746c0c' || match.id === '64597e01-02cc-474f-b2c5-b9c387322bef') {
-          log(`[DEBUG] Match ${match.id}: dayStr=${dayStr}, year=${year}, month=${month}, day=${dayOfMonth}, hours=${hours}, minutes=${minutes}`);
-          log(`[DEBUG] Match ${match.id}: matchDateTime UTC=${matchDateTime.toISOString()}, formatted=${formatInTimezone(matchDateTime, timezone)}`);
-        }
+        const matchDay = typeof match.day === 'string' ? new Date(match.day) : match.day;
+        const matchDateTime = combineDateTimeInTimezone(matchDay, match.plannedTime, timezone);
         
         const timeoutThreshold = new Date(matchDateTime.getTime() + TOLERANCE_MINUTES * 60 * 1000);
         

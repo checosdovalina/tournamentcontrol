@@ -2377,15 +2377,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         return res.status(403).json({ message: "Tournament admin access required" });
       }
       
-      // IMPORTANT: If the planned time or day is being changed, clear any pending DQF
-      // This prevents stale DQF flags from appearing when a match is rescheduled
-      if ((updates.plannedTime && updates.plannedTime !== match.plannedTime) || 
-          (updates.day && updates.day.getTime() !== new Date(match.day).getTime())) {
-        console.log(`[PATCH scheduled-match] Clearing pending DQF for rescheduled match ${id}`);
-        updates.pendingDqf = false;
-        updates.defaultWinnerPairId = null;
-      }
-      
       const updatedMatch = await storage.updateScheduledMatch(id, updates);
       if (!updatedMatch) {
         return res.status(404).json({ message: "Scheduled match not found" });
@@ -2483,23 +2474,14 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       
       // Auto-start match if ALL players confirmed AND court assigned
       // Works with both 'ready' and 'assigned' status
-      if (match) {
-        console.log(`[Auto-Start Check] Match ${id}: status=${match.status}, courtId=${match.courtId}, categoryId=${match.categoryId}, preAssigned=${!!match.preAssignedAt}, pendingDqf=${!!match.pendingDqf}`);
-      }
-      
-      // IMPORTANT: Do not auto-start if DQF (disqualification) is pending - admin must resolve it first
-      // Also verify that match hasn't already been started (matchId should be null)
-      if (match && (match.status === 'ready' || match.status === 'assigned') && match.courtId && match.categoryId && !match.preAssignedAt && !match.pendingDqf && !match.matchId) {
+      if (match && (match.status === 'ready' || match.status === 'assigned') && match.courtId && match.categoryId && !match.preAssignedAt) {
         const checkInRecords = await storage.getScheduledMatchPlayers(id);
         const pair1CheckIns = checkInRecords.filter(p => p.pairId === match!.pair1Id && p.isPresent).length;
         const pair2CheckIns = checkInRecords.filter(p => p.pairId === match!.pair2Id && p.isPresent).length;
         
-        console.log(`[Auto-Start Check] Match ${id}: pair1=${pair1CheckIns}/2, pair2=${pair2CheckIns}/2`);
-        
         const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
         
         if (allPlayersConfirmed) {
-          console.log(`[Auto-Start] Starting match ${id} automatically...`);
           // Create playing match
           const playingMatch = await storage.createMatch({
             tournamentId: match.tournamentId,
@@ -2704,105 +2686,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
-  // Manually start a match that is ready (all players confirmed + court assigned)
-  app.post("/api/scheduled-matches/:id/start-match", requireAuth, async (req, res) => {
-    const { id } = req.params;
-    console.log(`[Manual Start] Received request to start match ${id}`);
-    
-    try {
-      const match = await storage.getScheduledMatch(id);
-      console.log(`[Manual Start] Match found:`, match ? 'YES' : 'NO');
-      if (!match) {
-        return res.status(404).json({ message: "Scheduled match not found" });
-      }
-
-      // Check authorization
-      let isAuthorized = false;
-      if (req.session.userRole === 'superadmin') {
-        isAuthorized = true;
-      } else {
-        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
-          req.session.userId!,
-          match.tournamentId
-        );
-        if (tournamentUser && tournamentUser.status === 'active' && 
-            (tournamentUser.role === 'admin' || tournamentUser.role === 'scorekeeper')) {
-          isAuthorized = true;
-        }
-      }
-
-      if (!isAuthorized) {
-        return res.status(403).json({ message: "Tournament admin or scorekeeper access required" });
-      }
-      
-      // Check if match is already started
-      if (match.matchId) {
-        return res.status(400).json({ message: "Match already started" });
-      }
-      
-      // Check if DQF is pending
-      if (match.pendingDqf) {
-        return res.status(400).json({ message: "Cannot start match - disqualification pending" });
-      }
-      
-      // Check if court is assigned
-      if (!match.courtId) {
-        return res.status(400).json({ message: "Court must be assigned before starting match" });
-      }
-      
-      // Check if category exists
-      if (!match.categoryId) {
-        return res.status(400).json({ message: "Category must be assigned before starting match" });
-      }
-      
-      // Check if all players are confirmed
-      const checkInRecords = await storage.getScheduledMatchPlayers(id);
-      const pair1CheckIns = checkInRecords.filter(p => p.pairId === match.pair1Id && p.isPresent).length;
-      const pair2CheckIns = checkInRecords.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
-      
-      if (pair1CheckIns !== 2 || pair2CheckIns !== 2) {
-        return res.status(400).json({ 
-          message: `All players must be confirmed. Currently: Pair 1 = ${pair1CheckIns}/2, Pair 2 = ${pair2CheckIns}/2` 
-        });
-      }
-      
-      console.log(`[Manual Start] Starting match ${id}...`);
-      
-      // Create playing match
-      const playingMatch = await storage.createMatch({
-        tournamentId: match.tournamentId,
-        courtId: match.courtId,
-        pair1Id: match.pair1Id,
-        pair2Id: match.pair2Id,
-        categoryId: match.categoryId,
-        format: match.format,
-        accessToken: randomUUID(),
-        status: "playing",
-      });
-      
-      // Update scheduled match status
-      await storage.updateScheduledMatch(id, { 
-        status: "playing",
-        matchId: playingMatch.id 
-      });
-      
-      // Update court and pairs
-      const updatedCourt = await storage.updateCourt(match.courtId, { isAvailable: false });
-      await storage.updatePair(match.pair1Id, { isWaiting: false });
-      await storage.updatePair(match.pair2Id, { isWaiting: false });
-      
-      broadcastUpdate({ type: "match_started", data: playingMatch });
-      if (updatedCourt) {
-        broadcastUpdate({ type: "court_updated", data: updatedCourt });
-      }
-      
-      res.json(playingMatch);
-    } catch (error: any) {
-      console.error('[Manual Start] Error starting match:', error);
-      res.status(500).json({ message: "Failed to start match", error: error.message });
-    }
-  });
-
   // Auto-assign court to a ready match
   app.post("/api/scheduled-matches/:id/auto-assign", requireAuth, async (req, res) => {
     try {
@@ -2840,8 +2723,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       broadcastUpdate({ type: "court_auto_assigned", data: match });
       
       // Auto-start match if all players are confirmed (status "ready")
-      // IMPORTANT: Do not auto-start if DQF (disqualification) is pending or match already started
-      if (match.status === "ready" && match.courtId && match.categoryId && !match.pendingDqf && !match.matchId) {
+      if (match.status === "ready" && match.courtId && match.categoryId) {
         // Create playing match
         const playingMatch = await storage.createMatch({
           tournamentId: match.tournamentId,
@@ -3047,8 +2929,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         const pair2CheckIns = checkInRecords.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
         const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
         
-        // IMPORTANT: Do not auto-start if DQF (disqualification) is pending or match already started
-        if ((match.status === "ready" || match.status === "assigned") && match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt && !match.pendingDqf && !match.matchId) {
+        if ((match.status === "ready" || match.status === "assigned") && match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt) {
           // Create playing match
           const playingMatch = await storage.createMatch({
             tournamentId: match.tournamentId,
