@@ -87,7 +87,24 @@ The backend uses **Node.js** with **Express.js**. **Express-session** with **con
 
 ### Environment Variables (Required for Deployment)
 -   `DATABASE_URL`
--   `SESSION_SECRET`
+-   `SESSION_SECRET` - **CRITICAL**: Must be set to a strong, random value in production. The application falls back to 'default-secret-key' in development, but this is insecure for production use and will compromise session security.
 -   `DEFAULT_OBJECT_STORAGE_BUCKET_ID`
 -   `PUBLIC_OBJECT_SEARCH_PATHS`
 -   `PRIVATE_OBJECT_DIR`
+
+## Security Considerations
+
+### Session Secret
+The application uses `SESSION_SECRET` environment variable to sign session cookies. In `server/index.ts`, the code falls back to `'default-secret-key'` if this variable is not set:
+
+```javascript
+secret: process.env.SESSION_SECRET || 'default-secret-key'
+```
+
+**⚠️ Production Warning**: The default value is only suitable for development. In production:
+1. Set a strong, random `SESSION_SECRET` (minimum 32 characters, use cryptographically secure random generation)
+2. Never commit the secret to version control
+3. Rotate the secret periodically
+4. Keep it confidential
+
+Without a proper session secret, attackers can forge session cookies and impersonate users.
