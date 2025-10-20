@@ -49,12 +49,21 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
         
         const timeoutThreshold = new Date(matchDateTime.getTime() + TOLERANCE_MINUTES * 60 * 1000);
         
-        // Skip if match was created AFTER its timeout period (retroactive scheduling)
+        // Skip if match was created RECENTLY after its timeout period (retroactive scheduling)
         // This prevents immediate cancellation when scheduling past matches
+        // But we only skip if created within 2 hours of the timeout - older matches should be processed
         const matchCreatedAt = typeof match.createdAt === 'string' ? new Date(match.createdAt) : match.createdAt;
         if (matchCreatedAt && matchCreatedAt >= timeoutThreshold) {
-          log(`[Timeout Processor] Match ${match.id}: SKIPPED - created after timeout (created=${formatInTimezone(matchCreatedAt, timezone)}, timeout=${formatInTimezone(timeoutThreshold, timezone)})`);
-          continue;
+          const timeSinceTimeout = matchCreatedAt.getTime() - timeoutThreshold.getTime();
+          const twoHoursInMs = 2 * 60 * 60 * 1000;
+          
+          // Only skip if created within 2 hours after the timeout
+          if (timeSinceTimeout <= twoHoursInMs) {
+            log(`[Timeout Processor] Match ${match.id}: SKIPPED - recently created after timeout (created=${formatInTimezone(matchCreatedAt, timezone)}, timeout=${formatInTimezone(timeoutThreshold, timezone)}, diff=${Math.round(timeSinceTimeout / 1000 / 60)}min)`);
+            continue;
+          } else {
+            log(`[Timeout Processor] Match ${match.id}: Processing despite creation after timeout - too old to skip (created=${formatInTimezone(matchCreatedAt, timezone)}, timeout=${formatInTimezone(timeoutThreshold, timezone)}, diff=${Math.round(timeSinceTimeout / 1000 / 60 / 60)}hrs)`);
+          }
         }
         
         // Debug logging with timezone-aware formatting
@@ -72,16 +81,26 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
           const pair1Confirmed = pair1CheckIns === 2; // Both players from pair 1 must be present
           const pair2Confirmed = pair2CheckIns === 2; // Both players from pair 2 must be present
           
+          log(`[Timeout Processor] Match ${match.id} check-ins: pair1=${pair1CheckIns}/2 (confirmed=${pair1Confirmed}), pair2=${pair2CheckIns}/2 (confirmed=${pair2Confirmed})`);
+          
           // CASE 1: Only pair1 present → mark pending DQF (admin decides)
           if (pair1Confirmed && !pair2Confirmed) {
+            log(`[Timeout Processor] Match ${match.id}: CASE 1 - Only pair1 present, marking pending DQF`);
             await handlePendingDqf(storage, match, match.pair1Id, broadcastUpdate);
           }
           // CASE 2: Only pair2 present → mark pending DQF (admin decides)
           else if (!pair1Confirmed && pair2Confirmed) {
+            log(`[Timeout Processor] Match ${match.id}: CASE 2 - Only pair2 present, marking pending DQF`);
             await handlePendingDqf(storage, match, match.pair2Id, broadcastUpdate);
           }
           // CASE 3: Both pairs present → do nothing (normal game)
+          else if (pair1Confirmed && pair2Confirmed) {
+            log(`[Timeout Processor] Match ${match.id}: CASE 3 - Both pairs present, no action needed`);
+          }
           // CASE 4: Both pairs absent → do nothing (no auto-cancellation)
+          else {
+            log(`[Timeout Processor] Match ${match.id}: CASE 4 - No pairs fully present, no action taken`);
+          }
         }
       }
     } catch (error: any) {
