@@ -452,16 +452,36 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
               
               <div className="space-y-1">
                 <div className="bg-[#111827] rounded p-1.5">
-                  <div className="text-white font-bold text-sm truncate">
-                    {match.pair1?.player1?.name} / {match.pair1?.player2?.name}
+                  <div className="text-white font-bold text-sm flex items-center gap-1">
+                    <span className="truncate flex-1">
+                      {match.pair1?.player1?.name}
+                      {match.players?.find((p: any) => p.playerId === match.pair1?.player1Id)?.isPresent && (
+                        <span className="text-[#10B981] ml-1">✓</span>
+                      )}
+                      {' / '}
+                      {match.pair1?.player2?.name}
+                      {match.players?.find((p: any) => p.playerId === match.pair1?.player2Id)?.isPresent && (
+                        <span className="text-[#10B981] ml-1">✓</span>
+                      )}
+                    </span>
                   </div>
                 </div>
                 
                 <div className="text-center text-[#6B7280] font-bold text-xs">VS</div>
                 
                 <div className="bg-[#111827] rounded p-1.5">
-                  <div className="text-white font-bold text-sm truncate">
-                    {match.pair2?.player1?.name} / {match.pair2?.player2?.name}
+                  <div className="text-white font-bold text-sm flex items-center gap-1">
+                    <span className="truncate flex-1">
+                      {match.pair2?.player1?.name}
+                      {match.players?.find((p: any) => p.playerId === match.pair2?.player1Id)?.isPresent && (
+                        <span className="text-[#10B981] ml-1">✓</span>
+                      )}
+                      {' / '}
+                      {match.pair2?.player2?.name}
+                      {match.players?.find((p: any) => p.playerId === match.pair2?.player2Id)?.isPresent && (
+                        <span className="text-[#10B981] ml-1">✓</span>
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>

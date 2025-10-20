@@ -684,10 +684,26 @@ function NextMatchCard({ match }: any) {
       )}
       <div className="space-y-2 text-white">
         <div className="text-lg font-medium truncate">
-          {match.pair1.player1.name} / {match.pair1.player2.name}
+          {match.pair1.player1.name}
+          {match.players?.find((p: any) => p.playerId === match.pair1?.player1Id)?.isPresent && (
+            <span className="text-[#10B981] ml-1">✓</span>
+          )}
+          {' / '}
+          {match.pair1.player2.name}
+          {match.players?.find((p: any) => p.playerId === match.pair1?.player2Id)?.isPresent && (
+            <span className="text-[#10B981] ml-1">✓</span>
+          )}
         </div>
         <div className="text-lg font-medium truncate">
-          {match.pair2.player1.name} / {match.pair2.player2.name}
+          {match.pair2.player1.name}
+          {match.players?.find((p: any) => p.playerId === match.pair2?.player1Id)?.isPresent && (
+            <span className="text-[#10B981] ml-1">✓</span>
+          )}
+          {' / '}
+          {match.pair2.player2.name}
+          {match.players?.find((p: any) => p.playerId === match.pair2?.player2Id)?.isPresent && (
+            <span className="text-[#10B981] ml-1">✓</span>
+          )}
         </div>
       </div>
     </div>
