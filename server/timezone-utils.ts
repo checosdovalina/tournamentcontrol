@@ -122,7 +122,10 @@ export function fromTimezone(
   const offsetMs = inputTime - displayedTime;
   
   // Apply the offset to get the correct UTC time
-  return new Date(utcDate.getTime() - offsetMs);
+  // For America/Mexico_City (UTC-6), when we want 10:41 local, it displays as 04:41
+  // offsetMs = 10:41 - 04:41 = +6 hours
+  // We add this to shift the UTC time forward by 6 hours
+  return new Date(utcDate.getTime() + offsetMs);
 }
 
 /**
