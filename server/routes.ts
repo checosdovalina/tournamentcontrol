@@ -2479,7 +2479,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       }
       
       // IMPORTANT: Do not auto-start if DQF (disqualification) is pending - admin must resolve it first
-      if (match && (match.status === 'ready' || match.status === 'assigned') && match.courtId && match.categoryId && !match.preAssignedAt && !match.pendingDqf) {
+      // Also verify that match hasn't already been started (matchId should be null)
+      if (match && (match.status === 'ready' || match.status === 'assigned') && match.courtId && match.categoryId && !match.preAssignedAt && !match.pendingDqf && !match.matchId) {
         const checkInRecords = await storage.getScheduledMatchPlayers(id);
         const pair1CheckIns = checkInRecords.filter(p => p.pairId === match!.pair1Id && p.isPresent).length;
         const pair2CheckIns = checkInRecords.filter(p => p.pairId === match!.pair2Id && p.isPresent).length;
@@ -2731,8 +2732,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       broadcastUpdate({ type: "court_auto_assigned", data: match });
       
       // Auto-start match if all players are confirmed (status "ready")
-      // IMPORTANT: Do not auto-start if DQF (disqualification) is pending
-      if (match.status === "ready" && match.courtId && match.categoryId && !match.pendingDqf) {
+      // IMPORTANT: Do not auto-start if DQF (disqualification) is pending or match already started
+      if (match.status === "ready" && match.courtId && match.categoryId && !match.pendingDqf && !match.matchId) {
         // Create playing match
         const playingMatch = await storage.createMatch({
           tournamentId: match.tournamentId,
@@ -2938,8 +2939,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         const pair2CheckIns = checkInRecords.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
         const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
         
-        // IMPORTANT: Do not auto-start if DQF (disqualification) is pending
-        if ((match.status === "ready" || match.status === "assigned") && match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt && !match.pendingDqf) {
+        // IMPORTANT: Do not auto-start if DQF (disqualification) is pending or match already started
+        if ((match.status === "ready" || match.status === "assigned") && match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt && !match.pendingDqf && !match.matchId) {
           // Create playing match
           const playingMatch = await storage.createMatch({
             tournamentId: match.tournamentId,
