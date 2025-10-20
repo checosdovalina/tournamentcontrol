@@ -33,6 +33,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [startingMatchId, setStartingMatchId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Query for all scheduled matches in the tournament
@@ -362,6 +363,7 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
   const startMatchMutation = useMutation({
     mutationFn: async (matchId: string) => {
+      setStartingMatchId(matchId);
       const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/start-match`, {});
       return response.json();
     },
@@ -370,12 +372,14 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
       queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
       queryClient.invalidateQueries({ queryKey: ["/api/matches/current"] });
       toast({ title: "Partido iniciado", description: "El partido ha comenzado exitosamente" });
+      setStartingMatchId(null);
     },
     onError: (error: any) => {
       const errorMessage = error.message || "";
       const messageParts = errorMessage.split(": ");
       const message = messageParts.length > 1 ? messageParts.slice(1).join(": ") : "No se pudo iniciar el partido";
       toast({ title: "Error", description: message, variant: "destructive" });
+      setStartingMatchId(null);
     },
   });
 
@@ -1126,6 +1130,8 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
 
                   if (!shouldShowStartButton) return null;
 
+                  const isStarting = startingMatchId === match.id;
+                  
                   return (
                     <div className="border-t pt-4 space-y-3 bg-green-50 dark:bg-green-950 p-4 rounded-md">
                       <p className="text-sm font-medium text-green-600 dark:text-green-400">
@@ -1133,12 +1139,12 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                       </p>
                       <Button
                         onClick={() => handleStartMatch(match.id)}
-                        disabled={startMatchMutation.isPending}
+                        disabled={isStarting || startMatchMutation.isPending}
                         className="w-full bg-green-600 hover:bg-green-700"
                         data-testid={`button-start-match-${match.id}`}
                       >
                         <Play className="w-4 h-4 mr-2" />
-                        {startMatchMutation.isPending ? "Iniciando..." : "Iniciar Partido"}
+                        {isStarting ? "Iniciando..." : "Iniciar Partido"}
                       </Button>
                     </div>
                   );
