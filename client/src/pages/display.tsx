@@ -397,17 +397,17 @@ export default function Display() {
                   ) : currentMatches.length <= 2 ? (
                     <div className="space-y-3">
                       {currentMatches.map((match: any) => (
-                        <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} courts={courts} scheduledMatches={scheduledMatches} />
+                        <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
                       ))}
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
                       <div key={`current-${currentCount}`} className="animate-scroll-vertical space-y-3">
                         {currentMatches.map((match: any) => (
-                          <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} courts={courts} scheduledMatches={scheduledMatches} />
+                          <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
                         ))}
                         {currentMatches.map((match: any) => (
-                          <MatchCard key={`${match.id}-dup`} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} courts={courts} scheduledMatches={scheduledMatches} />
+                          <MatchCard key={`${match.id}-dup`} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
                         ))}
                       </div>
                     </div>
@@ -588,13 +588,7 @@ function FullscreenAdDisplay({ ad }: { ad: any }) {
 }
 
 // Match Card Component
-function MatchCard({ match, formatMatchDuration, formatScore, courts, scheduledMatches }: any) {
-  // Check if this court has a pre-assigned match waiting
-  const court = courts?.find((c: any) => c.id === match.courtId);
-  const preAssignedMatch = scheduledMatches?.find((sm: any) => 
-    sm.id === court?.preAssignedScheduledMatchId && sm.preAssignedAt
-  );
-
+function MatchCard({ match, formatMatchDuration, formatScore }: any) {
   return (
     <div 
       className="bg-white/5 rounded-xl p-4 border border-white/10"
@@ -605,11 +599,6 @@ function MatchCard({ match, formatMatchDuration, formatScore, courts, scheduledM
           <span className="px-3 py-1 bg-destructive/80 text-white rounded-lg font-bold text-lg">
             {match.court.name}
           </span>
-          {preAssignedMatch && (
-            <span className="px-2 py-1 bg-yellow-600/80 text-white rounded text-xs font-medium">
-              Siguiente en fila
-            </span>
-          )}
         </div>
         <span className="text-white/60 text-base">
           {formatMatchDuration(match.startTime)}
