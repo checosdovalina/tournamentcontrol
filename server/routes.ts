@@ -2475,10 +2475,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       // Auto-start match if ALL players confirmed AND court assigned
       // Works with both 'ready' and 'assigned' status
       if (match) {
-        log(`[Auto-Start Check] Match ${id}: status=${match.status}, courtId=${match.courtId}, categoryId=${match.categoryId}, preAssigned=${!!match.preAssignedAt}`);
+        log(`[Auto-Start Check] Match ${id}: status=${match.status}, courtId=${match.courtId}, categoryId=${match.categoryId}, preAssigned=${!!match.preAssignedAt}, pendingDqf=${!!match.pendingDqf}`);
       }
       
-      if (match && (match.status === 'ready' || match.status === 'assigned') && match.courtId && match.categoryId && !match.preAssignedAt) {
+      // IMPORTANT: Do not auto-start if DQF (disqualification) is pending - admin must resolve it first
+      if (match && (match.status === 'ready' || match.status === 'assigned') && match.courtId && match.categoryId && !match.preAssignedAt && !match.pendingDqf) {
         const checkInRecords = await storage.getScheduledMatchPlayers(id);
         const pair1CheckIns = checkInRecords.filter(p => p.pairId === match!.pair1Id && p.isPresent).length;
         const pair2CheckIns = checkInRecords.filter(p => p.pairId === match!.pair2Id && p.isPresent).length;
@@ -2730,7 +2731,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       broadcastUpdate({ type: "court_auto_assigned", data: match });
       
       // Auto-start match if all players are confirmed (status "ready")
-      if (match.status === "ready" && match.courtId && match.categoryId) {
+      // IMPORTANT: Do not auto-start if DQF (disqualification) is pending
+      if (match.status === "ready" && match.courtId && match.categoryId && !match.pendingDqf) {
         // Create playing match
         const playingMatch = await storage.createMatch({
           tournamentId: match.tournamentId,
@@ -2936,7 +2938,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         const pair2CheckIns = checkInRecords.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
         const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
         
-        if ((match.status === "ready" || match.status === "assigned") && match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt) {
+        // IMPORTANT: Do not auto-start if DQF (disqualification) is pending
+        if ((match.status === "ready" || match.status === "assigned") && match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt && !match.pendingDqf) {
           // Create playing match
           const playingMatch = await storage.createMatch({
             tournamentId: match.tournamentId,
