@@ -1138,7 +1138,11 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                         ✓ El partido está listo para comenzar
                       </p>
                       <Button
-                        onClick={() => handleStartMatch(match.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleStartMatch(match.id);
+                        }}
                         disabled={isStarting || startMatchMutation.isPending}
                         className="w-full bg-green-600 hover:bg-green-700"
                         data-testid={`button-start-match-${match.id}`}
