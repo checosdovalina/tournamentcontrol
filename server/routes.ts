@@ -4,7 +4,6 @@ import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
-import { log } from "./vite";
 import { 
   insertPlayerSchema, 
   insertPairSchema, 
@@ -2382,7 +2381,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       // This prevents stale DQF flags from appearing when a match is rescheduled
       if ((updates.plannedTime && updates.plannedTime !== match.plannedTime) || 
           (updates.day && updates.day.getTime() !== new Date(match.day).getTime())) {
-        log(`[PATCH scheduled-match] Clearing pending DQF for rescheduled match ${id}`);
+        console.log(`[PATCH scheduled-match] Clearing pending DQF for rescheduled match ${id}`);
         updates.pendingDqf = false;
         updates.defaultWinnerPairId = null;
       }
@@ -2485,7 +2484,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       // Auto-start match if ALL players confirmed AND court assigned
       // Works with both 'ready' and 'assigned' status
       if (match) {
-        log(`[Auto-Start Check] Match ${id}: status=${match.status}, courtId=${match.courtId}, categoryId=${match.categoryId}, preAssigned=${!!match.preAssignedAt}, pendingDqf=${!!match.pendingDqf}`);
+        console.log(`[Auto-Start Check] Match ${id}: status=${match.status}, courtId=${match.courtId}, categoryId=${match.categoryId}, preAssigned=${!!match.preAssignedAt}, pendingDqf=${!!match.pendingDqf}`);
       }
       
       // IMPORTANT: Do not auto-start if DQF (disqualification) is pending - admin must resolve it first
@@ -2495,12 +2494,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         const pair1CheckIns = checkInRecords.filter(p => p.pairId === match!.pair1Id && p.isPresent).length;
         const pair2CheckIns = checkInRecords.filter(p => p.pairId === match!.pair2Id && p.isPresent).length;
         
-        log(`[Auto-Start Check] Match ${id}: pair1=${pair1CheckIns}/2, pair2=${pair2CheckIns}/2`);
+        console.log(`[Auto-Start Check] Match ${id}: pair1=${pair1CheckIns}/2, pair2=${pair2CheckIns}/2`);
         
         const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
         
         if (allPlayersConfirmed) {
-          log(`[Auto-Start] Starting match ${id} automatically...`);
+          console.log(`[Auto-Start] Starting match ${id} automatically...`);
           // Create playing match
           const playingMatch = await storage.createMatch({
             tournamentId: match.tournamentId,
@@ -2765,7 +2764,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         });
       }
       
-      log(`[Manual Start] Starting match ${id}...`);
+      console.log(`[Manual Start] Starting match ${id}...`);
       
       // Create playing match
       const playingMatch = await storage.createMatch({
