@@ -2706,10 +2706,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
 
   // Manually start a match that is ready (all players confirmed + court assigned)
   app.post("/api/scheduled-matches/:id/start-match", requireAuth, async (req, res) => {
+    const { id } = req.params;
+    console.log(`[Manual Start] Received request to start match ${id}`);
+    
     try {
-      const { id } = req.params;
-      
       const match = await storage.getScheduledMatch(id);
+      console.log(`[Manual Start] Match found:`, match ? 'YES' : 'NO');
       if (!match) {
         return res.status(404).json({ message: "Scheduled match not found" });
       }
