@@ -24,16 +24,13 @@ export default function LiveScoreCapture() {
 
   const selectedMatch = currentMatches.find((m: any) => m.id === selectedMatchId);
 
-  // Initialize score structure
   const getInitialScore = () => ({
     sets: [] as number[][],
     currentSet: 1,
-    currentPoints: [0, 0] // Using numeric points: 0, 15, 30, 40, advantage
   });
 
   const [liveScore, setLiveScore] = useState<any>(getInitialScore());
 
-  // Load score when match is selected
   const handleSelectMatch = (match: any) => {
     setSelectedMatchId(match.id);
     
@@ -61,73 +58,10 @@ export default function LiveScoreCapture() {
     },
   });
 
-  const pointMap = [0, 15, 30, 40];
-
-  // Check if we're in tiebreak
-  const isInTiebreak = () => {
-    const currentSetIndex = liveScore.currentSet - 1;
-    const games = liveScore.sets[currentSetIndex] || [0, 0];
-    return games[0] === 6 && games[1] === 6;
-  };
-
-  const addPoint = (playerIndex: 0 | 1) => {
-    const newScore = { ...liveScore };
-    const currentPoints = [...newScore.currentPoints];
-    const otherIndex = playerIndex === 0 ? 1 : 0;
-
-    // TIEBREAK LOGIC
-    if (isInTiebreak()) {
-      currentPoints[playerIndex]++;
-      
-      // Check if tiebreak is won: first to 7 with 2-point difference
-      const winner = currentPoints[playerIndex];
-      const loser = currentPoints[otherIndex];
-      
-      if (winner >= 7 && (winner - loser) >= 2) {
-        // Tiebreak won! Add game and move to next set
-        addGame(playerIndex);
-        return;
-      }
-      
-      // Tiebreak continues
-      newScore.currentPoints = currentPoints;
-      setLiveScore(newScore);
-      updateScoreMutation.mutate(newScore);
-      return;
-    }
-
-    // NORMAL GAME LOGIC (0-15-30-40-deuce-advantage)
-    // Handle deuce and advantage
-    if (currentPoints[0] >= 3 && currentPoints[1] >= 3) {
-      if (currentPoints[playerIndex] === currentPoints[otherIndex]) {
-        // Deuce - give advantage
-        currentPoints[playerIndex] = 4;
-      } else if (currentPoints[playerIndex] === 4) {
-        // Had advantage, wins game
-        addGame(playerIndex);
-        return;
-      } else {
-        // Other had advantage, back to deuce
-        currentPoints[otherIndex] = 3;
-      }
-    } else if (currentPoints[playerIndex] === 3) {
-      // Wins game (40 to win)
-      addGame(playerIndex);
-      return;
-    } else {
-      currentPoints[playerIndex]++;
-    }
-
-    newScore.currentPoints = currentPoints;
-    setLiveScore(newScore);
-    updateScoreMutation.mutate(newScore);
-  };
-
   const addGame = (playerIndex: 0 | 1) => {
     const newScore = { ...liveScore };
     const currentSetIndex = newScore.currentSet - 1;
     
-    // Initialize current set if needed
     if (!newScore.sets[currentSetIndex]) {
       newScore.sets[currentSetIndex] = [0, 0];
     }
@@ -136,31 +70,22 @@ export default function LiveScoreCapture() {
     const games = newScore.sets[currentSetIndex];
     const otherIndex = playerIndex === 0 ? 1 : 0;
 
-    // Check if set is won (need 6 games and lead by 2, or tiebreak at 7-6)
     if (games[playerIndex] >= 6 && games[playerIndex] - games[otherIndex] >= 2) {
-      // Set won, start new set
       newScore.currentSet++;
-      newScore.currentPoints = [0, 0];
     } else if (games[playerIndex] === 7 && games[otherIndex] === 6) {
-      // Tiebreak won
       newScore.currentSet++;
-      newScore.currentPoints = [0, 0];
-    } else {
-      // Game won, reset points
-      newScore.currentPoints = [0, 0];
     }
 
     setLiveScore(newScore);
     updateScoreMutation.mutate(newScore);
   };
 
-  const removePoint = (playerIndex: 0 | 1) => {
+  const removeGame = (playerIndex: 0 | 1) => {
     const newScore = { ...liveScore };
-    const currentPoints = [...newScore.currentPoints];
-
-    if (currentPoints[playerIndex] > 0) {
-      currentPoints[playerIndex]--;
-      newScore.currentPoints = currentPoints;
+    const currentSetIndex = newScore.currentSet - 1;
+    
+    if (newScore.sets[currentSetIndex] && newScore.sets[currentSetIndex][playerIndex] > 0) {
+      newScore.sets[currentSetIndex][playerIndex]--;
       setLiveScore(newScore);
       updateScoreMutation.mutate(newScore);
     }
@@ -172,26 +97,13 @@ export default function LiveScoreCapture() {
     updateScoreMutation.mutate(newScore);
   };
 
-  const formatPoints = (points: number) => {
-    // In tiebreak, show actual numeric points
-    if (isInTiebreak()) {
-      return points;
-    }
-    
-    // In normal game, use tennis scoring
-    if (points === 4) return "AD";
-    return pointMap[points] || 0;
-  };
-
   const getCurrentSetGames = () => {
     const currentSetIndex = liveScore.currentSet - 1;
     return liveScore.sets[currentSetIndex] || [0, 0];
   };
 
-  // Check if a set is complete and who won it
   const isSetComplete = (set: number[]) => {
     const [games1, games2] = set;
-    // Valid completed sets: 6-x with difference >= 2, or 7-6 (tiebreak), or 7-5
     if (games1 >= 6 && games1 - games2 >= 2) return { complete: true, winner: 0 };
     if (games2 >= 6 && games2 - games1 >= 2) return { complete: true, winner: 1 };
     if (games1 === 7 && games2 === 6) return { complete: true, winner: 0 };
@@ -199,7 +111,6 @@ export default function LiveScoreCapture() {
     return { complete: false, winner: null };
   };
 
-  // Check if there's a match winner (best of 3 sets)
   const getMatchWinner = () => {
     if (!selectedMatch || !liveScore.sets || liveScore.sets.length === 0) return null;
     
@@ -214,7 +125,6 @@ export default function LiveScoreCapture() {
       }
     });
     
-    // First to win 2 sets wins the match
     if (setsWonByPair1 >= 2) return { winnerIndex: 0, winnerPairId: selectedMatch.pair1Id };
     if (setsWonByPair2 >= 2) return { winnerIndex: 1, winnerPairId: selectedMatch.pair2Id };
     
@@ -222,33 +132,6 @@ export default function LiveScoreCapture() {
   };
 
   const matchWinner = selectedMatch ? getMatchWinner() : null;
-
-  // Check if current game is complete (waiting for next game to start)
-  const isGameComplete = () => {
-    const [p1Points, p2Points] = liveScore.currentPoints;
-    
-    // In tiebreak
-    if (isInTiebreak()) {
-      // Tiebreak is won when someone reaches 7+ with 2-point lead
-      if (p1Points >= 7 && (p1Points - p2Points) >= 2) return true;
-      if (p2Points >= 7 && (p2Points - p1Points) >= 2) return true;
-      return false;
-    }
-    
-    // Normal game - check if someone won
-    if (p1Points >= 3 && p2Points >= 3) {
-      // In deuce/advantage situation, game is won when someone has advantage and scores
-      if (p1Points === 4 && p2Points === 3) return true; // P1 has advantage
-      if (p2Points === 4 && p1Points === 3) return true; // P2 has advantage
-      return false;
-    }
-    
-    // Game is won at 40 (index 3)
-    if (p1Points === 3 && p1Points > p2Points) return true;
-    if (p2Points === 3 && p2Points > p1Points) return true;
-    
-    return false;
-  };
 
   const finishMatchMutation = useMutation({
     mutationFn: async () => {
@@ -355,7 +238,6 @@ export default function LiveScoreCapture() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Match Info */}
           <div className="bg-muted/50 p-4 rounded-lg">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -371,23 +253,28 @@ export default function LiveScoreCapture() {
             </div>
           </div>
 
-          {/* Sets History */}
           {liveScore.sets.length > 0 && (
             <div>
               <h4 className="text-sm font-medium mb-2">Sets Completados:</h4>
               <div className="flex gap-2">
-                {liveScore.sets.map((set: number[], index: number) => (
-                  <Badge key={index} variant="outline" className="text-lg px-3 py-1">
-                    {set[0]}-{set[1]}
-                  </Badge>
-                ))}
+                {liveScore.sets.map((set: number[], index: number) => {
+                  const setResult = isSetComplete(set);
+                  return (
+                    <Badge 
+                      key={index} 
+                      variant={setResult.complete ? "default" : "outline"} 
+                      className="text-lg px-3 py-1"
+                    >
+                      {set[0]}-{set[1]}
+                    </Badge>
+                  );
+                })}
               </div>
             </div>
           )}
 
           <Separator />
 
-          {/* Current Set */}
           <div>
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-sm font-medium">Set {liveScore.currentSet}</h4>
@@ -402,77 +289,57 @@ export default function LiveScoreCapture() {
               </Button>
             </div>
 
-            {/* Games in Current Set */}
-            <div className="bg-primary/5 p-4 rounded-lg mb-4">
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div>
-                  <p className="text-3xl font-bold">{currentSetGames[0]}</p>
-                  <p className="text-xs text-muted-foreground">Juegos</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold">{currentSetGames[1]}</p>
-                  <p className="text-xs text-muted-foreground">Juegos</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Current Points */}
-            <div className="bg-secondary/20 p-3 md:p-6 rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-2 md:mb-3">
-                <p className="text-xs text-center text-muted-foreground">Puntos Actuales</p>
-                {isInTiebreak() && (
-                  <Badge variant="destructive" className="text-xs">TIEBREAK</Badge>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-3 md:gap-6">
+            <div className="bg-secondary/20 p-4 md:p-6 rounded-lg">
+              <p className="text-sm text-center text-muted-foreground mb-4">Juegos en Set Actual</p>
+              <div className="grid grid-cols-2 gap-4 md:gap-8">
                 <div className="text-center">
-                  <p className="text-3xl md:text-5xl font-bold mb-2 md:mb-3">{formatPoints(liveScore.currentPoints[0])}</p>
-                  <div className="flex gap-1 md:gap-2 justify-center">
+                  <p className="text-4xl md:text-6xl font-bold mb-3 md:mb-4">{currentSetGames[0]}</p>
+                  <div className="flex gap-2 justify-center">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 w-8 md:h-9 md:w-9 p-0"
-                      onClick={() => removePoint(0)}
-                      disabled={liveScore.currentPoints[0] === 0}
-                      data-testid="button-remove-point-0"
+                      className="h-8 w-8 md:h-10 md:w-10 p-0"
+                      onClick={() => removeGame(0)}
+                      disabled={currentSetGames[0] === 0}
+                      data-testid="button-remove-game-0"
                     >
-                      <Minus className="h-3 w-3 md:h-4 md:w-4" />
+                      <Minus className="h-4 w-4 md:h-5 md:w-5" />
                     </Button>
                     <Button
-                      onClick={() => addPoint(0)}
+                      onClick={() => addGame(0)}
                       size="sm"
-                      className="h-8 md:h-10 px-3 md:px-4"
+                      className="h-9 md:h-12 px-4 md:px-6 text-sm md:text-base"
                       disabled={!!matchWinner}
-                      data-testid="button-add-point-0"
+                      data-testid="button-add-game-0"
                     >
-                      <Plus className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
-                      <span className="hidden md:inline">Punto</span>
+                      <Plus className="h-4 w-4 md:h-5 md:w-5 mr-1" />
+                      Juego
                     </Button>
                   </div>
                 </div>
 
                 <div className="text-center">
-                  <p className="text-3xl md:text-5xl font-bold mb-2 md:mb-3">{formatPoints(liveScore.currentPoints[1])}</p>
-                  <div className="flex gap-1 md:gap-2 justify-center">
+                  <p className="text-4xl md:text-6xl font-bold mb-3 md:mb-4">{currentSetGames[1]}</p>
+                  <div className="flex gap-2 justify-center">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 w-8 md:h-9 md:w-9 p-0"
-                      onClick={() => removePoint(1)}
-                      disabled={liveScore.currentPoints[1] === 0}
-                      data-testid="button-remove-point-1"
+                      className="h-8 w-8 md:h-10 md:w-10 p-0"
+                      onClick={() => removeGame(1)}
+                      disabled={currentSetGames[1] === 0}
+                      data-testid="button-remove-game-1"
                     >
-                      <Minus className="h-3 w-3 md:h-4 md:w-4" />
+                      <Minus className="h-4 w-4 md:h-5 md:w-5" />
                     </Button>
                     <Button
-                      onClick={() => addPoint(1)}
+                      onClick={() => addGame(1)}
                       size="sm"
-                      className="h-8 md:h-10 px-3 md:px-4"
+                      className="h-9 md:h-12 px-4 md:px-6 text-sm md:text-base"
                       disabled={!!matchWinner}
-                      data-testid="button-add-point-1"
+                      data-testid="button-add-game-1"
                     >
-                      <Plus className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
-                      <span className="hidden md:inline">Punto</span>
+                      <Plus className="h-4 w-4 md:h-5 md:w-5 mr-1" />
+                      Juego
                     </Button>
                   </div>
                 </div>
@@ -480,7 +347,6 @@ export default function LiveScoreCapture() {
             </div>
           </div>
 
-          {/* Match Winner Section */}
           {matchWinner && (
             <div className="bg-green-50 dark:bg-green-950 border-2 border-green-500 rounded-lg p-4">
               <div className="text-center">
