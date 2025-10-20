@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { log } from "./vite";
 import { 
   insertPlayerSchema, 
   insertPairSchema, 
@@ -2375,6 +2376,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
 
       if (!isAuthorized) {
         return res.status(403).json({ message: "Tournament admin access required" });
+      }
+      
+      // IMPORTANT: If the planned time or day is being changed, clear any pending DQF
+      // This prevents stale DQF flags from appearing when a match is rescheduled
+      if ((updates.plannedTime && updates.plannedTime !== match.plannedTime) || 
+          (updates.day && updates.day.getTime() !== new Date(match.day).getTime())) {
+        log(`[PATCH scheduled-match] Clearing pending DQF for rescheduled match ${id}`);
+        updates.pendingDqf = false;
+        updates.defaultWinnerPairId = null;
       }
       
       const updatedMatch = await storage.updateScheduledMatch(id, updates);
