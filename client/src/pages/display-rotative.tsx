@@ -253,7 +253,7 @@ export default function DisplayRotative() {
         <div className="px-8 py-4 bg-[#1F2937] border-t border-[#374151]">
           {activeBanners.length > 0 ? (
             <div className="relative w-full overflow-hidden">
-              <div className="inline-flex w-max gap-8" style={{ animation: 'marquee 35s linear infinite' }}>
+              <div className="inline-flex w-max gap-8" style={{ animation: 'marquee 50s linear infinite' }}>
                 {[...activeBanners, ...activeBanners].map((banner: any, idx: number) => (
                   <div key={`sponsor-${banner.id}-${idx}`} className="h-16 flex items-center flex-shrink-0">
                     <img 
@@ -304,7 +304,7 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
     
     const timer = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
-    }, 5000); // 5 segundos por página
+    }, 8000); // 8 segundos por página
     
     return () => clearInterval(timer);
   }, [totalPages]);
@@ -393,7 +393,7 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
     
     const timer = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
-    }, 5000); // 5 segundos por página
+    }, 8000); // 8 segundos por página
     
     return () => clearInterval(timer);
   }, [totalPages]);
@@ -518,7 +518,7 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
     
     const timer = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
-    }, 5000); // 5 segundos por página
+    }, 8000); // 8 segundos por página
     
     return () => clearInterval(timer);
   }, [totalPages]);
