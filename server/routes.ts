@@ -2796,6 +2796,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       
       res.json(playingMatch);
     } catch (error: any) {
+      console.error('[Manual Start] Error starting match:', error);
       res.status(500).json({ message: "Failed to start match", error: error.message });
     }
   });
