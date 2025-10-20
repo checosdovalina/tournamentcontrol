@@ -970,7 +970,8 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                   const atLeastOnePairConfirmed = pair1Confirmed || pair2Confirmed;
                   const allPlayersConfirmed = pair1Confirmed && pair2Confirmed;
 
-                  if (!atLeastOnePairConfirmed || !(userRole === 'admin' || userRole === 'scorekeeper')) {
+                  // Don't show court assignment for completed or playing matches
+                  if (!atLeastOnePairConfirmed || !(userRole === 'admin' || userRole === 'scorekeeper') || match.status === 'completed' || match.status === 'playing') {
                     return null;
                   }
 
