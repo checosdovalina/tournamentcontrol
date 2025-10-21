@@ -2762,8 +2762,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       
       broadcastUpdate({ type: "court_auto_assigned", data: match });
       
-      // Auto-start match if all players are confirmed (status "ready")
-      if (match.status === "ready" && match.courtId && match.categoryId) {
+      // Auto-start match if all players are confirmed (check all 4 players present)
+      const checkInRecords = await storage.getScheduledMatchPlayers(id);
+      const pair1CheckIns = checkInRecords.filter(p => p.pairId === match.pair1Id && p.isPresent).length;
+      const pair2CheckIns = checkInRecords.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
+      const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
+      
+      if ((match.status === "ready" || match.status === "assigned") && match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt) {
         // Create playing match
         const playingMatch = await storage.createMatch({
           tournamentId: match.tournamentId,
