@@ -718,10 +718,10 @@ function ResultCard({ result, formatResultScore }: any) {
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="px-2 py-1 bg-orange-600/80 text-white rounded text-sm font-semibold">
+          <span className="px-2 py-1 bg-white/10 text-white/80 rounded text-sm">
             {result.match?.category?.name || 'Sin categoría'}
           </span>
-          <span className="px-2 py-1 bg-blue-600/80 text-white rounded text-sm font-semibold">
+          <span className="px-2 py-1 bg-white/10 text-white/80 rounded text-sm">
             {result.match?.court?.name || 'Cancha'}
           </span>
         </div>
