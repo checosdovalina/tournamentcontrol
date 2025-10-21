@@ -60,6 +60,69 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     next();
   };
 
+  // Helper function to release court and handle pre-assigned match
+  const releaseCourtAndHandlePreAssignment = async (courtId: string, broadcastFn: (msg: any) => void) => {
+    // Release court
+    const updatedCourt = await storage.updateCourt(courtId, { isAvailable: true });
+    if (updatedCourt) {
+      broadcastFn({ type: "court_updated", data: updatedCourt });
+    }
+    
+    // Handle pre-assigned match if exists
+    const court = await storage.getCourt(courtId);
+    if (court?.preAssignedScheduledMatchId) {
+      const preAssignedMatch = await storage.getScheduledMatch(court.preAssignedScheduledMatchId);
+      
+      // Clear pre-assignment
+      await storage.updateScheduledMatch(court.preAssignedScheduledMatchId, {
+        preAssignedAt: null,
+      });
+      await storage.updateCourt(courtId, {
+        preAssignedScheduledMatchId: null,
+      });
+      broadcastFn({ type: "match_enabled_from_preassign", data: { matchId: court.preAssignedScheduledMatchId } });
+      
+      // Auto-start match if ALL players confirmed AND has categoryId
+      if (preAssignedMatch && preAssignedMatch.categoryId) {
+        const checkInRecords = await storage.getScheduledMatchPlayers(court.preAssignedScheduledMatchId);
+        const pair1CheckIns = checkInRecords.filter(p => p.pairId === preAssignedMatch.pair1Id && p.isPresent).length;
+        const pair2CheckIns = checkInRecords.filter(p => p.pairId === preAssignedMatch.pair2Id && p.isPresent).length;
+        
+        const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
+        
+        if (allPlayersConfirmed) {
+          // Create playing match
+          const playingMatch = await storage.createMatch({
+            tournamentId: preAssignedMatch.tournamentId,
+            courtId: courtId,
+            pair1Id: preAssignedMatch.pair1Id,
+            pair2Id: preAssignedMatch.pair2Id,
+            categoryId: preAssignedMatch.categoryId,
+            format: preAssignedMatch.format,
+            accessToken: randomUUID(),
+            status: "playing",
+          });
+          
+          // Update scheduled match status
+          await storage.updateScheduledMatch(court.preAssignedScheduledMatchId, { 
+            status: "playing",
+            matchId: playingMatch.id 
+          });
+          
+          // Update court and pairs
+          const nowBusyCourt = await storage.updateCourt(courtId, { isAvailable: false });
+          await storage.updatePair(preAssignedMatch.pair1Id, { isWaiting: false });
+          await storage.updatePair(preAssignedMatch.pair2Id, { isWaiting: false });
+          
+          broadcastFn({ type: "match_started", data: playingMatch });
+          if (nowBusyCourt) {
+            broadcastFn({ type: "court_updated", data: nowBusyCourt });
+          }
+        }
+      }
+    }
+  };
+
   // Tournament access middleware - checks if user has access to a specific tournament
   const requireTournamentAccess = (tournamentIdParam: string = 'tournamentId') => {
     return async (req: any, res: any, next: any) => {
@@ -1047,9 +1110,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         return res.status(404).json({ message: "Match not found" });
       }
       
-      // If match is finished, make court available
+      // If match is finished, release court and handle pre-assigned match
       if (updates.status === "finished") {
-        await storage.updateCourt(updatedMatch.courtId, { isAvailable: true });
+        await releaseCourtAndHandlePreAssignment(updatedMatch.courtId, broadcastUpdate);
       }
       
       broadcastUpdate({ type: "match_updated", data: updatedMatch });
@@ -1209,12 +1272,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         score: { sets, currentSet: sets.length + 1, currentPoints: [0, 0] }
       });
       
-      // Release court
+      // Release court and handle pre-assigned match
       if (match.courtId) {
-        const updatedCourt = await storage.updateCourt(match.courtId, { isAvailable: true });
-        if (updatedCourt) {
-          broadcastUpdate({ type: "court_updated", data: updatedCourt });
-        }
+        await releaseCourtAndHandlePreAssignment(match.courtId, broadcastUpdate);
       }
       
       // Update scheduled match to completed if it exists
@@ -1286,17 +1346,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
           score: resultData.score
         });
         
-        // Make court available
-        const updatedCourt = await storage.updateCourt(match.courtId, { isAvailable: true });
+        // Release court and handle pre-assigned match
+        await releaseCourtAndHandlePreAssignment(match.courtId, broadcastUpdate);
         
         // Broadcast match updated
         if (updatedMatch) {
           broadcastUpdate({ type: "match_finished", data: { match: updatedMatch, result: newResult } });
-        }
-        
-        // Broadcast court updated
-        if (updatedCourt) {
-          broadcastUpdate({ type: "court_updated", data: updatedCourt });
         }
         
         // Update scheduled match to completed if it exists
@@ -2417,12 +2472,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         return res.status(403).json({ message: "Tournament admin access required" });
       }
       
-      // If court was assigned, release it before deleting
+      // If court was assigned, release it and handle pre-assigned match before deleting
       if (match.courtId) {
-        const updatedCourt = await storage.updateCourt(match.courtId, { isAvailable: true });
-        if (updatedCourt) {
-          broadcastUpdate({ type: "court_updated", data: updatedCourt });
-        }
+        await releaseCourtAndHandlePreAssignment(match.courtId, broadcastUpdate);
       }
       
       const success = await storage.deleteScheduledMatch(id);
@@ -2659,21 +2711,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         pendingDqf: false,
       });
       
-      // Free court if assigned
+      // Release court and handle pre-assigned match if assigned
       if (match.courtId) {
-        await storage.updateCourt(match.courtId, { isAvailable: true });
-        
-        // Handle pre-assigned match if exists
-        const court = await storage.getCourt(match.courtId);
-        if (court?.preAssignedScheduledMatchId) {
-          await storage.updateScheduledMatch(court.preAssignedScheduledMatchId, {
-            preAssignedAt: null,
-          });
-          await storage.updateCourt(match.courtId, {
-            preAssignedScheduledMatchId: null,
-          });
-          broadcastUpdate({ type: "match_enabled_from_preassign", data: { matchId: court.preAssignedScheduledMatchId } });
-        }
+        await releaseCourtAndHandlePreAssignment(match.courtId, broadcastUpdate);
       }
       
       // Broadcast updates
