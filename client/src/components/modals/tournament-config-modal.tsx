@@ -1517,24 +1517,26 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                                 data-testid="input-edit-ad-url"
                                 className="flex-1"
                               />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => document.getElementById('edit-ad-file-input')?.click()}
-                                disabled={uploadingEditAd}
-                                className="shrink-0"
-                                data-testid="button-upload-edit-ad"
+                              <ObjectUploader
+                                maxNumberOfFiles={1}
+                                maxFileSize={104857600}
+                                onGetUploadParameters={getUploadParameters}
+                                onComplete={(result) => {
+                                  const uploadedFile = result.successful?.[0];
+                                  if (uploadedFile) {
+                                    const fileUrl = uploadedFile.uploadURL?.split('?')[0] || '';
+                                    setEditAdUrl(fileUrl);
+                                    toast({
+                                      title: "Archivo subido",
+                                      description: "El archivo se ha cargado correctamente",
+                                    });
+                                  }
+                                }}
+                                buttonClassName="shrink-0"
                               >
                                 <Upload className="w-4 h-4 mr-2" />
-                                {uploadingEditAd ? "Subiendo..." : "Subir Archivo"}
-                              </Button>
-                              <input
-                                id="edit-ad-file-input"
-                                type="file"
-                                accept="image/*,video/*"
-                                onChange={handleEditAdFileUpload}
-                                className="hidden"
-                              />
+                                Subir Archivo
+                              </ObjectUploader>
                             </div>
                           </div>
                           <div>
@@ -1799,24 +1801,26 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                         data-testid="input-new-ad-url"
                         className="flex-1"
                       />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById('new-ad-file-input')?.click()}
-                        disabled={uploadingNewAd}
-                        className="shrink-0"
-                        data-testid="button-upload-new-ad"
+                      <ObjectUploader
+                        maxNumberOfFiles={1}
+                        maxFileSize={104857600}
+                        onGetUploadParameters={getUploadParameters}
+                        onComplete={(result) => {
+                          const uploadedFile = result.successful?.[0];
+                          if (uploadedFile) {
+                            const fileUrl = uploadedFile.uploadURL?.split('?')[0] || '';
+                            setNewAdUrl(fileUrl);
+                            toast({
+                              title: "Archivo subido",
+                              description: "El archivo se ha cargado correctamente",
+                            });
+                          }
+                        }}
+                        buttonClassName="shrink-0"
                       >
                         <Upload className="w-4 h-4 mr-2" />
-                        {uploadingNewAd ? "Subiendo..." : "Subir Archivo"}
-                      </Button>
-                      <input
-                        id="new-ad-file-input"
-                        type="file"
-                        accept="image/*,video/*"
-                        onChange={handleNewAdFileUpload}
-                        className="hidden"
-                      />
+                        Subir Archivo
+                      </ObjectUploader>
                     </div>
                   </div>
                   <Input
