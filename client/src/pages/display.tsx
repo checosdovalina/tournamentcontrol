@@ -206,7 +206,13 @@ export default function Display() {
     const start = new Date(startTime);
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - start.getTime()) / (1000 * 60));
-    return `${diffMinutes} min`;
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
 
   const formatScore = (score: any) => {
@@ -651,26 +657,26 @@ function NextMatchCard({ match }: any) {
       className="bg-white/5 rounded-xl p-4 border border-white/10"
       data-testid={`next-match-${match.id}`}
     >
-      <div className="flex items-center justify-between mb-3">
-        <span className="px-3 py-1 bg-blue-600/80 text-white rounded-lg font-bold text-base">
-          {match.plannedTime || 'Por confirmar'}
-        </span>
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
+          {match.category && (
+            <span className="px-2 py-1 bg-orange-600/80 text-white rounded text-sm font-semibold">
+              {match.category.name}
+            </span>
+          )}
           {match.court && (
-            <span className="text-white/80 text-base font-medium">
+            <span className="px-2 py-1 bg-blue-600/80 text-white rounded text-sm font-semibold">
               {match.court.name}
             </span>
           )}
-          {getStatusBadge()}
         </div>
+        <span className="px-3 py-1 bg-blue-600/80 text-white rounded-lg font-bold text-base">
+          {match.plannedTime || 'Por confirmar'}
+        </span>
       </div>
-      {match.category && (
-        <div className="mb-2">
-          <span className="text-white/60 text-sm bg-white/10 px-2 py-1 rounded">
-            {match.category.name}
-          </span>
-        </div>
-      )}
+      <div className="flex items-center justify-end mb-3">
+        {getStatusBadge()}
+      </div>
       <div className="space-y-2 text-white">
         <div className="text-lg font-medium truncate">
           {match.pair1.player1.name}
@@ -720,10 +726,15 @@ function ResultCard({ result, formatResultScore }: any) {
           </span>
         </div>
         <span className="text-white/60 text-sm">
-          {result.createdAt ? 
-            `Hace ${Math.floor((new Date().getTime() - new Date(result.createdAt).getTime()) / (1000 * 60))} min` : 
-            'Reciente'
-          }
+          {result.createdAt ? (() => {
+            const diffMinutes = Math.floor((new Date().getTime() - new Date(result.createdAt).getTime()) / (1000 * 60));
+            const hours = Math.floor(diffMinutes / 60);
+            const minutes = diffMinutes % 60;
+            if (hours > 0) {
+              return `Hace ${hours}h ${minutes}m`;
+            }
+            return `Hace ${minutes}m`;
+          })() : 'Reciente'}
         </span>
       </div>
       
