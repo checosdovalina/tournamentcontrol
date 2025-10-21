@@ -80,14 +80,11 @@ export function fromTimezone(
   
   const dateStr = `${year}-${monthStr}-${dayStr}T${hoursStr}:${minutesStr}:00`;
   
-  // Strategy: Create two dates - one parsing the string as local (server timezone),
-  // another parsing it as UTC. Then use Intl to find what the target timezone
-  // would display, and calculate the correct offset.
+  // Strategy: Use Date.parse with the timezone formatter to find the UTC equivalent
+  // Start with a guess (midnight UTC on the target date)
+  const guessDate = new Date(Date.UTC(year, month, day, 12, 0, 0));
   
-  // Create a UTC date from the components (this is our "target" time)
-  const utcDate = new Date(Date.UTC(year, month, day, hours, minutes, 0));
-  
-  // Format this UTC date in the target timezone to see what local time it represents
+  // Format this guess in the target timezone
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
     year: 'numeric',
@@ -95,34 +92,32 @@ export function fromTimezone(
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
     hour12: false,
   });
   
-  const parts = formatter.formatToParts(utcDate);
+  // Get the offset by comparing UTC midnight to what the timezone shows
+  const parts = formatter.formatToParts(guessDate);
   const getValue = (type: string) => {
     const part = parts.find(p => p.type === type);
     return part ? parseInt(part.value, 10) : 0;
   };
   
-  const tzYear = getValue('year');
-  const tzMonth = getValue('month') - 1;
-  const tzDay = getValue('day');
-  const tzHours = getValue('hour');
-  const tzMinutes = getValue('minute');
+  const guessYear = getValue('year');
+  const guessMonth = getValue('month') - 1;
+  const guessDay = getValue('day');
+  const guessHour = getValue('hour');
+  const guessMinute = getValue('minute');
   
-  // Calculate the offset in milliseconds
-  // We want: when formatted in target timezone, it should show our input values
-  // We have: a UTC time that when formatted shows (tzYear, tzMonth, tzDay, tzHours, tzMinutes)
-  // We need: a UTC time that when formatted shows (year, month, day, hours, minutes)
+  // Calculate the offset: difference between UTC time and displayed local time
+  const utcMs = guessDate.getTime();
+  const displayedMs = Date.UTC(guessYear, guessMonth, guessDay, guessHour, guessMinute, 0);
+  const offsetMs = utcMs - displayedMs;
   
-  // The difference in displayed time tells us the timezone offset
-  const inputTime = Date.UTC(year, month, day, hours, minutes, 0);
-  const displayedTime = Date.UTC(tzYear, tzMonth, tzDay, tzHours, tzMinutes, 0);
-  const offsetMs = inputTime - displayedTime;
+  // Now create the target time: input local time converted to UTC using the offset
+  const targetLocalMs = Date.UTC(year, month, day, hours, minutes, 0);
+  const targetUtcMs = targetLocalMs + offsetMs;
   
-  // Apply the offset to get the correct UTC time
-  return new Date(utcDate.getTime() - offsetMs);
+  return new Date(targetUtcMs);
 }
 
 /**
@@ -170,17 +165,21 @@ export function combineDateTimeInTimezone(
   timeString: string,
   timezone: string
 ): Date {
-  // Extract date components from dayDate in the target timezone
-  const dayComponents = toTimezone(dayDate, timezone);
+  // IMPORTANT: Extract only the DATE part (ignore time) from dayDate
+  // This ensures we always use the correct date regardless of what time is stored in the DB
+  // Get the date string in ISO format (YYYY-MM-DD)
+  const dateStr = dayDate.toISOString().slice(0, 10); // "2025-10-20"
+  const [year, month, day] = dateStr.split('-').map(Number);
   
   // Parse time string
   const [hours, minutes] = timeString.split(':').map(Number);
   
   // Combine and convert back to UTC
+  // month is 1-indexed in the string, but fromTimezone expects 0-indexed
   return fromTimezone(
-    dayComponents.year,
-    dayComponents.month,
-    dayComponents.day,
+    year,
+    month - 1,
+    day,
     hours,
     minutes,
     timezone

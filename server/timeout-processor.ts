@@ -46,7 +46,6 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
         // Create match datetime using tournament timezone
         const matchDay = typeof match.day === 'string' ? new Date(match.day) : match.day;
         const matchDateTime = combineDateTimeInTimezone(matchDay, match.plannedTime, timezone);
-        
         const timeoutThreshold = new Date(matchDateTime.getTime() + TOLERANCE_MINUTES * 60 * 1000);
         
         // Skip if match was created RECENTLY after its timeout period (retroactive scheduling)
@@ -71,6 +70,12 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
         
         // Check if we've passed the timeout threshold
         if (now >= timeoutThreshold) {
+          // Skip if already marked as pending DQF (avoid reprocessing)
+          if (match.pendingDqf) {
+            log(`[Timeout Processor] Match ${match.id}: Already marked as pending DQF, skipping`);
+            continue;
+          }
+          
           // Get check-in records for this match
           const checkInRecords = await storage.getScheduledMatchPlayers(match.id);
           
