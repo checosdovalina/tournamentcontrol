@@ -1003,6 +1003,13 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                 let canPreAssign = false;
                                 let matchDuration = 0;
                                 
+                                // Check if court is assigned to another scheduled match (excluding current match)
+                                const assignedToOther = allTournamentMatches?.find((sm: ScheduledMatchWithDetails) => 
+                                  sm.id !== match.id && 
+                                  sm.courtId === court.id && 
+                                  (sm.matchId !== null || sm.preAssignedAt !== null || sm.status === 'assigned' || sm.status === 'ready')
+                                );
+                                
                                 if (!isAvailable) {
                                   const currentMatch = currentMatches.find(m => m.courtId === court.id && m.status === "playing");
                                   if (currentMatch) {
@@ -1011,8 +1018,8 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                   }
                                 }
 
-                                // Only show available courts or courts that can be pre-assigned
-                                if (!isAvailable && !canPreAssign) return null;
+                                // Only show available courts that are not assigned to other matches, or courts that can be pre-assigned
+                                if ((!isAvailable && !canPreAssign) || assignedToOther) return null;
 
                                 return (
                                   <SelectItem key={court.id} value={court.id} data-testid={`option-court-${court.id}`}>
