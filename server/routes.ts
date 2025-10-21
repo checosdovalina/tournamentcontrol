@@ -2888,8 +2888,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         const courtConflict = allScheduledMatches.find(m => 
           m.id !== id && // Exclude current match
           m.courtId === courtId && 
-          m.status !== 'cancelled' &&
-          m.status !== 'completed'
+          (m.matchId !== null || m.preAssignedAt !== null) // Only block if match is actually playing or pre-assigned
         );
         
         console.log(`[Conflict check] Court conflict found: ${courtConflict ? `YES (match ${courtConflict.id})` : 'NO'}`);
@@ -3163,8 +3162,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       const courtConflict = allScheduledMatches.find(m => 
         m.id !== id && // Exclude current match
         m.courtId === courtId && 
-        m.status !== 'cancelled' &&
-        m.status !== 'completed'
+        (m.matchId !== null || m.preAssignedAt !== null) // Only block if match is actually playing or pre-assigned
       );
       
       if (courtConflict) {
