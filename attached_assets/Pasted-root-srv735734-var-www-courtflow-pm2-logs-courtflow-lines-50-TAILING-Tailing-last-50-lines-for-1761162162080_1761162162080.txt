@@ -1,0 +1,70 @@
+root@srv735734:/var/www/courtflow# pm2 logs courtflow --lines 50
+[TAILING] Tailing last 50 lines for [courtflow] process (change the value with --lines option)
+/var/log/courtflow-error-12.log last 50 lines:
+12|courtfl | (node:931685) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+12|courtfl | (Use `node --trace-warnings ...` to show where the warning was created)
+12|courtfl | (node:932375) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+12|courtfl | (Use `node --trace-warnings ...` to show where the warning was created)
+12|courtfl | (node:932529) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+12|courtfl | (Use `node --trace-warnings ...` to show where the warning was created)
+12|courtfl | (node:932719) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+12|courtfl | (Use `node --trace-warnings ...` to show where the warning was created)
+12|courtfl | (node:932944) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+12|courtfl | (Use `node --trace-warnings ...` to show where the warning was created)
+12|courtfl | (node:933175) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+12|courtfl | (Use `node --trace-warnings ...` to show where the warning was created)
+12|courtfl | (node:933429) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+12|courtfl | (Use `node --trace-warnings ...` to show where the warning was created)
+
+/var/log/courtflow-out-12.log last 50 lines:
+12|courtfl |     method: 'GET',
+12|courtfl |     host: 'localhost',
+12|courtfl |     path: '/v2',
+12|courtfl |     port: 443,
+12|courtfl |     createConnection: [Function: tlsConnect],
+12|courtfl |     defaultPort: 443,
+12|courtfl |     headers: {
+12|courtfl |       'Sec-WebSocket-Version': 13,
+12|courtfl |       'Sec-WebSocket-Key': 'YX7Ec5UE6Mlb2wS1ff9fEA==',
+12|courtfl |       Connection: 'Upgrade',
+12|courtfl |       Upgrade: 'websocket',
+12|courtfl |       'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits'
+12|courtfl |     }
+12|courtfl |   }
+12|courtfl | ]
+12|courtfl | 1:40:22 PM [express] [Timeout Processor] Error: Unexpected server response: 404
+12|courtfl | 1:41:58 PM [express] Upload directories ready
+12|courtfl | 1:41:58 PM [express] [Timeout Processor] Starting timeout processor (runs every 60s)
+12|courtfl | 1:41:58 PM [express] [Timeout Processor] Running timeout check...
+12|courtfl | HTTPS request args: [
+12|courtfl |   {
+12|courtfl |     allowSynchronousEvents: true,
+12|courtfl |     autoPong: true,
+12|courtfl |     protocolVersion: 13,
+12|courtfl |     maxPayload: 104857600,
+12|courtfl |     skipUTF8Validation: false,
+12|courtfl |     perMessageDeflate: true,
+12|courtfl |     followRedirects: false,
+12|courtfl |     maxRedirects: 10,
+12|courtfl |     socketPath: undefined,
+12|courtfl |     hostname: undefined,
+12|courtfl |     protocol: undefined,
+12|courtfl |     timeout: undefined,
+12|courtfl |     method: 'GET',
+12|courtfl |     host: 'localhost',
+12|courtfl |     path: '/v2',
+12|courtfl |     port: 443,
+12|courtfl |     createConnection: [Function: tlsConnect],
+12|courtfl |     defaultPort: 443,
+12|courtfl |     headers: {
+12|courtfl |       'Sec-WebSocket-Version': 13,
+12|courtfl |       'Sec-WebSocket-Key': 'SI9K4fBhPr75Hhr/YzATyg==',
+12|courtfl |       Connection: 'Upgrade',
+12|courtfl |       Upgrade: 'websocket',
+12|courtfl |       'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits'
+12|courtfl |     }
+12|courtfl |   }
+12|courtfl | ]
+12|courtfl | 1:41:58 PM [express] serving on port 4000
+12|courtfl | 1:41:58 PM [express] [Timeout Processor] Error: Unexpected server response: 404
+
