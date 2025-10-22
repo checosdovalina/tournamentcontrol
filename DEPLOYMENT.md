@@ -163,11 +163,13 @@ nano /var/www/courtflow/.env
 
 Pegar el siguiente contenido:
 
+**⚠️ IMPORTANTE:** El `DATABASE_URL` **NO debe tener parámetros SSL** porque PostgreSQL está en el mismo servidor (localhost).
+
 ```env
 # Node Environment
 NODE_ENV=production
 
-# Base de datos LOCAL (PostgreSQL)
+# Base de datos LOCAL (PostgreSQL) - SIN SSL
 DATABASE_URL=postgresql://courtflow:CourtFlow2025.@localhost:5432/courtflow
 PGHOST=localhost
 PGDATABASE=courtflow
@@ -546,6 +548,27 @@ tail -f /var/log/courtflow-error.log
 
 # Reiniciar
 pm2 restart courtflow
+```
+
+### Error de SSL: "HostnameIP does not match certificate's altnames"
+
+Este error aparece cuando el `DATABASE_URL` tiene parámetros SSL pero la base de datos es local.
+
+```bash
+# Editar .env
+nano /var/www/courtflow/.env
+
+# Asegurarse que DATABASE_URL sea EXACTAMENTE:
+# DATABASE_URL=postgresql://courtflow:CourtFlow2025.@localhost:5432/courtflow
+# 
+# NO debe tener:
+# - ?sslmode=require
+# - ?channel_binding=require
+# - Ningún parámetro SSL
+
+# Después de editar, reiniciar
+pm2 restart courtflow
+pm2 logs courtflow
 ```
 
 ### Error de conexión a base de datos
