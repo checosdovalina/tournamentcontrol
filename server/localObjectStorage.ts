@@ -58,9 +58,12 @@ export class LocalObjectStorageService {
       const requestedPath = path.resolve(publicDir, cleanPath);
 
       // SECURITY: Prevent directory traversal attacks
-      // Ensure the resolved path is within the allowed uploads directory
-      if (!requestedPath.startsWith(uploadsDir)) {
-        console.warn(`Directory traversal attempt blocked: ${relativePath}`);
+      // Use path.relative to check if the resolved path escapes the allowed directory
+      const relativeToDest = path.relative(uploadsDir, requestedPath);
+      
+      // If relative path starts with ".." or is absolute, it's outside the allowed directory
+      if (relativeToDest.startsWith("..") || path.isAbsolute(relativeToDest)) {
+        console.warn(`Directory traversal attempt blocked: ${relativePath} -> ${requestedPath}`);
         return null;
       }
 
