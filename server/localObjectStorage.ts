@@ -40,7 +40,7 @@ export class LocalObjectStorageService {
     return `/uploads/advertisements/${uniqueFilename}`;
   }
 
-  // Get file from local storage
+  // Get file from local storage with path traversal protection
   async getFile(relativePath: string): Promise<Buffer | null> {
     try {
       // Remove leading slash and /objects/ prefix if present
@@ -52,8 +52,19 @@ export class LocalObjectStorageService {
         cleanPath = `uploads/advertisements/${cleanPath}`;
       }
 
-      const filePath = path.join(process.cwd(), "public", cleanPath);
-      const fileBuffer = await fs.readFile(filePath);
+      // Build the full path
+      const publicDir = path.join(process.cwd(), "public");
+      const uploadsDir = path.join(publicDir, "uploads", "advertisements");
+      const requestedPath = path.resolve(publicDir, cleanPath);
+
+      // SECURITY: Prevent directory traversal attacks
+      // Ensure the resolved path is within the allowed uploads directory
+      if (!requestedPath.startsWith(uploadsDir)) {
+        console.warn(`Directory traversal attempt blocked: ${relativePath}`);
+        return null;
+      }
+
+      const fileBuffer = await fs.readFile(requestedPath);
       return fileBuffer;
     } catch (error) {
       return null;
