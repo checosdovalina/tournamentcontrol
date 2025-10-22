@@ -180,29 +180,13 @@ PGPORT=5432
 # Session Secret (genera uno aleatorio y seguro)
 SESSION_SECRET=CourtFlow_MX_2025_Super_Secure_Session_Secret_Key_1234567890
 
-# Google Cloud Storage (si lo usas)
-DEFAULT_OBJECT_STORAGE_BUCKET_ID=courtflow-bucket
-GOOGLE_APPLICATION_CREDENTIALS=/var/www/courtflow/gcs-credentials.json
-PUBLIC_OBJECT_SEARCH_PATHS=public
-PRIVATE_OBJECT_DIR=.private
-
 # Puerto interno
 PORT=3000
 ```
 
 Guardar (`Ctrl+X`, `Y`, `Enter`).
 
-**Opcional - Si usas Google Cloud Storage:**
-
-```bash
-# Crear archivo de credenciales
-nano /var/www/courtflow/gcs-credentials.json
-
-# Pegar tu JSON de credenciales de Google Cloud Service Account
-
-# Proteger archivo
-chmod 600 /var/www/courtflow/gcs-credentials.json
-```
+**Nota:** La aplicación crea automáticamente el directorio `public/uploads/advertisements` al iniciar. Los archivos de anuncios/banners se almacenan localmente en el filesystem del servidor.
 
 ---
 
