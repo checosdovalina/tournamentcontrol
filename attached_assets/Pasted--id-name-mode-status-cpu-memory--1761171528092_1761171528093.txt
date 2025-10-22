@@ -1,0 +1,104 @@
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 74.5mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 75.0mb   │
+│ 1  │ Record             │ fork     │ 0    │ online    │ 0%       │ 74.9mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 74.8mb   │
+│ 12 │ courtflow          │ fork     │ 2    │ stopped   │ 0%       │ 0b       │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 74.7mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# git pull origin main
+remote: Enumerating objects: 6, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 4 (delta 2), reused 4 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (4/4), 1.50 KiB | 511.00 KiB/s, done.
+From https://github.com/checosdovalina/tournamentcontrol
+ * branch            main       -> FETCH_HEAD
+   c81d023..8df65dd  main       -> origin/main
+Updating 390a5da..8df65dd
+error: Your local changes to the following files would be overwritten by merge:
+	package-lock.json
+	package.json
+Please commit your changes or stash them before you merge.
+Aborting
+root@srv735734:/var/www/courtflow# grep "@google-cloud/storage" package.json
+    "@google-cloud/storage": "^7.17.2",
+root@srv735734:/var/www/courtflow# npm uninstall @google-cloud/storage @uppy/aws-s3 @uppy/core @uppy/dashboard @uppy/react
+
+removed 107 packages, and audited 536 packages in 2s
+
+66 packages are looking for funding
+  run `npm fund` for details
+
+7 vulnerabilities (1 low, 5 moderate, 1 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+root@srv735734:/var/www/courtflow# git pull origin main
+remote: Enumerating objects: 6, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 4 (delta 2), reused 4 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (4/4), 633.69 KiB | 2.14 MiB/s, done.
+From https://github.com/checosdovalina/tournamentcontrol
+ * branch            main       -> FETCH_HEAD
+   8df65dd..9281deb  main       -> origin/main
+Updating 390a5da..9281deb
+error: Your local changes to the following files would be overwritten by merge:
+	package-lock.json
+	package.json
+Please commit your changes or stash them before you merge.
+Aborting
+root@srv735734:/var/www/courtflow# grep "@google-cloud/storage" package.json  # NO debe aparecer nada
+root@srv735734:/var/www/courtflow# npm install
+
+up to date, audited 536 packages in 1s
+
+66 packages are looking for funding
+  run `npm fund` for details
+
+7 vulnerabilities (1 low, 5 moderate, 1 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+root@srv735734:/var/www/courtflow# npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.20 building for production...
+transforming (2) ../vite/modulepreload-polyfill.jsBrowserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 1708 modules transformed.
+x Build failed in 5.82s
+error during build:
+[vite]: Rollup failed to resolve import "@uppy/core" from "/var/www/courtflow/client/src/components/ObjectUploader.tsx".
+This is most likely unintended because it can break your application at runtime.
+If you do want to externalize this module explicitly add it to
+`build.rollupOptions.external`
+    at viteWarn (file:///var/www/courtflow/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65854:17)
+    at onwarn (file:///var/www/courtflow/node_modules/@vitejs/plugin-react/dist/index.js:90:7)
+    at onRollupWarning (file:///var/www/courtflow/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65884:5)
+    at onwarn (file:///var/www/courtflow/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65549:7)
+    at file:///var/www/courtflow/node_modules/rollup/dist/es/shared/node-entry.js:19452:13
+    at Object.logger [as onLog] (file:///var/www/courtflow/node_modules/rollup/dist/es/shared/node-entry.js:21178:9)
+    at ModuleLoader.handleInvalidResolvedId (file:///var/www/courtflow/node_modules/rollup/dist/es/shared/node-entry.js:20067:26)
+    at file:///var/www/courtflow/node_modules/rollup/dist/es/shared/node-entry.js:20025:26
