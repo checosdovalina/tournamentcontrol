@@ -1,0 +1,169 @@
+Oct 22 11:23:47 srv735734 nginx[931007]: 2025/10/22 11:23:47 [warn] 931007#931007: conflicting server name "www.courtflow.com.mx" >
+Oct 22 11:23:47 srv735734 nginx[931007]: 2025/10/22 11:23:47 [warn] 931007#931007: conflicting server name "administrator.record.w>
+Oct 22 11:23:47 srv735734 nginx[931007]: 2025/10/22 11:23:47 [warn] 931007#931007: conflicting server name "www.administrator.reco>
+Oct 22 11:23:47 srv735734 nginx[931007]: 2025/10/22 11:23:47 [warn] 931007#931007: conflicting server name "www.courtflow.com.mx" >
+Oct 22 11:23:47 srv735734 nginx[931008]: 2025/10/22 11:23:47 [warn] 931008#931008: conflicting server name "www.courtflow.com.mx" >
+Oct 22 11:23:47 srv735734 nginx[931008]: 2025/10/22 11:23:47 [warn] 931008#931008: conflicting server name "administrator.record.w>
+Oct 22 11:23:47 srv735734 nginx[931008]: 2025/10/22 11:23:47 [warn] 931008#931008: conflicting server name "www.administrator.reco>
+Oct 22 11:23:47 srv735734 nginx[931008]: 2025/10/22 11:23:47 [warn] 931008#931008: conflicting server name "www.courtflow.com.mx" >
+
+root@srv735734:~# sudo nano /etc/nginx/sites-available/default
+root@srv735734:~# sudo nano /etc/nginx/sites-available/default
+root@srv735734:~# sudo nano /etc/nginx/sites-available/default
+root@srv735734:~# sudo nano /etc/nginx/sites-available/default
+root@srv735734:~# sudo nano /etc/nginx/sites-available/default
+root@srv735734:~# # Edita el archivo de configuración
+nano /etc/nginx/sites-available/courtflow
+root@srv735734:~# sudo nano /etc/nginx/sites-available/default
+root@srv735734:~# ls -l /etc/nginx/sites-available/
+total 76
+-rw-r--r-- 1 root root  927 Oct 22 11:24 app.courtflow.com.mx
+-rw-r--r-- 1 root root  952 Oct 20 21:19 courtflow.com.mx
+-rw-r--r-- 1 root root 6115 Oct 20 21:14 default
+-rw-r--r-- 1 root root 2024 Oct  6 13:13 grafana
+-rw-r--r-- 1 root root 1296 Jul 14 15:43 livestream.record.watch
+-rw-r--r-- 1 root root 1045 Oct  6 13:16 loki_ingestion
+-rw-r--r-- 1 root root 1095 Jun  6 11:04 optime.mx
+-rw-r--r-- 1 root root 1035 Jun 26 14:32 record
+-rw-r--r-- 1 root root  952 Sep 19 13:30 rockoly.quickstock.com.mx
+root@srv735734:~# # Editar el archivo correcto
+nano /etc/nginx/sites-available/app.courtflow.com.mx
+root@srv735734:~# nano /etc/nginx/sites-available/app.courtflow.com.mx
+root@srv735734:~# cat /var/www/courtflow/ecosystem.config.cjs
+require('dotenv').config({ path: '/var/www/courtflow/.env' });
+
+module.exports = {
+  apps: [{
+    name: 'courtflow',
+    script: 'node',
+    args: 'dist/index.js',
+    cwd: '/var/www/courtflow',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: process.env.NODE_ENV || 'production',
+      PORT: process.env.PORT || 4000,
+      DATABASE_URL: process.env.DATABASE_URL,
+      PGHOST: process.env.PGHOST,
+      PGDATABASE: process.env.PGDATABASE,
+      PGUSER: process.env.PGUSER,
+      PGPASSWORD: process.env.PGPASSWORD,
+      PGPORT: process.env.PGPORT,
+      SESSION_SECRET: process.env.SESSION_SECRET,
+      DEFAULT_OBJECT_STORAGE_BUCKET_ID: process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID,
+      GOOGLE_APPLICATION_CREDENTIALS: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+      PUBLIC_OBJECT_SEARCH_PATHS: process.env.PUBLIC_OBJECT_SEARCH_PATHS,
+      PRIVATE_OBJECT_DIR: process.env.PRIVATE_OBJECT_DIR,
+      NODE_TLS_REJECT_UNAUTHORIZED: "0",
+    },
+    error_file: '/var/log/courtflow-error.log',
+    out_file: '/var/log/courtflow-out.log',
+  }]
+};
+root@srv735734:~# nano /var/www/courtflow/ecosystem.config.cjs
+root@srv735734:~# pm2 delete courtflow
+[PM2] Applying action deleteProcessId on app [courtflow](ids: [ 12 ])
+[PM2] [courtflow](12) ✓
+┌────┬──────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                     │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase       │ default     │ N/A     │ fork    │ 910377   │ 23h    │ 0    │ online    │ 0%       │ 73.5mb   │ root     │ disabled │
+│ 0  │ Horarium                 │ default     │ N/A     │ fork    │ 909937   │ 23h    │ 0    │ online    │ 0%       │ 74.0mb   │ root     │ disabled │
+│ 1  │ Record                   │ default     │ N/A     │ fork    │ 909984   │ 23h    │ 0    │ online    │ 0%       │ 73.9mb   │ root     │ disabled │
+│ 2  │ RecordLivestreamAdmin    │ default     │ N/A     │ fork    │ 910054   │ 23h    │ 0    │ online    │ 0%       │ 73.8mb   │ root     │ disabled │
+│ 4  │ quickstock_rockoly       │ default     │ N/A     │ fork    │ 910317   │ 23h    │ 0    │ online    │ 0%       │ 73.7mb   │ root     │ disabled │
+└────┴──────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@srv735734:~# rm -f /var/log/courtflow-*.log
+root@srv735734:~# pm2 flush
+[PM2] Flushing /root/.pm2/pm2.log
+[PM2] Flushing:
+[PM2] /root/.pm2/logs/Horarium-out.log
+[PM2] /root/.pm2/logs/Horarium-error.log
+[PM2] Flushing:
+[PM2] /root/.pm2/logs/Record-out.log
+[PM2] /root/.pm2/logs/Record-error.log
+[PM2] Flushing:
+[PM2] /root/.pm2/logs/RecordLivestreamAdmin-out.log
+[PM2] /root/.pm2/logs/RecordLivestreamAdmin-error.log
+[PM2] Flushing:
+[PM2] /root/.pm2/logs/quickstock-rockoly-out.log
+[PM2] /root/.pm2/logs/quickstock-rockoly-error.log
+[PM2] Flushing:
+[PM2] /root/.pm2/logs/CourtFlow-showcase-out.log
+[PM2] /root/.pm2/logs/CourtFlow-showcase-error.log
+[PM2] Logs flushed
+root@srv735734:~# pm2 start /var/www/courtflow/ecosystem.config.cjs
+[PM2][ERROR] File /var/www/courtflow/ecosystem.config.cjs malformated
+Error: Cannot find module 'dotenv'
+Require stack:
+- /var/www/courtflow/ecosystem.config.cjs
+- /usr/lib/node_modules/pm2/lib/Common.js
+- /usr/lib/node_modules/pm2/lib/Client.js
+- /usr/lib/node_modules/pm2/lib/API.js
+- /usr/lib/node_modules/pm2/lib/binaries/CLI.js
+- /usr/lib/node_modules/pm2/bin/pm2
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.require (node:internal/modules/cjs/loader:1463:12)
+    at require (node:internal/modules/helpers:147:16)
+    at Object.<anonymous> (/var/www/courtflow/ecosystem.config.cjs:1:1)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/var/www/courtflow/ecosystem.config.cjs',
+    '/usr/lib/node_modules/pm2/lib/Common.js',
+    '/usr/lib/node_modules/pm2/lib/Client.js',
+    '/usr/lib/node_modules/pm2/lib/API.js',
+    '/usr/lib/node_modules/pm2/lib/binaries/CLI.js',
+    '/usr/lib/node_modules/pm2/bin/pm2'
+  ]
+}
+root@srv735734:~# pm2 logs courtflow --lines 20 --nostream
+[TAILING] Tailing last 20 lines for [courtflow] process (change the value with --lines option)
+root@srv735734:~# pm2 status
+┌────┬──────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                     │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase       │ default     │ N/A     │ fork    │ 910377   │ 23h    │ 0    │ online    │ 0%       │ 73.5mb   │ root     │ disabled │
+│ 0  │ Horarium                 │ default     │ N/A     │ fork    │ 909937   │ 23h    │ 0    │ online    │ 0%       │ 74.0mb   │ root     │ disabled │
+│ 1  │ Record                   │ default     │ N/A     │ fork    │ 909984   │ 23h    │ 0    │ online    │ 0%       │ 73.9mb   │ root     │ disabled │
+│ 2  │ RecordLivestreamAdmin    │ default     │ N/A     │ fork    │ 910054   │ 23h    │ 0    │ online    │ 0%       │ 73.8mb   │ root     │ disabled │
+│ 4  │ quickstock_rockoly       │ default     │ N/A     │ fork    │ 910317   │ 23h    │ 0    │ online    │ 0%       │ 73.7mb   │ root     │ disabled │
+└────┴──────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@srv735734:~# cat /var/log/courtflow-error.log
+cat: /var/log/courtflow-error.log: No such file or directory
+root@srv735734:~# nano /var/www/courtflow/ecosystem.config.cjs
+root@srv735734:~# cd /var/www/courtflow
+root@srv735734:/var/www/courtflow# pm2 start ecosystem.config.cjs
+[PM2][ERROR] File ecosystem.config.cjs malformated
+Error: Cannot find module 'dotenv'
+Require stack:
+- /var/www/courtflow/ecosystem.config.cjs
+- /usr/lib/node_modules/pm2/lib/Common.js
+- /usr/lib/node_modules/pm2/lib/Client.js
+- /usr/lib/node_modules/pm2/lib/API.js
+- /usr/lib/node_modules/pm2/lib/binaries/CLI.js
+- /usr/lib/node_modules/pm2/bin/pm2
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.require (node:internal/modules/cjs/loader:1463:12)
+    at require (node:internal/modules/helpers:147:16)
+    at Object.<anonymous> (/var/www/courtflow/ecosystem.config.cjs:1:1)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/var/www/courtflow/ecosystem.config.cjs',
+    '/usr/lib/node_modules/pm2/lib/Common.js',
+    '/usr/lib/node_modules/pm2/lib/Client.js',
+    '/usr/lib/node_modules/pm2/lib/API.js',
+    '/usr/lib/node_modules/pm2/lib/binaries/CLI
