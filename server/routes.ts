@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 import { storage } from "./storage";
-import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { LocalObjectStorageService, ObjectNotFoundError } from "./localObjectStorage";
 import { 
   insertPlayerSchema, 
   insertPairSchema, 
@@ -1944,32 +1944,66 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
-  // ============ Object Storage (File Upload) ============
-  // Reference: blueprint:javascript_object_storage
+  // ============ Object Storage (File Upload) - Local Filesystem ============
   
-  // Get upload URL for file upload - requires authentication
-  app.post("/api/objects/upload", requireAuth, async (req, res) => {
+  // Configure multer for generic object uploads
+  const objectUploadStorage = multer.memoryStorage();
+  const uploadObject = multer({ 
+    storage: objectUploadStorage,
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+    fileFilter: (req, file, cb) => {
+      const localObjectStorageService = new LocalObjectStorageService();
+      if (localObjectStorageService.isValidFileType(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error("Invalid file type"));
+      }
+    }
+  });
+  
+  // Upload file - requires authentication
+  app.post("/api/objects/upload", requireAuth, uploadObject.single('file'), async (req, res) => {
     try {
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
+      if (!req.file) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+
+      const localObjectStorageService = new LocalObjectStorageService();
+      
+      // Validate file size
+      if (!localObjectStorageService.isValidFileSize(req.file.size)) {
+        return res.status(400).json({ message: "File too large (max 50MB)" });
+      }
+
+      // Save file and get public URL
+      const fileUrl = await localObjectStorageService.saveUploadedFile(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype
+      );
+
+      res.json({ 
+        url: fileUrl,
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      });
     } catch (error: any) {
-      console.error("Error getting upload URL:", error);
-      res.status(500).json({ message: "Failed to get upload URL", error: error.message });
+      console.error("Error uploading file:", error);
+      res.status(500).json({ message: "Failed to upload file", error: error.message });
     }
   });
 
   // Serve uploaded objects (public access for advertisements)
   app.get("/objects/:objectPath(*)", async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
+    const localObjectStorageService = new LocalObjectStorageService();
     try {
-      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
-      objectStorageService.downloadObject(objectFile, res);
-    } catch (error) {
-      console.error("Error serving object:", error);
-      if (error instanceof ObjectNotFoundError) {
+      const success = await localObjectStorageService.downloadFile(req.path, res);
+      if (!success) {
         return res.sendStatus(404);
       }
+    } catch (error) {
+      console.error("Error serving object:", error);
       return res.sendStatus(500);
     }
   });
@@ -2057,17 +2091,10 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     try {
       const adData = insertAdvertisementSchema.parse(req.body);
       
-      // If contentUrl is a Google Cloud Storage URL, normalize it and set ACL policy
+      // Normalize path if needed (for backward compatibility with old GCS URLs)
       if (adData.contentUrl.startsWith("https://storage.googleapis.com/")) {
-        const objectStorageService = new ObjectStorageService();
-        const normalizedPath = await objectStorageService.trySetObjectEntityAclPolicy(
-          adData.contentUrl,
-          {
-            owner: req.session.userId!,
-            visibility: "public", // Advertisements are publicly visible
-          }
-        );
-        adData.contentUrl = normalizedPath;
+        const localObjectStorageService = new LocalObjectStorageService();
+        adData.contentUrl = await localObjectStorageService.trySetObjectEntityAclPolicy(adData.contentUrl);
       }
       
       const advertisement = await storage.createAdvertisement(adData);
@@ -2109,20 +2136,14 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         return res.status(403).json({ message: "Admin access required for this tournament" });
       }
       
-      // If contentUrl is being updated, normalize Google Cloud Storage URLs and set ACL policy
-      // Skip if already normalized (starts with /objects/)
+      // Normalize path if needed (for backward compatibility with old GCS URLs)
+      // Skip if already normalized (starts with /objects/ or /uploads/)
       if (updates.contentUrl && 
           !updates.contentUrl.startsWith("/objects/") && 
+          !updates.contentUrl.startsWith("/uploads/") &&
           updates.contentUrl.startsWith("https://storage.googleapis.com/")) {
-        const objectStorageService = new ObjectStorageService();
-        const normalizedPath = await objectStorageService.trySetObjectEntityAclPolicy(
-          updates.contentUrl,
-          {
-            owner: req.session.userId!,
-            visibility: "public", // Advertisements are publicly visible
-          }
-        );
-        updates.contentUrl = normalizedPath;
+        const localObjectStorageService = new LocalObjectStorageService();
+        updates.contentUrl = await localObjectStorageService.trySetObjectEntityAclPolicy(updates.contentUrl);
       }
       
       // Authorization passed - proceed with update
