@@ -1019,6 +1019,9 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                   }
                                 }
 
+                                // Debug logging
+                                console.log(`Court ${court.name}: available=${isAvailable}, canPreAssign=${canPreAssign}, assignedToOther=${!!assignedToOther}`, assignedToOther);
+
                                 // Only show available courts that are not assigned to other matches, or courts that can be pre-assigned
                                 if ((!isAvailable && !canPreAssign) || assignedToOther) return null;
 
