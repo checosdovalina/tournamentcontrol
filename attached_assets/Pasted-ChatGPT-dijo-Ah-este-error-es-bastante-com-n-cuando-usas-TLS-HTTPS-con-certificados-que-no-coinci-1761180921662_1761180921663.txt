@@ -1,0 +1,69 @@
+ChatGPT dijo:
+
+Ah, este error es bastante común cuando usas TLS/HTTPS con certificados que no coinciden con el host al que te conectas. Vamos a desglosarlo paso a paso:
+
+1️⃣ El mensaje clave
+Error: Hostname/IP does not match certificate's altnames: 
+Host: localhost. is not in the cert's altnames: DNS:loki.record.watch, DNS:www.loki.record.watch
+
+
+Esto significa que:
+
+Tu aplicación intenta conectarse a https://localhost:443 (según el log: host: 'localhost', port: 443) usando WebSocket seguro (wss://).
+
+El certificado TLS que se está usando no tiene “localhost” como nombre válido. Solo es válido para loki.record.watch y www.loki.record.watch.
+
+TLS verifica que el nombre de host que pides coincida con el certificado; si no coincide, falla con ese error.
+
+2️⃣ Cómo se produce
+
+En tu log:
+
+socketPath: undefined,
+hostname: undefined,
+protocol: undefined,
+host: 'localhost',
+path: '/v2',
+port: 443,
+
+
+Tu aplicación está construyendo un WebSocket seguro hacia localhost, pero el certificado está emitido para un dominio público (loki.record.watch). Por eso Node.js / TLS bloquea la conexión.
+
+3️⃣ Opciones para resolverlo
+🔹 Opción A: Usar el dominio correcto
+
+Si tu certificado es válido solo para loki.record.watch, conecta tu WebSocket a:
+
+wss://loki.record.watch/v2
+
+
+En lugar de localhost. Esto asegura que el nombre coincida con el certificado.
+
+🔹 Opción B: Ignorar la verificación (solo en desarrollo)
+
+En desarrollo puedes permitir certificados auto-firmados o con nombre diferente, agregando:
+
+const ws = new WebSocket('wss://localhost:443/v2', {
+  rejectUnauthorized: false // ⚠️ solo desarrollo
+});
+
+
+Esto desactiva la verificación del certificado y no debe usarse en producción.
+
+🔹 Opción C: Generar un certificado válido para localhost
+
+Si quieres correr en local con TLS seguro, puedes generar un certificado que tenga:
+
+CN = localhost
+
+o SAN = DNS:localhost
+
+Y usarlo en tu servidor Node/Express.
+
+💡 Resumen rápido:
+
+Error: TLS no coincide host/cert.
+
+Solución típica: usar el dominio del certificado o desactivar validación (solo dev).
+
+Nunca ignores TLS en producción; es inseguro.
