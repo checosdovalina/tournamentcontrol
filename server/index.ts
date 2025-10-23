@@ -1,7 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import { Pool } from "@neondatabase/serverless";
+import pkg from "pg";
+const { Pool } = pkg;
 import { registerRoutes } from "./routes";
 import { startTimeoutProcessor } from "./timeout-processor";
 import { setupVite, serveStatic, log } from "./vite";
