@@ -1,0 +1,56 @@
+es in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Wed Oct 22 18:43:49 2025 from 177.241.174.237
+root@srv735734:~# cd /var/www/courtflow
+root@srv735734:/var/www/courtflow# # En otra terminal, prueba el login
+curl -X POST https://app.courtflow.com.mx/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}' \
+  -v
+Note: Unnecessary use of -X or --request, POST is already inferred.
+*   Trying 195.35.9.117:443...
+* Connected to app.courtflow.com.mx (195.35.9.117) port 443 (#0)
+* ALPN: offers h2,http/1.1
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+*  CAfile: /etc/ssl/certs/ca-certificates.crt
+*  CApath: /etc/ssl/certs
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* ALPN: server accepted http/1.1
+* Server certificate:
+*  subject: CN=app.courtflow.com.mx
+*  start date: Oct 22 16:26:12 2025 GMT
+*  expire date: Jan 20 16:26:11 2026 GMT
+*  subjectAltName: host "app.courtflow.com.mx" matched cert's "app.courtflow.com.mx"
+*  issuer: C=US; O=Let's Encrypt; CN=E8
+*  SSL certificate verify ok.
+* using HTTP/1.1
+> POST /api/auth/login HTTP/1.1
+> Host: app.courtflow.com.mx
+> User-Agent: curl/7.88.1
+> Accept: */*
+> Content-Type: application/json
+> Content-Length: 42
+> 
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* old SSL session ID is stale, removing
+< HTTP/1.1 500 Internal Server Error
+< Server: nginx/1.22.1
+< Date: Thu, 23 Oct 2025 01:10:50 GMT
+< Content-Type: application/json; charset=utf-8
+< Content-Length: 184
+< Connection: keep-alive
+< X-Powered-By: Express
+< ETag: W/"b8-fwVDS0VedJ0g2fNjydSogt6qk9k"
+< 
+* Connection #0 to host app.courtflow.com.mx left intact
+{"message":"Login failed","error":"Hostname/IP does not match certificate's altnames: Host: localhost. is not in the cert's altnames: DNS:loki.record.watch, DNS:www.loki.record.watch"}root@srv735734:/var/www/courtflow# 
