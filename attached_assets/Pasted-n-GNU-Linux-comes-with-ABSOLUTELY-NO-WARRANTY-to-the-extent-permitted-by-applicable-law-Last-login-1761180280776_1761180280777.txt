@@ -1,0 +1,60 @@
+n GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Wed Oct 22 18:02:34 2025 from 177.241.174.237
+root@srv735734:~# # Conectarte por SSH a tu VPS y ejecutar:
+pm2 logs courtflow --lines 50 --nostream
+[TAILING] Tailing last 50 lines for [courtflow] process (change the value with --lines option)
+/var/log/courtflow-error-13.log last 50 lines:
+/var/log/courtflow-out-13.log last 50 lines:
+13|courtfl |     hostname: undefined,
+13|courtfl |     protocol: undefined,
+13|courtfl |     timeout: undefined,
+13|courtfl |     method: 'GET',
+13|courtfl |     host: 'localhost',
+13|courtfl |     path: '/v2',
+13|courtfl |     port: 443,
+13|courtfl |     createConnection: [Function: tlsConnect],
+13|courtfl |     defaultPort: 443,
+13|courtfl |     headers: {
+13|courtfl |       'Sec-WebSocket-Version': 13,
+13|courtfl |       'Sec-WebSocket-Key': '59oDlVLz2Y6y/47p5d0oXg==',
+13|courtfl |       Connection: 'Upgrade',
+13|courtfl |       Upgrade: 'websocket',
+13|courtfl |       'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits'
+13|courtfl |     }
+13|courtfl |   }
+13|courtfl | ]
+13|courtfl | 6:43:05 PM [express] [Timeout Processor] Error: Hostname/IP does not match certificate's altnames: Host: localhost. is not in the cert's altnames: DNS:loki.record.watch, DNS:www.loki.record.watch
+13|courtfl | 6:44:05 PM [express] [Timeout Processor] Running timeout check...
+13|courtfl | HTTPS request args: [
+13|courtfl |   {
+13|courtfl |     allowSynchronousEvents: true,
+13|courtfl |     autoPong: true,
+13|courtfl |     protocolVersion: 13,
+13|courtfl |     maxPayload: 104857600,
+13|courtfl |     skipUTF8Validation: false,
+13|courtfl |     perMessageDeflate: true,
+13|courtfl |     followRedirects: false,
+13|courtfl |     maxRedirects: 10,
+13|courtfl |     socketPath: undefined,
+13|courtfl |     hostname: undefined,
+13|courtfl |     protocol: undefined,
+13|courtfl |     timeout: undefined,
+13|courtfl |     method: 'GET',
+13|courtfl |     host: 'localhost',
+13|courtfl |     path: '/v2',
+13|courtfl |     port: 443,
+13|courtfl |     createConnection: [Function: tlsConnect],
+13|courtfl |     defaultPort: 443,
+13|courtfl |     headers: {
+13|courtfl |       'Sec-WebSocket-Version': 13,
+13|courtfl |       'Sec-WebSocket-Key': 'RvLlpkET4zQxxs8/O6WRNg==',
+13|courtfl |       Connection: 'Upgrade',
+13|courtfl |       Upgrade: 'websocket',
+13|courtfl |       'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits'
+13|courtfl |     }
+13|courtfl |   }
+13|courtfl | ]
+13|courtfl | 6:44:05 PM [express] [Timeout Processor] Error: Hostname/IP does not match certificate's altnames: Host: localhost. is not in the cert's altnames: DNS:loki.record.watch, DNS:www.loki.record.watch
+
+root@srv735734:~# 
