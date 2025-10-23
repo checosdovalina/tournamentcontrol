@@ -255,7 +255,7 @@ export default function DisplayRotative() {
             <div className="relative w-full overflow-hidden">
               <div className="inline-flex w-max gap-8" style={{ animation: 'marquee 50s linear infinite' }}>
                 {[...activeBanners, ...activeBanners].map((banner: any, idx: number) => (
-                  <div key={`sponsor-${banner.id}-${idx}`} className="h-16 flex items-center flex-shrink-0">
+                  <div key={`sponsor-${banner.id}-${idx}`} className="h-10 flex items-center flex-shrink-0">
                     <img 
                       src={banner.imageUrl} 
                       alt={banner.sponsorName} 
