@@ -17,7 +17,7 @@ The frontend is built with **React** and **TypeScript** using **Vite**. It utili
 The backend uses **Node.js** with **Express.js**. **Express-session** with **connect-pg-simple** handles session management and authentication. A standalone **WebSocket server** (using 'ws') provides real-time communication. An **Automated Timeout Processor** runs every 60 seconds to manage scheduled matches. When both pairs are absent after the 15-minute timeout, the match is automatically cancelled. When only one pair completes check-in, the system marks the match as `pendingDqf: true` and awaits manual admin approval via a DQF (Disqualification) button instead of automatically awarding the default win. **RESTful APIs** are organized by resource, with **Zod** and **drizzle-zod** used for data validation.
 
 ### Data Storage
-**PostgreSQL** (via Neon serverless driver) is the primary database, managed by **Drizzle ORM**. The schema is TypeScript-first, supporting users, tournaments, categories, sponsor banners, advertisements, clubs, courts, players, pairs, matches, scheduled matches (with outcome tracking: 'normal'|'default'|'cancelled', outcomeReason, and defaultWinnerPairId), and results (with optional scheduledMatch outcome data). Multi-tenancy is achieved through tournament-specific configurations and relationships. An advanced **Advertisement System** supports various content types, text overlays, animations, and time-based scheduling with smart rotation. A `server/storage.ts` interface provides a clean data access layer.
+**PostgreSQL** (via standard `pg` driver) is the primary database, managed by **Drizzle ORM**. The schema is TypeScript-first, supporting users, tournaments, categories, sponsor banners, advertisements, clubs, courts, players, pairs, matches, scheduled matches (with outcome tracking: 'normal'|'default'|'cancelled', outcomeReason, and defaultWinnerPairId), and results (with optional scheduledMatch outcome data). Multi-tenancy is achieved through tournament-specific configurations and relationships. An advanced **Advertisement System** supports various content types, text overlays, animations, and time-based scheduling with smart rotation. A `server/storage.ts` interface provides a clean data access layer. **File uploads** are handled via local filesystem storage in `public/uploads/` directory.
 
 ### Authentication & Authorization
 **Session-based authentication** using username/password is implemented. **Role-Based Access Control** supports `superadmin`, `admin`, `scorekeeper`, and `display` roles with varying access levels. Sessions use HTTP-only cookies and have a 24-hour expiration.
@@ -48,7 +48,7 @@ The backend uses **Node.js** with **Express.js**. **Express-session** with **con
 -   TypeScript
 
 ### Database & ORM
--   @neondatabase/serverless
+-   pg (node-postgres)
 -   Drizzle ORM, drizzle-kit, drizzle-zod
 
 ### UI Component Libraries
@@ -79,16 +79,15 @@ The backend uses **Node.js** with **Express.js**. **Express-session** with **con
 -   wouter
 
 ### File Upload & Storage
--   @uppy/core, @uppy/react, @uppy/dashboard, @uppy/aws-s3
--   @google-cloud/storage (client for Google Cloud Storage)
-
-### External Services
--   **Neon Database**: Serverless PostgreSQL hosting
--   **Replit Object Storage**: For file uploads
+-   multer (native multipart/form-data handling)
+-   Local filesystem storage in `public/uploads/`
 
 ### Environment Variables (Required for Deployment)
--   `DATABASE_URL`
--   `SESSION_SECRET`
--   `DEFAULT_OBJECT_STORAGE_BUCKET_ID`
--   `PUBLIC_OBJECT_SEARCH_PATHS`
--   `PRIVATE_OBJECT_DIR`
+-   `DATABASE_URL` - PostgreSQL connection string
+-   `SESSION_SECRET` - Session encryption key
+-   `NODE_ENV` - Environment mode (development/production)
+
+### Build & Deployment
+-   **Build Process**: TypeScript compilation without bundling (`tsc`) for server code, Vite bundling for client code
+-   **Production Server**: Compiled JavaScript from `dist/server/index.js` with `pg` as runtime dependency
+-   **VPS Deployment**: Nginx reverse proxy → Node.js (PM2) → PostgreSQL (local instance)
