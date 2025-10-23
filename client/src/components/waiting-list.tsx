@@ -36,7 +36,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
     refetchInterval: 3000,
   });
 
-  // Filter to show only matches from the last 12 hours (720 minutes)
+  // Filter to show only matches from the last 8 hours (480 minutes)
   const readyMatches = allReadyMatches.filter((match: ScheduledMatchWithDetails) => {
     const players = [
       match.pair1?.player1,
@@ -54,7 +54,7 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
     const earliestCheckIn = Math.min(...checkInTimes);
     const now = new Date().getTime();
     const diffMinutes = Math.floor((now - earliestCheckIn) / (1000 * 60));
-    return diffMinutes <= 720; // 12 hours = 720 minutes
+    return diffMinutes <= 480; // 8 hours = 480 minutes
   });
 
   const { data: courts = [] } = useQuery<any[]>({
