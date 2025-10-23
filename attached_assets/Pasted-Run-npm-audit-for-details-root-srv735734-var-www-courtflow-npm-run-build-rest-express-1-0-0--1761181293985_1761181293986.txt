@@ -1,0 +1,188 @@
+Run `npm audit` for details.
+root@srv735734:/var/www/courtflow# npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.20 building for production...
+transforming (2) ../vite/modulepreload-polyfill.jsBrowserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2775 modules transformed.
+../dist/public/index.html                                                      1.95 kB │ gzip:   0.74 kB
+../dist/public/assets/_LogosCOURTFLOW  sin fondo_1760480356184-CuWp6qNT.png  546.05 kB
+../dist/public/assets/_Logos JC (Court Flow)_1759964500350-Bl85Zqk5.png      754.31 kB
+../dist/public/assets/index-CnB8PiFP.css                                      74.34 kB │ gzip:  13.25 kB
+../dist/public/assets/index-DCgSflHi.js                                      826.30 kB │ gzip: 230.23 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.45s
+
+  dist/index.js  168.9kb
+
+⚡ Done in 20ms
+root@srv735734:/var/www/courtflow# pm2 restart courtflow
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [courtflow](ids: [ 13 ])
+[PM2] [courtflow](13) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 72.0mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 71.9mb   │
+│ 1  │ Record             │ fork     │ 0    │ online    │ 0%       │ 71.8mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 71.7mb   │
+│ 13 │ courtflow          │ fork     │ 2    │ online    │ 0%       │ 6.6mb    │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 72.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# pm2 logs courtflow --lines 30 --nostream
+[TAILING] Tailing last 30 lines for [courtflow] process (change the value with --lines option)
+/var/log/courtflow-error-13.log last 30 lines:
+/var/log/courtflow-out-13.log last 30 lines:
+13|courtfl |   {
+13|courtfl |     allowSynchronousEvents: true,
+13|courtfl |     autoPong: true,
+13|courtfl |     protocolVersion: 13,
+13|courtfl |     maxPayload: 104857600,
+13|courtfl |     skipUTF8Validation: false,
+13|courtfl |     perMessageDeflate: true,
+13|courtfl |     followRedirects: false,
+13|courtfl |     maxRedirects: 10,
+13|courtfl |     socketPath: undefined,
+13|courtfl |     hostname: undefined,
+13|courtfl |     protocol: undefined,
+13|courtfl |     timeout: undefined,
+13|courtfl |     method: 'GET',
+13|courtfl |     host: 'localhost',
+13|courtfl |     path: '/v2',
+13|courtfl |     port: 443,
+13|courtfl |     createConnection: [Function: tlsConnect],
+13|courtfl |     defaultPort: 443,
+13|courtfl |     headers: {
+13|courtfl |       'Sec-WebSocket-Version': 13,
+13|courtfl |       'Sec-WebSocket-Key': 'mmeN2L3oSXep3OR031fv5Q==',
+13|courtfl |       Connection: 'Upgrade',
+13|courtfl |       Upgrade: 'websocket',
+13|courtfl |       'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits'
+13|courtfl |     }
+13|courtfl |   }
+13|courtfl | ]
+13|courtfl | 6:53:27 PM [express] serving on port 4000
+13|courtfl | 6:53:27 PM [express] [Timeout Processor] Error: Hostname/IP does not match certificate's altnames: Host: localhost. is not in the cert's altnames: DNS:loki.record.watch, DNS:www.loki.record.watch
+
+root@srv735734:/var/www/courtflow# ls -la node_modules/@google-cloud 2>/dev/null && echo "❌ GOOGLE CLOUD TODAVÍA INSTALADO" || echo "✅ Google Cloud eliminado"✅ Google Cloud eliminado
+root@srv735734:/var/www/courtflow# ls -la dist/index.js
+-rw-r--r-- 1 root root 172981 Oct 22 18:53 dist/index.js
+root@srv735734:/var/www/courtflow# stat dist/index.js | grep Modify
+Modify: 2025-10-22 18:53:22.277091134 -0600
+root@srv735734:/var/www/courtflow# cat package.json | grep -i "google\|uppy"
+root@srv735734:/var/www/courtflow# pm2 stop courtflow
+[PM2] Applying action stopProcessId on app [courtflow](ids: [ 13 ])
+[PM2] [courtflow](13) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 72.0mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 71.9mb   │
+│ 1  │ Record             │ fork     │ 0    │ online    │ 0%       │ 71.8mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 71.7mb   │
+│ 13 │ courtflow          │ fork     │ 2    │ stopped   │ 0%       │ 0b       │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 72.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# pm2 delete courtflow
+[PM2] Applying action deleteProcessId on app [courtflow](ids: [ 13 ])
+[PM2] [courtflow](13) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 72.0mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 71.9mb   │
+│ 1  │ Record             │ fork     │ 0    │ online    │ 0%       │ 71.8mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 71.7mb   │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 72.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# rm -rf dist/ node_modules/ package-lock.json .npm
+root@srv735734:/var/www/courtflow# npm cache clean --force
+npm warn using --force Recommended protections disabled.
+root@srv735734:/var/www/courtflow# npm install
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+
+added 532 packages, and audited 533 packages in 1m
+
+67 packages are looking for funding
+  run `npm fund` for details
+
+6 vulnerabilities (5 moderate, 1 high)
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+root@srv735734:/var/www/courtflow# npm run build 2>&1 | tail -20  # Ver si hay errores
+vite v5.4.21 building for production...
+transforming...
+✓ 2787 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                                                      1.95 kB │ gzip:   0.74 kB
+../dist/public/assets/_LogosCOURTFLOW  sin fondo_1760480356184-CuWp6qNT.png  546.05 kB
+../dist/public/assets/_Logos JC (Court Flow)_1759964500350-Bl85Zqk5.png      754.31 kB
+../dist/public/assets/index-DSMhEOwe.css                                      74.02 kB │ gzip:  13.24 kB
+../dist/public/assets/index-DBRD3Mse.js                                      830.97 kB │ gzip: 231.98 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.07s
+
+  dist/index.js  168.9kb
+
+⚡ Done in 18ms
+root@srv735734:/var/www/courtflow# pm2 start ecosystem.config.cjs
+[dotenv@17.2.3] injecting env (11) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[PM2][WARN] Applications courtflow not running, starting...
+[PM2] App [courtflow] launched (1 instances)
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 70.1mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 70.0mb   │
+│ 1  │ Record             │ fork     │ 0    │ online    │ 0%       │ 69.9mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 69.8mb   │
+│ 14 │ courtflow          │ fork     │ 0    │ online    │ 0%       │ 13.1mb   │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 70.2mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# pm2 logs courtflow --lines 20 --nostream
+[TAILING] Tailing last 20 lines for [courtflow] process (change the value with --lines option)
+/var/log/courtflow-error-14.log last 20 lines:
+/var/log/courtflow-out-14.log last 20 lines:
+14|courtfl |     hostname: undefined,
+14|courtfl |     protocol: undefined,
+14|courtfl |     timeout: undefined,
+14|courtfl |     method: 'GET',
+14|courtfl |     host: 'localhost',
+14|courtfl |     path: '/v2',
+14|courtfl |     port: 443,
+14|courtfl |     createConnection: [Function: tlsConnect],
+14|courtfl |     defaultPort: 443,
+14|courtfl |     headers: {
+14|courtfl |       'Sec-WebSocket-Version': 13,
+14|courtfl |       'Sec-WebSocket-Key': 'TssdjpkED8aFtiVP8ohJrQ==',
+14|courtfl |       Connection: 'Upgrade',
+14|courtfl |       Upgrade: 'websocket',
+14|courtfl |       'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits'
+14|courtfl |     }
+14|courtfl |   }
+14|courtfl | ]
+14|courtfl | 7:00:38 PM [express] serving on port 4000
+14|courtfl | 7:00:38 PM [express] [Timeout Processor] Error: Hostname/IP does not match certificate's altnames: Host: localhost. is not in the cert's altnames: DNS:loki.record.watch, DNS:www.loki.record.watch
+
+root@srv735734:/var/www/courtflow# 
