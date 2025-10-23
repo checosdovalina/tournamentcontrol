@@ -287,7 +287,7 @@ export default function Display() {
           {(tournament?.clubLogoUrl || tournament?.systemLogoUrl) && (
             <div className="flex items-center space-x-4">
               {tournament?.clubLogoUrl && (
-                <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-16 w-auto object-contain" />
+                <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-24 w-auto object-contain" />
               )}
               {tournament?.systemLogoUrl && (
                 <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-16 w-auto object-contain" />
