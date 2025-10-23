@@ -48,21 +48,12 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
         const matchDateTime = combineDateTimeInTimezone(matchDay, match.plannedTime, timezone);
         const timeoutThreshold = new Date(matchDateTime.getTime() + TOLERANCE_MINUTES * 60 * 1000);
         
-        // Skip if match was created RECENTLY after its timeout period (retroactive scheduling)
-        // This prevents immediate cancellation when scheduling past matches
-        // But we only skip if created within 2 hours of the timeout - older matches should be processed
+        // Skip ALL matches created after their timeout period (retroactive scheduling)
+        // This prevents ANY timeout processing for retroactively scheduled past matches
         const matchCreatedAt = typeof match.createdAt === 'string' ? new Date(match.createdAt) : match.createdAt;
         if (matchCreatedAt && matchCreatedAt >= timeoutThreshold) {
-          const timeSinceTimeout = matchCreatedAt.getTime() - timeoutThreshold.getTime();
-          const twoHoursInMs = 2 * 60 * 60 * 1000;
-          
-          // Only skip if created within 2 hours after the timeout
-          if (timeSinceTimeout <= twoHoursInMs) {
-            log(`[Timeout Processor] Match ${match.id}: SKIPPED - recently created after timeout (created=${formatInTimezone(matchCreatedAt, timezone)}, timeout=${formatInTimezone(timeoutThreshold, timezone)}, diff=${Math.round(timeSinceTimeout / 1000 / 60)}min)`);
-            continue;
-          } else {
-            log(`[Timeout Processor] Match ${match.id}: Processing despite creation after timeout - too old to skip (created=${formatInTimezone(matchCreatedAt, timezone)}, timeout=${formatInTimezone(timeoutThreshold, timezone)}, diff=${Math.round(timeSinceTimeout / 1000 / 60 / 60)}hrs)`);
-          }
+          log(`[Timeout Processor] Match ${match.id}: SKIPPED - created after timeout (created=${formatInTimezone(matchCreatedAt, timezone)}, timeout=${formatInTimezone(timeoutThreshold, timezone)})`);
+          continue;
         }
         
         // Debug logging with timezone-aware formatting

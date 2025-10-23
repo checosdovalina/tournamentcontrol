@@ -1,0 +1,85 @@
+
+scheduled-matches.tsx:1023 Court Cancha - ABS: available=true, canPreAssign=false, assignedToOther=true 
+{id: 'b2980af7-caaf-493e-a865-0ae4bf720956', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', day: '2025-10-19T12:00:00.000Z', plannedTime: '18:05', pair1Id: 'a54ba093-a471-4c7b-a67e-0ac251f84983', …}
+scheduled-matches.tsx:1023 Court Cancha - MAJA: available=true, canPreAssign=false, assignedToOther=true 
+{id: '3a75a8ea-1cd1-4bb7-891f-fad3a25b1472', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', day: '2025-10-20T00:00:00.000Z', plannedTime: '23:08', pair1Id: '5b448bfd-f5dd-4245-a2a5-a910449c8d77', …}
+scheduled-matches.tsx:1023 Court Cancha - NORVERT: available=true, canPreAssign=false, assignedToOther=true 
+{id: 'a646f11d-9853-4ae6-a77b-9ad0a0e1544e', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', day: '2025-10-19T00:00:00.000Z', plannedTime: '18:00', pair1Id: 'f3de2fa1-fbbe-4e66-ae52-2fcccb7f2110', …}
+scheduled-matches.tsx:1023 Court Cancha - LALA: available=true, canPreAssign=false, assignedToOther=true 
+{id: '6b955196-1a1c-4491-b6b4-b256f2633158', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', day: '2025-10-20T00:00:00.000Z', plannedTime: '23:10', pair1Id: '04f13287-878b-4782-90b7-bd476c01665d', …}
+scheduled-matches.tsx:1023 Court Cancha - ALFA GAMA: available=false, canPreAssign=true, assignedToOther=true 
+{id: '215dc148-78aa-46a5-9be2-19f616aae642', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', day: '2025-10-19T00:00:00.000Z', plannedTime: '18:00', pair1Id: 'b4e3328d-ed73-4fcd-a12b-e21ccef36aed', …}
+scheduled-matches.tsx:1023 Court Cancha - PLAYDOIT: available=false, canPreAssign=true, assignedToOther=true 
+{id: '8c854fa0-b8d1-4a15-916d-cb568eb38d6a', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', day: '2025-10-20T00:00:00.000Z', plannedTime: '22:00', pair1Id: '1a6f12d6-fafa-473c-9da4-5c54826c741c', …}
+category
+: 
+{id: 'd4d4d2a5-f96f-45a7-8c18-cc47e3a6c764', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', name: 'Segunda Varonil', description: '', isActive: true, …}
+categoryId
+: 
+"d4d4d2a5-f96f-45a7-8c18-cc47e3a6c764"
+court
+: 
+{id: '4c9f478e-4ce6-41b0-b1e5-734aa044262d', name: 'Cancha - PLAYDOIT', clubId: '06caf906-c816-4c52-9fc2-8254d36cffe3', isAvailable: false, preAssignedScheduledMatchId: null, …}
+courtId
+: 
+"4c9f478e-4ce6-41b0-b1e5-734aa044262d"
+createdAt
+: 
+"2025-10-19T23:29:18.321Z"
+day
+: 
+"2025-10-20T00:00:00.000Z"
+defaultWinnerPairId
+: 
+"1a6f12d6-fafa-473c-9da4-5c54826c741c"
+format
+: 
+"best_of_3"
+id
+: 
+"8c854fa0-b8d1-4a15-916d-cb568eb38d6a"
+matchId
+: 
+"b52f0b05-7dbb-4d70-8c23-fbc776cb10ac"
+notes
+: 
+null
+outcome
+: 
+"default"
+outcomeReason
+: 
+"PARTIDO GANADO POR DEFAULT (DQF)"
+pair1
+: 
+{id: '1a6f12d6-fafa-473c-9da4-5c54826c741c', player1Id: '6a54dfdd-0c30-4475-b103-3f3245b8406d', player2Id: 'b33d61ed-10bd-470f-9452-e0f93ac76c3b', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', categoryId: 'd4d4d2a5-f96f-45a7-8c18-cc47e3a6c764', …}
+pair1Id
+: 
+"1a6f12d6-fafa-473c-9da4-5c54826c741c"
+pair2
+: 
+{id: '5f49cd4d-f639-4c99-bcfd-e984959acd99', player1Id: 'd57f5404-8d55-4030-9897-0a74598ffb66', player2Id: '099678ad-c39c-43c6-827e-23df254479d6', tournamentId: 'd5017921-d966-48e6-a0ac-b7c9cb95050d', categoryId: 'd4d4d2a5-f96f-45a7-8c18-cc47e3a6c764', …}
+pair2Id
+: 
+"5f49cd4d-f639-4c99-bcfd-e984959acd99"
+pendingDqf
+: 
+false
+plannedTime
+: 
+"22:00"
+players
+: 
+(4) [{…}, {…}, {…}, {…}]
+preAssignedAt
+: 
+null
+status
+: 
+"completed"
+tournamentId
+: 
+"d5017921-d966-48e6-a0ac-b7c9cb95050d"
+[[Prototype]]
+: 
+Object

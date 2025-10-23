@@ -1004,10 +1004,11 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                 let matchDuration = 0;
                                 
                                 // Check if court is assigned to another scheduled match (excluding current match)
-                                // Only block if court has active match or is pre-assigned (not old assigned/ready matches)
+                                // Only block if court has active match or is pre-assigned (exclude completed matches)
                                 const assignedToOther = allTournamentMatches?.find((sm: ScheduledMatchWithDetails) => 
                                   sm.id !== match.id && 
                                   sm.courtId === court.id && 
+                                  sm.status !== 'completed' && // Don't block for completed matches
                                   (sm.matchId !== null || sm.preAssignedAt !== null)
                                 );
                                 
@@ -1018,9 +1019,6 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
                                     canPreAssign = matchDuration >= 40;
                                   }
                                 }
-
-                                // Debug logging
-                                console.log(`Court ${court.name}: available=${isAvailable}, canPreAssign=${canPreAssign}, assignedToOther=${!!assignedToOther}`, assignedToOther);
 
                                 // Only show available courts that are not assigned to other matches, or courts that can be pre-assigned
                                 if ((!isAvailable && !canPreAssign) || assignedToOther) return null;
