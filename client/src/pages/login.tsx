@@ -93,14 +93,6 @@ export default function Login() {
               {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
             </Button>
           </form>
-          
-          <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-            <h4 className="text-sm font-medium mb-2">Credenciales de prueba:</h4>
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p><strong>Admin:</strong> admin / admin123</p>
-              <p><strong>Escribano:</strong> escribano / escribano123</p>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
