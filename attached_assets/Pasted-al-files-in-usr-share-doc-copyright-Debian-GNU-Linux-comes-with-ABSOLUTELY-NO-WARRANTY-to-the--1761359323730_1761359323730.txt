@@ -1,0 +1,60 @@
+al files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Fri Oct 24 20:21:03 2025 from 177.242.1.192
+root@srv735734:~# cd /var/www/courtflow
+root@srv735734:/var/www/courtflow# pm2 logs courtflow --lines 50
+[TAILING] Tailing last 50 lines for [courtflow] process (change the value with --lines option)
+/var/log/courtflow-error-15.log last 50 lines:
+/var/log/courtflow-out-15.log last 50 lines:
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 6433d126-ebaa-45ca-9402-099f5bf6a052 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 6433d126-ebaa-45ca-9402-099f5bf6a052: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match a4962c4e-aba3-499a-adde-d4e1a8159d66 [America/Mexico_City]: planned=24-10-2025, 18:00:00, timeout=24-10-2025, 18:15:00, now=24-10-2025, 20:26:38, overdue=true
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match a4962c4e-aba3-499a-adde-d4e1a8159d66 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match a4962c4e-aba3-499a-adde-d4e1a8159d66: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 47f0cb21-ee61-4124-970c-8e4df938c7e8 [America/Mexico_City]: planned=24-10-2025, 18:00:00, timeout=24-10-2025, 18:15:00, now=24-10-2025, 20:26:38, overdue=true
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 47f0cb21-ee61-4124-970c-8e4df938c7e8 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 47f0cb21-ee61-4124-970c-8e4df938c7e8: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 29c4070c-cbb0-474b-b995-a32964ed2550 [America/Mexico_City]: planned=24-10-2025, 18:00:00, timeout=24-10-2025, 18:15:00, now=24-10-2025, 20:26:38, overdue=true
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 29c4070c-cbb0-474b-b995-a32964ed2550 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 29c4070c-cbb0-474b-b995-a32964ed2550: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 7754380f-9f36-4660-abd0-bca5a47baf92 [America/Mexico_City]: planned=24-10-2025, 19:00:00, timeout=24-10-2025, 19:15:00, now=24-10-2025, 20:26:38, overdue=true
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 7754380f-9f36-4660-abd0-bca5a47baf92 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 7754380f-9f36-4660-abd0-bca5a47baf92: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 0088927b-61f6-445a-8141-bbc8176622ef [America/Mexico_City]: planned=24-10-2025, 19:30:00, timeout=24-10-2025, 19:45:00, now=24-10-2025, 20:26:38, overdue=true
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 0088927b-61f6-445a-8141-bbc8176622ef check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 0088927b-61f6-445a-8141-bbc8176622ef: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 19f6b10d-0840-4c7f-81f7-efcda9dedd8d [America/Mexico_City]: planned=24-10-2025, 19:30:00, timeout=24-10-2025, 19:45:00, now=24-10-2025, 20:26:38, overdue=true
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 19f6b10d-0840-4c7f-81f7-efcda9dedd8d check-ins: pair1=2/2 (confirmed=true), pair2=2/2 (confirmed=true)
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 19f6b10d-0840-4c7f-81f7-efcda9dedd8d: CASE 3 - Both pairs present, no action needed
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match c1e4c434-974a-47e2-b367-f01bb1a005d5 [America/Mexico_City]: planned=24-10-2025, 20:30:00, timeout=24-10-2025, 20:45:00, now=24-10-2025, 20:26:38, overdue=false
+15|courtfl | 8:26:38 PM [express] [Timeout Processor] Match 5116cf0a-b397-43e7-9b96-ab23badee1d1 [America/Mexico_City]: planned=24-10-2025, 22:30:00, timeout=24-10-2025, 22:45:00, now=24-10-2025, 20:26:38, overdue=false
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Found 13 total matches to evaluate
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 0f5bbbe3-0479-4620-b316-c5ada9f25684 [America/Mexico_City]: planned=24-10-2025, 17:00:00, timeout=24-10-2025, 17:15:00, now=24-10-2025, 20:27:38, overdue=true
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 0f5bbbe3-0479-4620-b316-c5ada9f25684 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 0f5bbbe3-0479-4620-b316-c5ada9f25684: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 6433d126-ebaa-45ca-9402-099f5bf6a052 [America/Mexico_City]: planned=24-10-2025, 18:00:00, timeout=24-10-2025, 18:15:00, now=24-10-2025, 20:27:38, overdue=true
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 6433d126-ebaa-45ca-9402-099f5bf6a052 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 6433d126-ebaa-45ca-9402-099f5bf6a052: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match a4962c4e-aba3-499a-adde-d4e1a8159d66 [America/Mexico_City]: planned=24-10-2025, 18:00:00, timeout=24-10-2025, 18:15:00, now=24-10-2025, 20:27:38, overdue=true
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match a4962c4e-aba3-499a-adde-d4e1a8159d66 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match a4962c4e-aba3-499a-adde-d4e1a8159d66: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 47f0cb21-ee61-4124-970c-8e4df938c7e8 [America/Mexico_City]: planned=24-10-2025, 18:00:00, timeout=24-10-2025, 18:15:00, now=24-10-2025, 20:27:38, overdue=true
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 47f0cb21-ee61-4124-970c-8e4df938c7e8 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 47f0cb21-ee61-4124-970c-8e4df938c7e8: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 29c4070c-cbb0-474b-b995-a32964ed2550 [America/Mexico_City]: planned=24-10-2025, 18:00:00, timeout=24-10-2025, 18:15:00, now=24-10-2025, 20:27:38, overdue=true
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 29c4070c-cbb0-474b-b995-a32964ed2550 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 29c4070c-cbb0-474b-b995-a32964ed2550: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 7754380f-9f36-4660-abd0-bca5a47baf92 [America/Mexico_City]: planned=24-10-2025, 19:00:00, timeout=24-10-2025, 19:15:00, now=24-10-2025, 20:27:38, overdue=true
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 7754380f-9f36-4660-abd0-bca5a47baf92 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 7754380f-9f36-4660-abd0-bca5a47baf92: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 0088927b-61f6-445a-8141-bbc8176622ef [America/Mexico_City]: planned=24-10-2025, 19:30:00, timeout=24-10-2025, 19:45:00, now=24-10-2025, 20:27:38, overdue=true
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 0088927b-61f6-445a-8141-bbc8176622ef check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 0088927b-61f6-445a-8141-bbc8176622ef: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 19f6b10d-0840-4c7f-81f7-efcda9dedd8d [America/Mexico_City]: planned=24-10-2025, 19:30:00, timeout=24-10-2025, 19:45:00, now=24-10-2025, 20:27:38, overdue=true
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 19f6b10d-0840-4c7f-81f7-efcda9dedd8d check-ins: pair1=2/2 (confirmed=true), pair2=2/2 (confirmed=true)
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 19f6b10d-0840-4c7f-81f7-efcda9dedd8d: CASE 3 - Both pairs present, no action needed
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match c1e4c434-974a-47e2-b367-f01bb1a005d5 [America/Mexico_City]: planned=24-10-2025, 20:30:00, timeout=24-10-2025, 20:45:00, now=24-10-2025, 20:27:38, overdue=false
+15|courtfl | 8:27:38 PM [express] [Timeout Processor] Match 5116cf0a-b397-43e7-9b96-ab23badee1d1 [America/Mexico_City]: planned=24-10-2025, 22:30:00, timeout=24-10-2025, 22:45:00, now=24-10-2025, 20:27:38, overdue=false
