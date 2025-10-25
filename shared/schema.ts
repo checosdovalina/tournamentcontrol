@@ -30,6 +30,8 @@ export const tournaments = pgTable("tournaments", {
   clubLogoUrl: text("club_logo_url"),
   systemLogoUrl: text("system_logo_url"),
   timezone: text("timezone").notNull().default("America/Santiago"), // IANA timezone string
+  sponsorRotationSpeed: integer("sponsor_rotation_speed").default(20), // Speed in seconds
+  sponsorRotationEnabled: boolean("sponsor_rotation_enabled").default(true), // Enable/disable rotation
   config: json("config"),
   createdAt: timestamp("created_at").defaultNow(),
 });

@@ -4,9 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { insertTournamentSchema } from "@shared/schema";
@@ -38,6 +40,8 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
       endDate: "",
       isActive: true,
       timezone: "America/Santiago",
+      sponsorRotationSpeed: 20,
+      sponsorRotationEnabled: true,
       tournamentLogoUrl: "",
       clubLogoUrl: "",
       systemLogoUrl: "",
@@ -54,6 +58,8 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
         endDate: tournament?.endDate ? new Date(tournament.endDate).toISOString().split('T')[0] : "",
         isActive: tournament?.isActive ?? true,
         timezone: tournament?.timezone || "America/Santiago",
+        sponsorRotationSpeed: tournament?.sponsorRotationSpeed ?? 20,
+        sponsorRotationEnabled: tournament?.sponsorRotationEnabled ?? true,
         tournamentLogoUrl: tournament?.tournamentLogoUrl || "",
         clubLogoUrl: tournament?.clubLogoUrl || "",
         systemLogoUrl: tournament?.systemLogoUrl || "",
@@ -175,6 +181,53 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
                       <SelectItem value="America/Los_Angeles">EE.UU. Oeste - UTC-8/-7</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sponsorRotationEnabled"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Rotativo de Patrocinadores</FormLabel>
+                    <FormDescription>
+                      Activa el desplazamiento automático de logos de patrocinadores en las pantallas
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      data-testid="switch-sponsor-rotation"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sponsorRotationSpeed"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Velocidad de Rotación: {field.value}s</FormLabel>
+                  <FormControl>
+                    <Slider
+                      min={5}
+                      max={60}
+                      step={5}
+                      value={[field.value || 20]}
+                      onValueChange={(vals) => field.onChange(vals[0])}
+                      className="w-full"
+                      data-testid="slider-rotation-speed"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Ajusta qué tan rápido se desplazan los logos (5s = muy rápido, 60s = muy lento)
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
