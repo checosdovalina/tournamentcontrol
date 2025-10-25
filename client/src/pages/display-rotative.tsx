@@ -20,6 +20,8 @@ export default function DisplayRotative() {
     tournamentLogoUrl?: string;
     clubLogoUrl?: string;
     systemLogoUrl?: string;
+    sponsorRotationSpeed?: number;
+    sponsorRotationEnabled?: boolean;
   }>({
     queryKey: ["/api/tournament"],
   });
@@ -253,7 +255,14 @@ export default function DisplayRotative() {
         <div className="px-8 py-4 bg-[#1F2937] border-t border-[#374151]">
           {activeBanners.length > 0 ? (
             <div className="relative w-full overflow-hidden">
-              <div className="inline-flex w-max gap-8" style={{ animation: 'marquee 20s linear infinite' }}>
+              <div 
+                className="inline-flex w-max gap-8" 
+                style={{ 
+                  animation: tournament?.sponsorRotationEnabled !== false 
+                    ? `marquee ${tournament?.sponsorRotationSpeed ?? 20}s linear infinite` 
+                    : 'none' 
+                }}
+              >
                 {[...activeBanners, ...activeBanners, ...activeBanners].map((banner: any, idx: number) => (
                   <div key={`sponsor-${banner.id}-${idx}`} className="h-10 flex items-center flex-shrink-0">
                     <img 
