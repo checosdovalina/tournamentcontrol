@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { X, Clock, Users, Trophy, TrendingUp, Activity } from "lucide-react";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
+import { getTodayInTimezone } from "@/lib/utils";
 import courtflowLogoNew from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
 
 type ScreenType = 'current' | 'upcoming' | 'results' | 'advertisement';
@@ -20,6 +21,7 @@ export default function DisplayRotative() {
     tournamentLogoUrl?: string;
     clubLogoUrl?: string;
     systemLogoUrl?: string;
+    timezone?: string;
     sponsorRotationSpeed?: number;
     sponsorRotationEnabled?: boolean;
   }>({
@@ -37,8 +39,8 @@ export default function DisplayRotative() {
     queryKey: ["/api/scheduled-matches/today", tournament?.id],
     queryFn: async () => {
       if (!tournament?.id) return [];
-      const now = new Date();
-      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      // Use tournament's timezone to calculate "today" instead of browser's timezone
+      const today = getTodayInTimezone(tournament.timezone || 'America/Mexico_City');
       const response = await fetch(`/api/scheduled-matches/day/${tournament.id}?day=${today}`);
       return response.json();
     },
