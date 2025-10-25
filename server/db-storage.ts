@@ -782,11 +782,11 @@ export class DatabaseStorage implements IStorage {
     return matchesWithDetails;
   }
 
-  async getScheduledMatchesByDay(tournamentId: string, day: Date): Promise<ScheduledMatchWithDetails[]> {
-    const dayStart = new Date(day);
-    dayStart.setHours(0, 0, 0, 0);
-    const dayEnd = new Date(day);
-    dayEnd.setHours(23, 59, 59, 999);
+  async getScheduledMatchesByDay(tournamentId: string, day: Date | string): Promise<ScheduledMatchWithDetails[]> {
+    // Convert to YYYY-MM-DD string format to avoid timezone issues
+    const dayString = typeof day === 'string' 
+      ? day.split('T')[0]  // If already string, extract date part
+      : day.toISOString().split('T')[0];  // Convert Date to YYYY-MM-DD
 
     const matches = await db
       .select()
@@ -794,7 +794,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(scheduledMatches.tournamentId, tournamentId),
-          sql`DATE(${scheduledMatches.day}) = DATE(${dayStart})`
+          sql`DATE(${scheduledMatches.day}) = ${dayString}`
         )
       )
       .orderBy(scheduledMatches.plannedTime);
