@@ -1,0 +1,54 @@
+root@srv735734:/var/www/courtflow# pm2 restart courtflow
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [courtflow](ids: [ 15 ])
+[PM2] [courtflow](15) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 61.8mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 62.3mb   │
+│ 1  │ Record             │ fork     │ 2    │ online    │ 0%       │ 75.7mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 61.5mb   │
+│ 15 │ courtflow          │ fork     │ 10   │ online    │ 0%       │ 20.0mb   │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 62.6mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# cd /var/www/courtflow
+sed -i 's/animation: scroll-vertical 30s linear infinite;/animation: scroll-vertical 120s linear infinite;/' client/src/index.css
+root@srv735734:/var/www/courtflow# cat > client/src/lib/utils.ts << 'EOF'
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+/**
+ * Get today's date in YYYY-MM-DD format for a specific timezone
+ * This ensures the display shows matches from "today" in the tournament's timezone,
+ * not the browser's timezone
+ */
+export function getTodayInTimezone(timezone: string): string {
+  const now = new Date();
+  
+  // Use Intl.DateTimeFormat to get the date parts in the tournament's timezone
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+EOFeturn `${year}-${month}-${day}`;e === 'day')?.value;lue;
+root@srv735734:/var/www/courtflow# # Verificar que la función getTodayInTimezone existe
+grep -n "getTodayInTimezone" client/src/lib/utils.ts
+
+# Verificar la velocidad del scroll
+grep -n "scroll-vertical.*linear" client/src/index.css
+13:export function getTodayInTimezone(timezone: string): string {
+184:  animation: scroll-vertical 120s linear infinite;
+root@srv735734:/var/www/courtflow# grep -n "getTodayInTimezone" client/src/pages/display.tsx
+grep -n "getTodayInTimezone" client/src/pages/display-rotative.tsx
+7:import { getTodayInTimezone } from "@/lib/utils";
+43:      const today = getTodayInTimezone(tournament.timezone || 'America/Mexico_City');
+7:import { getTodayInTimezone } from "@/lib/utils";
+43:      const today = getTodayInTimezone(tournament.timezone || 'America/Mexico_City');
+root@srv735734:/var/www/courtflow# 
