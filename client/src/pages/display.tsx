@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { X, Volleyball } from "lucide-react";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
-import { getTodayInTimezone } from "@/lib/utils";
+import { getTodayInTimezone, getCurrentDayTimeInTimezone } from "@/lib/utils";
 import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
 import courtflowLogoNew from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
 
@@ -101,16 +101,35 @@ export default function Display() {
   useWebSocket();
 
   // Create a time key that changes only when day or minute changes (not every second)
+  // Uses tournament timezone instead of browser timezone when available
   const timeKey = useMemo(() => {
-    const now = currentTime;
-    return `${now.getDay()}-${now.getHours()}-${now.getMinutes()}`;
-  }, [currentTime]);
+    if (tournament?.timezone) {
+      const { day, hours, minutes } = getCurrentDayTimeInTimezone(tournament.timezone);
+      return `${day}-${hours}-${minutes}`;
+    } else {
+      // Fallback to browser time if tournament timezone not configured
+      const now = currentTime;
+      return `${now.getDay()}-${now.getHours()}-${now.getMinutes()}`;
+    }
+  }, [currentTime, tournament?.timezone]);
 
   // Filter active advertisements based on day and time - Updates only when advertisements or time (day/minute) changes
+  // Uses tournament timezone when available, falls back to browser timezone for backward compatibility
   const activeAds = useMemo(() => {
-    const now = new Date(); // Get fresh time for filtering
-    const currentDay = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][now.getDay()];
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    let currentDay: string;
+    let currentMinutes: number;
+    
+    if (tournament?.timezone) {
+      // Use tournament timezone
+      const { day, totalMinutes } = getCurrentDayTimeInTimezone(tournament.timezone);
+      currentDay = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][day];
+      currentMinutes = totalMinutes;
+    } else {
+      // Fallback to browser time if tournament timezone not configured
+      const now = new Date();
+      currentDay = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][now.getDay()];
+      currentMinutes = now.getHours() * 60 + now.getMinutes();
+    }
 
     return advertisements.filter((ad: any) => {
       if (!ad.isActive) return false;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { X, Clock, Users, Trophy, TrendingUp, Activity } from "lucide-react";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
-import { getTodayInTimezone } from "@/lib/utils";
+import { getTodayInTimezone, getCurrentDayTimeInTimezone } from "@/lib/utils";
 import courtflowLogoNew from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
 
 type ScreenType = 'current' | 'upcoming' | 'results' | 'advertisement';
@@ -87,16 +87,33 @@ export default function DisplayRotative() {
 
   useWebSocket();
 
-  // Time key for filtering ads
+  // Time key for filtering ads - Uses tournament timezone when available, falls back to browser timezone
   const timeKey = useMemo(() => {
-    const now = currentTime;
-    return `${now.getDay()}-${now.getHours()}-${now.getMinutes()}`;
-  }, [currentTime]);
+    if (tournament?.timezone) {
+      const { day, hours, minutes } = getCurrentDayTimeInTimezone(tournament.timezone);
+      return `${day}-${hours}-${minutes}`;
+    } else {
+      // Fallback to browser time if tournament timezone not configured
+      const now = currentTime;
+      return `${now.getDay()}-${now.getHours()}-${now.getMinutes()}`;
+    }
+  }, [currentTime, tournament?.timezone]);
 
   const activeAds = useMemo(() => {
-    const now = new Date();
-    const currentDay = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][now.getDay()];
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    let currentDay: string;
+    let currentMinutes: number;
+    
+    if (tournament?.timezone) {
+      // Use tournament timezone
+      const { day, totalMinutes } = getCurrentDayTimeInTimezone(tournament.timezone);
+      currentDay = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][day];
+      currentMinutes = totalMinutes;
+    } else {
+      // Fallback to browser time if tournament timezone not configured
+      const now = new Date();
+      currentDay = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][now.getDay()];
+      currentMinutes = now.getHours() * 60 + now.getMinutes();
+    }
 
     return advertisements.filter((ad: any) => {
       if (!ad.isActive) return false;
