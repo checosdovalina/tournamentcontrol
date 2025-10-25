@@ -107,7 +107,7 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" data-testid="modal-create-tournament">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" data-testid="modal-create-tournament">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</DialogTitle>
         </DialogHeader>
