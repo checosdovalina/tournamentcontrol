@@ -1,0 +1,187 @@
+-lines option)
+/var/log/courtflow-error-15.log last 20 lines:
+/var/log/courtflow-out-15.log last 20 lines:
+15|courtfl | eout=25-10-2025, 13:30:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match cb615fe5-df2b-4661-9713-7fda89253ca6 [America/Mexico_City]: planned=25-10-2025, 13:15:00, timeout=25-10-2025, 13:30:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 23270908-d980-4e7c-a1c3-e2aaecff5af6 [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match cb615149-1fdd-42aa-8866-8e0805d635f6 [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 333c1299-fbbb-405d-b169-277ce5ebf63a [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 3e493182-2df5-4280-aeb9-af1c93d81c01 [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 79136169-eda1-4e52-b02e-af0a301e842d [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 9c2d287d-d659-479c-a3db-ce063f264bec [America/Mexico_City]: planned=25-10-2025, 17:00:00, timeout=25-10-2025, 17:15:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 59db40e2-3190-41c7-ad10-8e0ce631f9df [America/Mexico_City]: planned=25-10-2025, 17:00:00, timeout=25-10-2025, 17:15:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 2ee433da-cea9-4023-9140-7a80c31328b2 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match f2b18ce5-4864-4abb-9a70-85a887c4c783 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 1c953f02-2535-4d16-a67d-b3f944f88b48 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 04cd5832-0e23-4834-afc9-bed8bc519cef [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match e753ddfc-4e0e-4717-a078-c41fa45ea706 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 9a97937c-0d5e-4686-83d6-2665ab6b1f2b [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match feafac3f-cad4-4218-83dc-3f8574a095ab [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 6c647770-2912-4665-90ef-c5f3c8fa4d95 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match a93f93eb-a956-486c-8cf6-6ca28fc57ca4 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match 9e320b6b-d0df-4671-83ac-27347e16aaf7 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:10:09, overdue=false
+15|courtfl | 2:10:09 AM [express] [Timeout Processor] Match d97febbf-42c4-484e-8349-ae17cd52f171 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:10:09, overdue=false
+
+c15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Running timeout check...
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Found 50 total matches to evaluate
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 250e52d5-6678-4f33-98f9-186ae8db79f4 [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match af31074d-eb43-4f9f-9b64-1aac2c477727 [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match aebcf373-0dfb-428d-aad9-ff4891e50210 [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 7ea0bb4b-abae-4768-a449-1d40e85c938a [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 195d702c-21ce-423c-a676-93caac56ed0f [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 866e447e-b413-484c-aec0-058fdeafdab7 [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match e0d8e5d8-f38e-49bd-9d25-481c2adfd80f [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match ed2a1397-e3c6-44b8-a2fe-0b3c49dde530 [America/Mexico_City]: planned=25-10-2025, 08:15:00, timeout=25-10-2025, 08:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 0af8153a-5a58-42d9-a36a-4eaebbe9dff9 [America/Mexico_City]: planned=25-10-2025, 08:15:00, timeout=25-10-2025, 08:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 529230a1-0d46-4017-a702-6b504150c404 [America/Mexico_City]: planned=25-10-2025, 08:15:00, timeout=25-10-2025, 08:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 81783204-43a7-4a1b-97d5-8a316e6bda79 [America/Mexico_City]: planned=25-10-2025, 08:15:00, timeout=25-10-2025, 08:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match a361c050-f49c-4e46-b0dd-4a4ccab06be6 [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 8bb6fc9c-8ece-406d-9de4-9c80d312c474 [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 82bbae6b-ff64-457e-8280-7ee5d95620be [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match faa95473-ab60-46e5-901e-5c0b220bfdb9 [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 25444c09-ad41-4ef9-af7a-ce8d6ff7a14d [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 9c1f9797-49be-4c1e-acad-98fef6db23ec [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match e143db51-7cde-4ec7-bc9a-7799385b9773 [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match a0a6cd10-e14f-4bfa-bfe0-f294c08e3cff [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match d47d5434-9de6-4627-80b7-45ea91a88a8b [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 4d42b6b5-2171-45b4-8994-e04b86c689e3 [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match f6c7cf59-a43a-47bf-a404-5e88eeba54ce [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 5254b1da-d1f3-4e82-b5b4-c39bf66aafcf [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match cf27f00b-8fcf-4373-b538-515182d7c1ed [America/Mexico_City]: planned=25-10-2025, 12:00:00, timeout=25-10-2025, 12:15:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 834a0af5-5cdb-40bc-90a0-6df08b06360f [America/Mexico_City]: planned=25-10-2025, 12:00:00, timeout=25-10-2025, 12:15:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 80ed9c57-9005-449a-a60f-fc39c9b858af [America/Mexico_City]: planned=25-10-2025, 12:00:00, timeout=25-10-2025, 12:15:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 0e4ba814-08c0-4582-83ec-12d1cce45b42 [America/Mexico_City]: planned=25-10-2025, 12:00:00, timeout=25-10-2025, 12:15:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match e83793c9-af66-4923-98e6-b75974c07d78 [America/Mexico_City]: planned=25-10-2025, 12:00:00, timeout=25-10-2025, 12:15:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match d9456a3e-e949-4ba1-8c20-80f0a3af5f59 [America/Mexico_City]: planned=25-10-2025, 13:15:00, timeout=25-10-2025, 13:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 0ad4fb25-66ce-4515-aee9-4982ef7c0642 [America/Mexico_City]: planned=25-10-2025, 13:15:00, timeout=25-10-2025, 13:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match f7329d13-08a3-420b-afe1-6f28bcf35448 [America/Mexico_City]: planned=25-10-2025, 13:15:00, timeout=25-10-2025, 13:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match cb615fe5-df2b-4661-9713-7fda89253ca6 [America/Mexico_City]: planned=25-10-2025, 13:15:00, timeout=25-10-2025, 13:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 23270908-d980-4e7c-a1c3-e2aaecff5af6 [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match cb615149-1fdd-42aa-8866-8e0805d635f6 [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 333c1299-fbbb-405d-b169-277ce5ebf63a [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 3e493182-2df5-4280-aeb9-af1c93d81c01 [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 79136169-eda1-4e52-b02e-af0a301e842d [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 9c2d287d-d659-479c-a3db-ce063f264bec [America/Mexico_City]: planned=25-10-2025, 17:00:00, timeout=25-10-2025, 17:15:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 59db40e2-3190-41c7-ad10-8e0ce631f9df [America/Mexico_City]: planned=25-10-2025, 17:00:00, timeout=25-10-2025, 17:15:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 2ee433da-cea9-4023-9140-7a80c31328b2 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match f2b18ce5-4864-4abb-9a70-85a887c4c783 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 1c953f02-2535-4d16-a67d-b3f944f88b48 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 04cd5832-0e23-4834-afc9-bed8bc519cef [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match e753ddfc-4e0e-4717-a078-c41fa45ea706 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 9a97937c-0d5e-4686-83d6-2665ab6b1f2b [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match feafac3f-cad4-4218-83dc-3f8574a095ab [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 6c647770-2912-4665-90ef-c5f3c8fa4d95 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match a93f93eb-a956-486c-8cf6-6ca28fc57ca4 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match 9e320b6b-d0df-4671-83ac-27347e16aaf7 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:11:09 AM [express] [Timeout Processor] Match d97febbf-42c4-484e-8349-ae17cd52f171 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:11:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Running timeout check...
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Found 50 total matches to evaluate
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 250e52d5-6678-4f33-98f9-186ae8db79f4 [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match af31074d-eb43-4f9f-9b64-1aac2c477727 [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match aebcf373-0dfb-428d-aad9-ff4891e50210 [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 7ea0bb4b-abae-4768-a449-1d40e85c938a [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 195d702c-21ce-423c-a676-93caac56ed0f [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 866e447e-b413-484c-aec0-058fdeafdab7 [America/Mexico_City]: planned=25-10-2025, 14:30:00, timeout=25-10-2025, 14:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match e0d8e5d8-f38e-49bd-9d25-481c2adfd80f [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match ed2a1397-e3c6-44b8-a2fe-0b3c49dde530 [America/Mexico_City]: planned=25-10-2025, 08:15:00, timeout=25-10-2025, 08:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 0af8153a-5a58-42d9-a36a-4eaebbe9dff9 [America/Mexico_City]: planned=25-10-2025, 08:15:00, timeout=25-10-2025, 08:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 529230a1-0d46-4017-a702-6b504150c404 [America/Mexico_City]: planned=25-10-2025, 08:15:00, timeout=25-10-2025, 08:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 81783204-43a7-4a1b-97d5-8a316e6bda79 [America/Mexico_City]: planned=25-10-2025, 08:15:00, timeout=25-10-2025, 08:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match a361c050-f49c-4e46-b0dd-4a4ccab06be6 [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 8bb6fc9c-8ece-406d-9de4-9c80d312c474 [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 82bbae6b-ff64-457e-8280-7ee5d95620be [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match faa95473-ab60-46e5-901e-5c0b220bfdb9 [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 25444c09-ad41-4ef9-af7a-ce8d6ff7a14d [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 9c1f9797-49be-4c1e-acad-98fef6db23ec [America/Mexico_City]: planned=25-10-2025, 09:30:00, timeout=25-10-2025, 09:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match e143db51-7cde-4ec7-bc9a-7799385b9773 [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match a0a6cd10-e14f-4bfa-bfe0-f294c08e3cff [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match d47d5434-9de6-4627-80b7-45ea91a88a8b [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 4d42b6b5-2171-45b4-8994-e04b86c689e3 [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match f6c7cf59-a43a-47bf-a404-5e88eeba54ce [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 5254b1da-d1f3-4e82-b5b4-c39bf66aafcf [America/Mexico_City]: planned=25-10-2025, 10:45:00, timeout=25-10-2025, 11:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match cf27f00b-8fcf-4373-b538-515182d7c1ed [America/Mexico_City]: planned=25-10-2025, 12:00:00, timeout=25-10-2025, 12:15:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 834a0af5-5cdb-40bc-90a0-6df08b06360f [America/Mexico_City]: planned=25-10-2025, 12:00:00, timeout=25-10-2025, 12:15:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 80ed9c57-9005-449a-a60f-fc39c9b858af [America/Mexico_City]: planned=25-10-2025, 12:00:00, timeout=25-10-2025, 12:15:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 0e4ba814-08c0-4582-83ec-12d1cce45b42 [America/Mexico_City]: planned=25-10-2025, 12:00:00, timeout=25-10-2025, 12:15:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match e83793c9-af66-4923-98e6-b75974c07d78 [America/Mexico_City]: planned=25-10-2025, 12:00:00, timeout=25-10-2025, 12:15:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match d9456a3e-e949-4ba1-8c20-80f0a3af5f59 [America/Mexico_City]: planned=25-10-2025, 13:15:00, timeout=25-10-2025, 13:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 0ad4fb25-66ce-4515-aee9-4982ef7c0642 [America/Mexico_City]: planned=25-10-2025, 13:15:00, timeout=25-10-2025, 13:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match f7329d13-08a3-420b-afe1-6f28bcf35448 [America/Mexico_City]: planned=25-10-2025, 13:15:00, timeout=25-10-2025, 13:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match cb615fe5-df2b-4661-9713-7fda89253ca6 [America/Mexico_City]: planned=25-10-2025, 13:15:00, timeout=25-10-2025, 13:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 23270908-d980-4e7c-a1c3-e2aaecff5af6 [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match cb615149-1fdd-42aa-8866-8e0805d635f6 [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 333c1299-fbbb-405d-b169-277ce5ebf63a [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 3e493182-2df5-4280-aeb9-af1c93d81c01 [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 79136169-eda1-4e52-b02e-af0a301e842d [America/Mexico_City]: planned=25-10-2025, 15:45:00, timeout=25-10-2025, 16:00:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 9c2d287d-d659-479c-a3db-ce063f264bec [America/Mexico_City]: planned=25-10-2025, 17:00:00, timeout=25-10-2025, 17:15:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 59db40e2-3190-41c7-ad10-8e0ce631f9df [America/Mexico_City]: planned=25-10-2025, 17:00:00, timeout=25-10-2025, 17:15:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 2ee433da-cea9-4023-9140-7a80c31328b2 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match f2b18ce5-4864-4abb-9a70-85a887c4c783 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 1c953f02-2535-4d16-a67d-b3f944f88b48 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 04cd5832-0e23-4834-afc9-bed8bc519cef [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match e753ddfc-4e0e-4717-a078-c41fa45ea706 [America/Mexico_City]: planned=25-10-2025, 18:15:00, timeout=25-10-2025, 18:30:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 9a97937c-0d5e-4686-83d6-2665ab6b1f2b [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match feafac3f-cad4-4218-83dc-3f8574a095ab [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 6c647770-2912-4665-90ef-c5f3c8fa4d95 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match a93f93eb-a956-486c-8cf6-6ca28fc57ca4 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match 9e320b6b-d0df-4671-83ac-27347e16aaf7 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:12:09, overdue=false
+15|courtflow  | 2:12:09 AM [express] [Timeout Processor] Match d97febbf-42c4-484e-8349-ae17cd52f171 [America/Mexico_City]: planned=25-10-2025, 19:30:00, timeout=25-10-2025, 19:45:00, now=25-10-2025, 02:12:09, overdue=false
+^X
+^C
+root@srv735734:/var/www/courtflow# git pull
+remote: Enumerating objects: 24, done.
+remote: Counting objects: 100% (24/24), done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 14 (delta 10), reused 14 (delta 10), pack-reused 0 (from 0)
+Unpacking objects: 100% (14/14), 5.45 KiB | 558.00 KiB/s, done.
+From https://github.com/checosdovalina/tournamentcontrol
+   477f56f..e4c889b  main       -> origin/main
+Updating 477f56f..e4c889b
+Fast-forward
+ ...17-root-195-35--1761379806557_1761379806558.txt | 212 +++++++++++++++++++++
+ client/src/lib/utils.ts                            |  24 +++
+ client/src/pages/display-rotative.tsx              |   6 +-
+ client/src/pages/display.tsx                       |   6 +-
+ replit.md                                          |   2 +
+ 5 files changed, 246 insertions(+), 4 deletions(-)
+ create mode 100644 attached_assets/Pasted-Last-login-Fri-Oct-24-20-30-16-on-ttys000-sergiodovalina-192-ssh-root-195-35-9-117-root-195-35--1761379806557_1761379806558.txt
+root@srv735734:/var/www/courtflow# npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.20 building for production...
+transforming (2) ../vite/modulepreload-polyfill.jsBrowserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2777 modules transformed.
+../dist/public/index.html                                                      1.95 kB │ gzip:   0.74 kB
+../dist/public/assets/_LogosCOURTFLOW  sin fondo_1760480356184-CuWp6qNT.png  546.05 kB
+../dist/public/assets/_Logos JC (Court Flow)_1759964500350-Bl85Zqk5.png      754.31 kB
+../dist/public/assets/index-DnAMjF8k.css                                      74.34 kB │ gzip:  13.25 kB
+../dist/public/assets/index-BjXyUYcZ.js                                      835.62 kB │ gzip: 233.69 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.20s
+
+  dist/index.js  168.3kb
+
+⚡ Done in 16ms
+root@srv735734:/var/www/courtflow# pm2 restart courtflow
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [courtflow](ids: [ 15 ])
+[PM2] [courtflow](15) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 61.8mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 62.3mb   │
+│ 1  │ Record             │ fork     │ 2    │ online    │ 0%       │ 75.7mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 61.5mb   │
+│ 15 │ courtflow          │ fork     │ 10   │ online    │ 0%       │ 20.0mb   │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 62.6mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# 
