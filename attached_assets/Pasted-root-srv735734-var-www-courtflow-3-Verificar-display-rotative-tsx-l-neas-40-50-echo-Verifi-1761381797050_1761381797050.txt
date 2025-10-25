@@ -1,0 +1,36 @@
+root@srv735734:/var/www/courtflow# # 3. Verificar display-rotative.tsx líneas 40-50
+echo "=== Verificando display-rotative.tsx líneas 40-50 ==="
+sed -n '40,50p' client/src/pages/display-rotative.tsx
+=== Verificando display-rotative.tsx líneas 40-50 ===
+    queryFn: async () => {
+      if (!tournament?.id) return [];
+      // Use tournament's timezone to calculate "today" instead of browser's timezone
+      const today = getTodayInTimezone(tournament.timezone || 'America/Mexico_City');
+      const response = await fetch(`/api/scheduled-matches/day/${tournament.id}?day=${today}`);
+      return response.json();
+    },
+    enabled: !!tournament?.id,
+    refetchInterval: 5000,
+    staleTime: 0,
+  });
+root@srv735734:/var/www/courtflow# # En el VPS, verifica qué devuelve el API directamente
+curl "http://localhost:3000/api/scheduled-matches/day/d5017921-d966-48e6-a0ac-b7c9cb95050d?day=2025-10-25" | jq '. | length'
+-bash: jq: command not found
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  3091    0  3091    0     0   128k      0 --:--:-- --:--:-- --:--:--  131k
+curl: (23) Failure writing output to destination
+root@srv735734:/var/www/courtflow# curl "http://localhost:3000/api/scheduled-matches/day/d5017921-d966-48e6-a0ac-b7c9cb95050d?day=2025-10-25" 2>/dev/null | head -c 200
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/css/85d08561f3ff7fcc.css" daroot@srv735734:/var/www/courtflow# ^C
+root@srv735734:/var/www/courtflow# pm2 describe courtflow | grep -A 5 "script path"
+│ script path       │ /usr/bin/node                    │
+│ script args       │ dist/index.js                    │
+│ error log path    │ /var/log/courtflow-error-15.log  │
+│ out log path      │ /var/log/courtflow-out-15.log    │
+│ pid path          │ /root/.pm2/pids/courtflow-15.pid │
+│ interpreter       │ none                             │
+root@srv735734:/var/www/courtflow# pm2 logs courtflow --lines 30 --nostream | grep "serving on port"
+root@srv735734:/var/www/courtflow# netstat -tlnp | grep node
+tcp        0      0 0.0.0.0:4000            0.0.0.0:*               LISTEN      961129/node         
+root@srv735734:/var/www/courtflow# curl "http://localhost:5000/api/scheduled-matches/day/d5017921-d966-48e6-a0ac-b7c9cb95050d?day=2025-10-25" 2>/dev/null | head -c 200
+root@srv735734:/var/www/courtflow# 
