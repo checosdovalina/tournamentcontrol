@@ -1293,6 +1293,14 @@ export class DatabaseStorage implements IStorage {
         // (since players are only associated through pairs)
       }
       
+      // Release all courts (free them up after tournament reset)
+      await db
+        .update(courts)
+        .set({ 
+          isAvailable: true,
+          preAssignedScheduledMatchId: null
+        });
+      
       return true;
     } catch (error) {
       console.error("Error resetting tournament data:", error);
