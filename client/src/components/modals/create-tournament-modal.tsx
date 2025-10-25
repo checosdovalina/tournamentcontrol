@@ -199,7 +199,7 @@ export default function CreateTournamentModal({ open, onOpenChange, tournament }
                   </div>
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value ?? true}
                       onCheckedChange={field.onChange}
                       data-testid="switch-sponsor-rotation"
                     />
