@@ -2914,10 +2914,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         const courtConflict = allScheduledMatches.find(m => 
           m.id !== id && // Exclude current match
           m.courtId === courtId && 
+          m.status !== 'completed' && // Exclude completed matches
+          m.status !== 'cancelled' && // Exclude cancelled matches
           (m.matchId !== null || m.preAssignedAt !== null) // Only block if match is actually playing or pre-assigned
         );
         
-        console.log(`[Conflict check] Court conflict found: ${courtConflict ? `YES (match ${courtConflict.id})` : 'NO'}`);
+        console.log(`[Conflict check] Court conflict found: ${courtConflict ? `YES (match ${courtConflict.id}, status: ${courtConflict.status})` : 'NO'}`);
         
         if (courtConflict) {
           return res.status(400).json({ 
