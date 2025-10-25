@@ -1,0 +1,212 @@
+Last login: Fri Oct 24 20:30:16 on ttys000
+sergiodovalina@192 ~ % ssh root@195.35.9.117
+root@195.35.9.117's password: 
+Linux srv735734 6.1.0-32-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.129-1 (2025-03-06) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Fri Oct 24 20:30:35 2025 from 177.242.1.192
+root@srv735734:~# cd /var/www/courtflow
+root@srv735734:/var/www/courtflow# date
+Sat Oct 25 01:37:17 AM CST 2025
+root@srv735734:/var/www/courtflow# timedatectl
+               Local time: Sat 2025-10-25 01:37:39 CST
+           Universal time: Sat 2025-10-25 07:37:39 UTC
+                 RTC time: Sat 2025-10-25 07:37:38
+                Time zone: America/Mexico_City (CST, -0600)
+System clock synchronized: yes
+              NTP service: active
+          RTC in local TZ: no
+root@srv735734:/var/www/courtflow# psql -U courtflow -d courtflow -c "SELECT CURRENT_DATE, CURRENT_TIMESTAMP, NOW();"
+Password for user courtflow: 
+ current_date |       current_timestamp       |              now              
+--------------+-------------------------------+-------------------------------
+ 2025-10-25   | 2025-10-25 01:38:55.010446-06 | 2025-10-25 01:38:55.010446-06
+(1 row)
+
+root@srv735734:/var/www/courtflow# # Ver partidos programados para el 25 de octubre
+psql -U courtflow -d courtflow -c "SELECT COUNT(*) FROM scheduled_matches WHERE day::date = '2025-10-25' AND status NOT IN ('completed', 'cancelled');"
+
+# Ver todos los partidos agrupados por fecha
+psql -U courtflow -d courtflow -c "SELECT day::date, COUNT(*) FROM scheduled_matches WHERE status NOT IN ('completed', 'cancelled') GROUP BY day::date ORDER BY day::date;"
+Password for user courtflow: 
+ count 
+-------
+    50
+(1 row)
+
+Password for user courtflow: 
+    day     | count 
+------------+-------
+ 2025-10-25 |    50
+(1 row)
+
+root@srv735734:/var/www/courtflow# git pull
+remote: Enumerating objects: 16, done.
+remote: Counting objects: 100% (16/16), done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 13 (delta 7), reused 13 (delta 7), pack-reused 0 (from 0)
+Unpacking objects: 100% (13/13), 180.47 KiB | 1.17 MiB/s, done.
+From https://github.com/checosdovalina/tournamentcontrol
+   7f61a23..04af2ee  main       -> origin/main
+Updating 7f61a23..04af2ee
+Fast-forward
+ ..._PADEL_PARQUE_ESPAN\314\203A_1761376156442.pdf" | Bin 0 -> 182966 bytes
+ ...ARRANTY-to-the--1761359323730_1761359323730.txt |  60 ++++++++++++++
+ cronograma_torneo_parque_espana.xlsx               | Bin 0 -> 34924 bytes
+ parse-schedule.cjs                                 |  86 +++++++++++++++++++++
+ public/cronograma_torneo_parque_espana.xlsx        | Bin 0 -> 34924 bytes
+ 5 files changed, 146 insertions(+)
+ create mode 100644 "attached_assets/Cronograma_6TO_TORNEO_ANUAL_DE_PADEL_PARQUE_ESPAN\314\203A_1761376156442.pdf"
+ create mode 100644 attached_assets/Pasted-al-files-in-usr-share-doc-copyright-Debian-GNU-Linux-comes-with-ABSOLUTELY-NO-WARRANTY-to-the--1761359323730_1761359323730.txt
+ create mode 100644 cronograma_torneo_parque_espana.xlsx
+ create mode 100644 parse-schedule.cjs
+ create mode 100644 public/cronograma_torneo_parque_espana.xlsx
+root@srv735734:/var/www/courtflow# npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.20 building for production...
+transforming (2) ../vite/modulepreload-polyfill.jsBrowserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2777 modules transformed.
+../dist/public/index.html                                                      1.95 kB │ gzip:   0.74 kB
+../dist/public/assets/_LogosCOURTFLOW  sin fondo_1760480356184-CuWp6qNT.png  546.05 kB
+../dist/public/assets/_Logos JC (Court Flow)_1759964500350-Bl85Zqk5.png      754.31 kB
+../dist/public/assets/index-CnB8PiFP.css                                      74.34 kB │ gzip:  13.25 kB
+../dist/public/assets/index-DmhrWI17.js                                      835.41 kB │ gzip: 233.54 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 12.18s
+
+  dist/index.js  168.3kb
+
+⚡ Done in 90ms
+root@srv735734:/var/www/courtflow# pm2 restart courtflow
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [courtflow](ids: [ 15 ])
+[PM2] [courtflow](15) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 61.8mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 62.3mb   │
+│ 1  │ Record             │ fork     │ 2    │ online    │ 0%       │ 75.7mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 61.5mb   │
+│ 15 │ courtflow          │ fork     │ 7    │ online    │ 0%       │ 27.6mb   │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 62.6mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# git pull
+remote: Enumerating objects: 16, done.
+remote: Counting objects: 100% (16/16), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 9 (delta 6), reused 9 (delta 6), pack-reused 0 (from 0)
+Unpacking objects: 100% (9/9), 503.83 KiB | 2.11 MiB/s, done.
+From https://github.com/checosdovalina/tournamentcontrol
+   04af2ee..8fe9196  main       -> origin/main
+Updating 04af2ee..8fe9196
+Fast-forward
+ ... a la(s) 1.47.48\342\200\257a.m._1761378484539.png" | Bin 0 -> 595561 bytes
+ .../src/components/modals/create-tournament-modal.tsx  |   2 +-
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ create mode 100644 "attached_assets/Captura de pantalla 2025-10-25 a la(s) 1.47.48\342\200\257a.m._1761378484539.png"
+root@srv735734:/var/www/courtflow# npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.20 building for production...
+transforming (2) ../vite/modulepreload-polyfill.jsBrowserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2777 modules transformed.
+../dist/public/index.html                                                      1.95 kB │ gzip:   0.74 kB
+../dist/public/assets/_LogosCOURTFLOW  sin fondo_1760480356184-CuWp6qNT.png  546.05 kB
+../dist/public/assets/_Logos JC (Court Flow)_1759964500350-Bl85Zqk5.png      754.31 kB
+../dist/public/assets/index-CnB8PiFP.css                                      74.34 kB │ gzip:  13.25 kB
+../dist/public/assets/index-5zdP8Pir.js                                      835.44 kB │ gzip: 233.56 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.47s
+
+  dist/index.js  168.3kb
+
+⚡ Done in 23ms
+root@srv735734:/var/www/courtflow# pm2 restart courtflow
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [courtflow](ids: [ 15 ])
+[PM2] [courtflow](15) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 61.8mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 62.3mb   │
+│ 1  │ Record             │ fork     │ 2    │ online    │ 0%       │ 75.7mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 61.5mb   │
+│ 15 │ courtflow          │ fork     │ 8    │ online    │ 0%       │ 20.1mb   │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 62.6mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# git pull
+remote: Enumerating objects: 14, done.
+remote: Counting objects: 100% (14/14), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 10 (delta 7), reused 10 (delta 7), pack-reused 0 (from 0)
+Unpacking objects: 100% (10/10), 1.11 KiB | 284.00 KiB/s, done.
+From https://github.com/checosdovalina/tournamentcontrol
+   8fe9196..477f56f  main       -> origin/main
+Updating 8fe9196..477f56f
+Fast-forward
+ client/src/index.css | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+root@srv735734:/var/www/courtflow# npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.20 building for production...
+transforming (2) ../vite/modulepreload-polyfill.jsBrowserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2777 modules transformed.
+../dist/public/index.html                                                      1.95 kB │ gzip:   0.74 kB
+../dist/public/assets/_LogosCOURTFLOW  sin fondo_1760480356184-CuWp6qNT.png  546.05 kB
+../dist/public/assets/_Logos JC (Court Flow)_1759964500350-Bl85Zqk5.png      754.31 kB
+../dist/public/assets/index-DnAMjF8k.css                                      74.34 kB │ gzip:  13.25 kB
+../dist/public/assets/index-CCxITpW6.js                                      835.44 kB │ gzip: 233.56 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.92s
+
+  dist/index.js  168.3kb
+
+⚡ Done in 26ms
+root@srv735734:/var/www/courtflow# pm2 restart courtflow
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [courtflow](ids: [ 15 ])
+[PM2] [courtflow](15) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 61.8mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 62.3mb   │
+│ 1  │ Record             │ fork     │ 2    │ online    │ 0%       │ 75.7mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 7.7%     │ 61.5mb   │
+│ 15 │ courtflow          │ fork     │ 9    │ online    │ 0%       │ 17.4mb   │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 62.6mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# 
