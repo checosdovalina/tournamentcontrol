@@ -1298,16 +1298,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
   app.get("/api/matches/tournament/:tournamentId/active", async (req, res) => {
     try {
       const { tournamentId } = req.params;
-      const matches = await storage.getMatchesByTournament(tournamentId);
-      
-      // Filter only active matches (playing status)
-      const activeMatches = matches.filter(m => m.status === "playing");
+      const activeMatches = await storage.getCurrentMatches(tournamentId);
       
       // Add availability status based on capture session
       const now = new Date();
       const LOCK_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
       
-      const matchesWithStatus = activeMatches.map(match => {
+      const matchesWithStatus = activeMatches.map((match: any) => {
         const isLocked = match.activeCaptureSession && 
                         (now.getTime() - new Date(match.activeCaptureSession).getTime()) < LOCK_TIMEOUT_MS;
         
