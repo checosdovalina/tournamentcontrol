@@ -11,6 +11,7 @@ import DisplayRotative from "@/pages/display-rotative";
 import Login from "@/pages/login";
 import Setup from "@/pages/setup";
 import GuestScore from "@/pages/guest-score";
+import ScoreSelect from "@/pages/score-select";
 import { useWebSocket } from "@/hooks/use-websocket";
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
@@ -54,6 +55,7 @@ function Router() {
       )} />
       <Route path="/display" component={Display} />
       <Route path="/display-rotative" component={DisplayRotative} />
+      <Route path="/score-capture/:tournamentId" component={ScoreSelect} />
       <Route path="/score/:token" component={GuestScore} />
       <Route path="/login" component={Login} />
       <Route path="/setup" component={Setup} />
