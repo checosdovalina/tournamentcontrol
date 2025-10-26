@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { useRoute } from "wouter";
+import { useState, useEffect, useRef } from "react";
+import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Plus, Minus } from "lucide-react";
+import { Trophy, Plus, Minus, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import courtflowLogo from "@assets/_LogosCOURTFLOW  sin fondo_1760488965348.png";
@@ -14,6 +14,9 @@ export default function GuestScore() {
   const { toast } = useToast();
   const [, params] = useRoute("/score/:token");
   const token = params?.token;
+  const [, setLocation] = useLocation();
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isClaimed, setIsClaimed] = useState(false);
 
   const { data: match, isLoading, error } = useQuery({
     queryKey: ["/api/matches/public", token],
@@ -96,6 +99,7 @@ export default function GuestScore() {
         title: "Partido finalizado",
         description: "El partido se ha completado exitosamente",
       });
+      releaseMutation.mutate(); // Release the match lock
       queryClient.invalidateQueries({ queryKey: ["/api/matches/public", token] });
     },
     onError: (error: any) => {
@@ -106,6 +110,74 @@ export default function GuestScore() {
       });
     },
   });
+
+  // Claim match mutation
+  const claimMutation = useMutation({
+    mutationFn: async () => {
+      if (!match?.id) return;
+      const response = await fetch(`/api/matches/${match.id}/claim`, {
+        method: "POST",
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to claim match");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsClaimed(true);
+      // Start heartbeat interval (every 2 minutes)
+      heartbeatIntervalRef.current = setInterval(() => {
+        if (match?.id) {
+          fetch(`/api/matches/${match.id}/heartbeat`, { method: "PATCH" });
+        }
+      }, 120000); // 2 minutes
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Partido no disponible",
+        description: error.message || "Este partido está siendo capturado por otro usuario",
+        variant: "destructive",
+      });
+      // Redirect back after 2 seconds
+      setTimeout(() => {
+        setLocation(`/score-capture/${match?.tournamentId}`);
+      }, 2000);
+    },
+  });
+
+  // Release match mutation
+  const releaseMutation = useMutation({
+    mutationFn: async () => {
+      if (!match?.id) return;
+      const response = await fetch(`/api/matches/${match.id}/release`, {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to release match");
+      }
+      return response.json();
+    },
+  });
+
+  // Claim match on mount
+  useEffect(() => {
+    if (match?.id && !isClaimed && match.status === "playing") {
+      claimMutation.mutate();
+    }
+  }, [match?.id]);
+
+  // Release match on unmount or when leaving the page
+  useEffect(() => {
+    return () => {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+      }
+      if (isClaimed && match?.id) {
+        fetch(`/api/matches/${match.id}/release`, { method: "POST" });
+      }
+    };
+  }, [isClaimed, match?.id]);
 
   const addGame = (playerIndex: 0 | 1) => {
     const newScore = { ...liveScore };
@@ -216,6 +288,20 @@ export default function GuestScore() {
             className="h-16 w-auto"
           />
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            releaseMutation.mutate();
+            setLocation(`/score-capture/${match.tournamentId}`);
+          }}
+          className="mb-2"
+          data-testid="button-back-to-list"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Volver a la lista
+        </Button>
 
         <Card>
           <CardHeader>
