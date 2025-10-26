@@ -1294,6 +1294,123 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
+  // Generic score capture routes (public QR access)
+  app.get("/api/matches/tournament/:tournamentId/active", async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const matches = await storage.getMatchesByTournament(tournamentId);
+      
+      // Filter only active matches (playing status)
+      const activeMatches = matches.filter(m => m.status === "playing");
+      
+      // Add availability status based on capture session
+      const now = new Date();
+      const LOCK_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+      
+      const matchesWithStatus = activeMatches.map(match => {
+        const isLocked = match.activeCaptureSession && 
+                        (now.getTime() - new Date(match.activeCaptureSession).getTime()) < LOCK_TIMEOUT_MS;
+        
+        return {
+          ...match,
+          isAvailableForCapture: !isLocked,
+          captureExpiresIn: isLocked 
+            ? Math.max(0, LOCK_TIMEOUT_MS - (now.getTime() - new Date(match.activeCaptureSession!).getTime()))
+            : 0
+        };
+      });
+      
+      res.json(matchesWithStatus);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get active matches", error: error.message });
+    }
+  });
+
+  app.post("/api/matches/:matchId/claim", async (req, res) => {
+    try {
+      const { matchId } = req.params;
+      const match = await storage.getMatch(matchId);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+      
+      if (match.status !== "playing") {
+        return res.status(400).json({ message: "Match is not active" });
+      }
+      
+      // Check if already locked by another session
+      const now = new Date();
+      const LOCK_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+      
+      if (match.activeCaptureSession) {
+        const lockAge = now.getTime() - new Date(match.activeCaptureSession).getTime();
+        if (lockAge < LOCK_TIMEOUT_MS) {
+          return res.status(409).json({ 
+            message: "Este partido ya está siendo capturado por otro usuario",
+            expiresIn: LOCK_TIMEOUT_MS - lockAge
+          });
+        }
+      }
+      
+      // Claim the match
+      const updatedMatch = await storage.updateMatch(matchId, {
+        activeCaptureSession: now
+      });
+      
+      broadcastUpdate({ type: "match_updated", data: updatedMatch });
+      res.json({ success: true, match: updatedMatch });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to claim match", error: error.message });
+    }
+  });
+
+  app.post("/api/matches/:matchId/release", async (req, res) => {
+    try {
+      const { matchId } = req.params;
+      const match = await storage.getMatch(matchId);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+      
+      // Release the match
+      const updatedMatch = await storage.updateMatch(matchId, {
+        activeCaptureSession: null
+      });
+      
+      broadcastUpdate({ type: "match_updated", data: updatedMatch });
+      res.json({ success: true, match: updatedMatch });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to release match", error: error.message });
+    }
+  });
+
+  app.patch("/api/matches/:matchId/heartbeat", async (req, res) => {
+    try {
+      const { matchId } = req.params;
+      const match = await storage.getMatch(matchId);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+      
+      if (match.status !== "playing") {
+        return res.status(400).json({ message: "Match is not active" });
+      }
+      
+      // Update heartbeat timestamp
+      const now = new Date();
+      const updatedMatch = await storage.updateMatch(matchId, {
+        activeCaptureSession: now
+      });
+      
+      res.json({ success: true, timestamp: now });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update heartbeat", error: error.message });
+    }
+  });
+
   // Results routes
   app.get("/api/results/recent/:tournamentId", async (req, res) => {
     try {

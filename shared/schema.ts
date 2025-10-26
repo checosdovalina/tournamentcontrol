@@ -86,6 +86,7 @@ export const matches = pgTable("matches", {
   score: json("score"), // {set1: [6,4], set2: [3,6], set3: [6,2]}
   winnerId: varchar("winner_id"),
   accessToken: varchar("access_token").notNull().unique(), // Unique token for public score access
+  activeCaptureSession: timestamp("active_capture_session"), // Timestamp of last activity for score capture lock
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
 });
