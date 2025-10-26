@@ -497,12 +497,12 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
                     <span className="truncate flex-1">
                       {match.pair1?.player1?.name}
                       {match.players?.find((p: any) => p.playerId === match.pair1?.player1Id)?.isPresent && (
-                        <span className="text-[#10B981] ml-1">✓</span>
+                        <span className="text-yellow-400 ml-1 text-lg font-bold">✓</span>
                       )}
                       {' / '}
                       {match.pair1?.player2?.name}
                       {match.players?.find((p: any) => p.playerId === match.pair1?.player2Id)?.isPresent && (
-                        <span className="text-[#10B981] ml-1">✓</span>
+                        <span className="text-yellow-400 ml-1 text-lg font-bold">✓</span>
                       )}
                     </span>
                   </div>
@@ -515,12 +515,12 @@ function UpcomingMatchesScreen({ matches }: { matches: any[] }) {
                     <span className="truncate flex-1">
                       {match.pair2?.player1?.name}
                       {match.players?.find((p: any) => p.playerId === match.pair2?.player1Id)?.isPresent && (
-                        <span className="text-[#10B981] ml-1">✓</span>
+                        <span className="text-yellow-400 ml-1 text-lg font-bold">✓</span>
                       )}
                       {' / '}
                       {match.pair2?.player2?.name}
                       {match.players?.find((p: any) => p.playerId === match.pair2?.player2Id)?.isPresent && (
-                        <span className="text-[#10B981] ml-1">✓</span>
+                        <span className="text-yellow-400 ml-1 text-lg font-bold">✓</span>
                       )}
                     </span>
                   </div>
