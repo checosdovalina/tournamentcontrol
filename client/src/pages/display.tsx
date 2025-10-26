@@ -651,21 +651,16 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
         </span>
       </div>
       <div className="space-y-2 text-white">
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-medium truncate flex-1">
-            {match.pair1.player1.name} / {match.pair1.player2.name}
-          </span>
-          <span className="text-[26px] font-mono font-bold ml-2">
-            {formatScore(match.score).split(' | ')[0] || '0'}
-          </span>
+        <div className="text-lg font-medium">
+          {match.pair1.player1.name} / {match.pair1.player2.name}
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-medium truncate flex-1">
-            {match.pair2.player1.name} / {match.pair2.player2.name}
-          </span>
-          <span className="text-[26px] font-mono font-bold ml-2">
-            {formatScore(match.score).split(' | ')[1] || '0'}
-          </span>
+        <div className="text-center my-2">
+          <div className="text-[26px] font-mono font-bold text-yellow-400">
+            {formatScore(match.score)}
+          </div>
+        </div>
+        <div className="text-lg font-medium">
+          {match.pair2.player1.name} / {match.pair2.player2.name}
         </div>
       </div>
     </div>
