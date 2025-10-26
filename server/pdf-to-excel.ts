@@ -43,8 +43,8 @@ async function parsePDFSchedule(pdfPath: string): Promise<Match[]> {
       currentHora = horaMatch[1];
     }
     
-    // Detectar categoría (líneas que contienen palabras clave)
-    const categoriaMatch = line.match(/^(SUMA \d+ \w+|CUARTA \w+|QUINTA \w+|TERCERA \w+|SENIORS 50\+)/);
+    // Detectar categoría (al inicio O después de la hora)
+    const categoriaMatch = line.match(/(SUMA \d+ \w+|CUARTA \w+|QUINTA \w+|TERCERA \w+|SENIORS 50\+)/);
     if (categoriaMatch && currentHora) {
       const categoria = categoriaMatch[1];
       
@@ -97,8 +97,8 @@ async function parsePDFSchedule(pdfPath: string): Promise<Match[]> {
         });
       }
       
-      // Avanzar el índice principal al final del partido procesado
-      i = j - 1;
+      // NO avanzar el índice aquí - dejar que el for loop continúe normalmente
+      // Esto permite procesar múltiples partidos en la misma hora
     }
   }
   
