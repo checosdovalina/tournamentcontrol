@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock, FileSpreadsheet, ChevronDown, LayoutGrid, Repeat } from "lucide-react";
+import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock, FileSpreadsheet, ChevronDown, LayoutGrid, Repeat, QrCode } from "lucide-react";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
@@ -14,6 +14,7 @@ import ScheduleTimelineView from "@/components/schedule-timeline-view";
 import SuperAdminPanel from "@/components/super-admin-panel";
 import PairsManagement from "@/components/pairs-management";
 import LiveScoreCapture from "@/components/live-score-capture";
+import TournamentQR from "@/components/tournament-qr";
 import RegisterPlayerModal from "@/components/modals/register-player-modal";
 import RecordResultModal from "@/components/modals/record-result-modal";
 import ManageCourtsModal from "@/components/modals/manage-courts-modal";
@@ -147,6 +148,12 @@ export default function Dashboard() {
                 Parejas
               </TabsTrigger>
             )}
+            {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && (
+              <TabsTrigger value="qr-capture" data-testid="tab-qr-capture">
+                <QrCode className="w-4 h-4 mr-2" />
+                QR Captura
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {user?.user?.role === 'superadmin' && (
@@ -275,6 +282,17 @@ export default function Dashboard() {
           {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && (
             <TabsContent value="pairs">
               <PairsManagement />
+            </TabsContent>
+          )}
+
+          {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && (
+            <TabsContent value="qr-capture">
+              {tournament && (
+                <TournamentQR 
+                  tournamentId={tournament.id} 
+                  tournamentName={tournament.name} 
+                />
+              )}
             </TabsContent>
           )}
         </Tabs>
