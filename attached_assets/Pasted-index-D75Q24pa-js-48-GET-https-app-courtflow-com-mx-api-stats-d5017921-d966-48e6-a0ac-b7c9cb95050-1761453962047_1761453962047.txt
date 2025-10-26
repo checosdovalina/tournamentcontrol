@@ -1,0 +1,178 @@
+index-D75Q24pa.js:48  GET https://app.courtflow.com.mx/api/stats/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
+(anonymous) @ index-D75Q24pa.js:48
+i @ index-D75Q24pa.js:48
+b @ index-D75Q24pa.js:48
+start @ index-D75Q24pa.js:48
+fetch @ index-D75Q24pa.js:48
+Ml @ index-D75Q24pa.js:48
+setOptions @ index-D75Q24pa.js:48
+(anonymous) @ index-D75Q24pa.js:48
+Of @ index-D75Q24pa.js:40
+eo @ index-D75Q24pa.js:40
+K4 @ index-D75Q24pa.js:40
+$a @ index-D75Q24pa.js:40
+C0 @ index-D75Q24pa.js:40
+ka @ index-D75Q24pa.js:38
+(anonymous) @ index-D75Q24pa.js:40
+setTimeout
+s @ index-D75Q24pa.js:48
+o @ index-D75Q24pa.js:48
+batch @ index-D75Q24pa.js:48
+gs @ index-D75Q24pa.js:48
+setData @ index-D75Q24pa.js:48
+onSuccess @ index-D75Q24pa.js:48
+f @ index-D75Q24pa.js:48
+Promise.then
+b @ index-D75Q24pa.js:48
+start @ index-D75Q24pa.js:48
+fetch @ index-D75Q24pa.js:48
+Ml @ index-D75Q24pa.js:48
+onSubscribe @ index-D75Q24pa.js:48
+subscribe @ index-D75Q24pa.js:48
+(anonymous) @ index-D75Q24pa.js:48
+AC @ index-D75Q24pa.js:38
+Of @ index-D75Q24pa.js:40
+eo @ index-D75Q24pa.js:40
+K4 @ index-D75Q24pa.js:40
+$a @ index-D75Q24pa.js:40
+C0 @ index-D75Q24pa.js:40
+ka @ index-D75Q24pa.js:38
+(anonymous) @ index-D75Q24pa.js:40
+setTimeout
+s @ index-D75Q24pa.js:48
+o @ index-D75Q24pa.js:48
+batch @ index-D75Q24pa.js:48
+gs @ index-D75Q24pa.js:48
+setData @ index-D75Q24pa.js:48
+onSuccess @ index-D75Q24pa.js:48
+f @ index-D75Q24pa.js:48
+Promise.then
+b @ index-D75Q24pa.js:48
+start @ index-D75Q24pa.js:48
+fetch @ index-D75Q24pa.js:48
+Ml @ index-D75Q24pa.js:48
+onSubscribe @ index-D75Q24pa.js:48
+subscribe @ index-D75Q24pa.js:48
+(anonymous) @ index-D75Q24pa.js:48
+AC @ index-D75Q24pa.js:38
+Of @ index-D75Q24pa.js:40
+eo @ index-D75Q24pa.js:40
+C0 @ index-D75Q24pa.js:40
+ka @ index-D75Q24pa.js:38
+K4 @ index-D75Q24pa.js:40
+$a @ index-D75Q24pa.js:40
+d2 @ index-D75Q24pa.js:40
+S @ index-D75Q24pa.js:25
+O @ index-D75Q24pa.js:25Understand this error
+index-D75Q24pa.js:410  GET https://app.courtflow.com.mx/api/matches/current/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
+queryFn @ index-D75Q24pa.js:410
+i @ index-D75Q24pa.js:48
+b @ index-D75Q24pa.js:48
+start @ index-D75Q24pa.js:48
+fetch @ index-D75Q24pa.js:48
+Ml @ index-D75Q24pa.js:48
+onSubscribe @ index-D75Q24pa.js:48
+subscribe @ index-D75Q24pa.js:48
+(anonymous) @ index-D75Q24pa.js:48
+AC @ index-D75Q24pa.js:38
+Of @ index-D75Q24pa.js:40
+eo @ index-D75Q24pa.js:40
+K4 @ index-D75Q24pa.js:40
+$a @ index-D75Q24pa.js:40
+C0 @ index-D75Q24pa.js:40
+ka @ index-D75Q24pa.js:38
+(anonymous) @ index-D75Q24pa.js:40Understand this error
+index-D75Q24pa.js:40 TypeError: j.find is not a function
+    at bK (index-D75Q24pa.js:415:113053)
+    at jv (index-D75Q24pa.js:38:17018)
+    at Ap (index-D75Q24pa.js:40:3139)
+    at g2 (index-D75Q24pa.js:40:44833)
+    at m2 (index-D75Q24pa.js:40:39790)
+    at W4 (index-D75Q24pa.js:40:39718)
+    at Bu (index-D75Q24pa.js:40:39570)
+    at Up (index-D75Q24pa.js:40:35934)
+    at C0 (index-D75Q24pa.js:40:36738)
+    at ka (index-D75Q24pa.js:38:3279)
+Mp @ index-D75Q24pa.js:40
+QC.n.callback @ index-D75Q24pa.js:40
+i0 @ index-D75Q24pa.js:38
+j0 @ index-D75Q24pa.js:40
+c2 @ index-D75Q24pa.js:40
+B4 @ index-D75Q24pa.js:40
+K4 @ index-D75Q24pa.js:40
+$a @ index-D75Q24pa.js:40
+C0 @ index-D75Q24pa.js:40
+ka @ index-D75Q24pa.js:38
+(anonymous) @ index-D75Q24pa.js:40
+setTimeout
+s @ index-D75Q24pa.js:48
+o @ index-D75Q24pa.js:48
+batch @ index-D75Q24pa.js:48
+gs @ index-D75Q24pa.js:48
+setData @ index-D75Q24pa.js:48
+onSuccess @ index-D75Q24pa.js:48
+f @ index-D75Q24pa.js:48
+Promise.then
+b @ index-D75Q24pa.js:48
+start @ index-D75Q24pa.js:48
+fetch @ index-D75Q24pa.js:48
+Ml @ index-D75Q24pa.js:48
+onSubscribe @ index-D75Q24pa.js:48
+subscribe @ index-D75Q24pa.js:48
+(anonymous) @ index-D75Q24pa.js:48
+AC @ index-D75Q24pa.js:38
+Of @ index-D75Q24pa.js:40
+eo @ index-D75Q24pa.js:40
+K4 @ index-D75Q24pa.js:40
+$a @ index-D75Q24pa.js:40
+C0 @ index-D75Q24pa.js:40
+ka @ index-D75Q24pa.js:38
+(anonymous) @ index-D75Q24pa.js:40Understand this error
+index-D75Q24pa.js:415 Uncaught TypeError: j.find is not a function
+    at bK (index-D75Q24pa.js:415:113053)
+    at jv (index-D75Q24pa.js:38:17018)
+    at Ap (index-D75Q24pa.js:40:3139)
+    at g2 (index-D75Q24pa.js:40:44833)
+    at m2 (index-D75Q24pa.js:40:39790)
+    at W4 (index-D75Q24pa.js:40:39718)
+    at Bu (index-D75Q24pa.js:40:39570)
+    at Up (index-D75Q24pa.js:40:35934)
+    at C0 (index-D75Q24pa.js:40:36738)
+    at ka (index-D75Q24pa.js:38:3279)
+bK @ index-D75Q24pa.js:415
+jv @ index-D75Q24pa.js:38
+Ap @ index-D75Q24pa.js:40
+g2 @ index-D75Q24pa.js:40
+m2 @ index-D75Q24pa.js:40
+W4 @ index-D75Q24pa.js:40
+Bu @ index-D75Q24pa.js:40
+Up @ index-D75Q24pa.js:40
+C0 @ index-D75Q24pa.js:40
+ka @ index-D75Q24pa.js:38
+(anonymous) @ index-D75Q24pa.js:40
+setTimeout
+s @ index-D75Q24pa.js:48
+o @ index-D75Q24pa.js:48
+batch @ index-D75Q24pa.js:48
+gs @ index-D75Q24pa.js:48
+setData @ index-D75Q24pa.js:48
+onSuccess @ index-D75Q24pa.js:48
+f @ index-D75Q24pa.js:48
+Promise.then
+b @ index-D75Q24pa.js:48
+start @ index-D75Q24pa.js:48
+fetch @ index-D75Q24pa.js:48
+Ml @ index-D75Q24pa.js:48
+onSubscribe @ index-D75Q24pa.js:48
+subscribe @ index-D75Q24pa.js:48
+(anonymous) @ index-D75Q24pa.js:48
+AC @ index-D75Q24pa.js:38
+Of @ index-D75Q24pa.js:40
+eo @ index-D75Q24pa.js:40
+K4 @ index-D75Q24pa.js:40
+$a @ index-D75Q24pa.js:40
+C0 @ index-D75Q24pa.js:40
+ka @ index-D75Q24pa.js:38
+(anonymous) @ index-D75Q24pa.js:40Understand this error
+index-D75Q24pa.js:415 WebSocket disconnected
+index-D75Q24pa.js:415 WebSocket connected
