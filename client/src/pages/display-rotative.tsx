@@ -60,12 +60,25 @@ export default function DisplayRotative() {
     staleTime: 0,
   });
 
-  const recentResults = allResults.filter((result: any) => {
-    const resultTime = new Date(result.createdAt);
-    const now = new Date();
-    const diffMinutes = Math.floor((now.getTime() - resultTime.getTime()) / (1000 * 60));
-    return diffMinutes <= 1440;
-  }).slice(0, 20);
+  // Filter results to show only those from today (based on tournament timezone)
+  const recentResults = useMemo(() => {
+    const today = getTodayInTimezone(tournament?.timezone || 'America/Mexico_City');
+    
+    const todayResults = allResults.filter((result: any) => {
+      const resultDate = new Date(result.createdAt);
+      // Format result date in tournament timezone as YYYY-MM-DD
+      const resultDateStr = resultDate.toLocaleDateString('en-CA', { 
+        timeZone: tournament?.timezone || 'America/Mexico_City',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      
+      return resultDateStr === today;
+    });
+    
+    return todayResults.slice(0, 20);
+  }, [allResults, tournament?.timezone]);
 
   const { data: banners = [] } = useQuery<any[]>({
     queryKey: ["/api/banners", tournament?.id],

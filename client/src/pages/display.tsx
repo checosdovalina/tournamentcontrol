@@ -59,13 +59,23 @@ export default function Display() {
     staleTime: 0,
   });
 
-  // Filter results to show only those from the last 24 hours (1,440 minutes)
-  const recentResults = allResults.filter((result: any) => {
-    const resultTime = new Date(result.createdAt);
-    const now = new Date();
-    const diffMinutes = Math.floor((now.getTime() - resultTime.getTime()) / (1000 * 60));
-    return diffMinutes <= 1440;
-  });
+  // Filter results to show only those from today (based on tournament timezone)
+  const recentResults = useMemo(() => {
+    const today = getTodayInTimezone(tournament?.timezone || 'America/Mexico_City');
+    
+    return allResults.filter((result: any) => {
+      const resultDate = new Date(result.createdAt);
+      // Format result date in tournament timezone as YYYY-MM-DD
+      const resultDateStr = resultDate.toLocaleDateString('en-CA', { 
+        timeZone: tournament?.timezone || 'America/Mexico_City',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      
+      return resultDateStr === today;
+    });
+  }, [allResults, tournament?.timezone]);
 
   // Stable keys for carousels based on item count (prevents animation restart on data updates)
   const upcomingCount = useMemo(() => 
