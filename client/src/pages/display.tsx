@@ -206,13 +206,16 @@ export default function Display() {
 
     let intervalTimer: NodeJS.Timeout | null = null;
 
-    // Show ad for displayDuration
+    // Show ad for displayDuration (in seconds)
     setShowAd(true);
+    const displayDurationMs = (currentAd.displayDuration || 10) * 1000;
+    const displayIntervalMs = (currentAd.displayInterval || 30) * 1000;
+    
     const showTimer = setTimeout(() => {
       setShowAd(false);
       
       // Wait for remaining interval time before showing next ad
-      const waitTime = Math.max((currentAd.displayInterval - currentAd.displayDuration) * 1000, 1000);
+      const waitTime = Math.max(displayIntervalMs - displayDurationMs, 1000);
       intervalTimer = setTimeout(() => {
         setCurrentAdIndex((prev) => {
           // Access latest activeAds length from ref
@@ -221,13 +224,13 @@ export default function Display() {
           return (prev + 1) % adsCount;
         });
       }, waitTime);
-    }, (currentAd.displayDuration || 10) * 1000);
+    }, displayDurationMs);
 
     return () => {
       clearTimeout(showTimer);
       if (intervalTimer) clearTimeout(intervalTimer);
     };
-  }, [currentAdIndex, activeAds.length]);
+  }, [currentAdIndex]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('es-ES', { 
