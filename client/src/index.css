@@ -181,7 +181,7 @@
 }
 
 .animate-scroll-vertical {
-  animation: scroll-vertical 120s linear infinite;
+  animation: scroll-vertical 180s linear infinite;
   will-change: transform;
 }
 
