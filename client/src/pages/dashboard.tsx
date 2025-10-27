@@ -15,12 +15,14 @@ import SuperAdminPanel from "@/components/super-admin-panel";
 import PairsManagement from "@/components/pairs-management";
 import LiveScoreCapture from "@/components/live-score-capture";
 import TournamentQR from "@/components/tournament-qr";
+import ImportExcelCard from "@/components/import-excel-card";
 import RegisterPlayerModal from "@/components/modals/register-player-modal";
 import RecordResultModal from "@/components/modals/record-result-modal";
 import ManageCourtsModal from "@/components/modals/manage-courts-modal";
 import TournamentConfigModal from "@/components/modals/tournament-config-modal";
 import ImportPairsModal from "@/components/modals/import-pairs-modal";
 import { useLocation } from "wouter";
+import { queryClient } from "@/lib/queryClient";
 import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
 
 export default function Dashboard() {
@@ -272,7 +274,17 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="schedule">
-            <ScheduledMatches tournamentId={tournament?.id} userRole={tournament?.userRole} />
+            <div className="space-y-6">
+              {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && tournament && (
+                <ImportExcelCard 
+                  tournamentId={tournament.id} 
+                  onImportComplete={() => {
+                    queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
+                  }}
+                />
+              )}
+              <ScheduledMatches tournamentId={tournament?.id} userRole={tournament?.userRole} />
+            </div>
           </TabsContent>
 
           <TabsContent value="timeline">
