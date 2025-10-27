@@ -19,9 +19,10 @@ import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/sc
 interface ScheduledMatchesProps {
   tournamentId?: string;
   userRole?: string;
+  onImportClick?: () => void;
 }
 
-export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMatchesProps) {
+export default function ScheduledMatches({ tournamentId, userRole, onImportClick }: ScheduledMatchesProps) {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
@@ -32,7 +33,6 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
   const [timeFilter, setTimeFilter] = useState<string>("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
 
   // Query for all scheduled matches in the tournament
@@ -479,60 +479,6 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
     setSheetOpen(true);
   };
 
-  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !tournamentId) return;
-
-    setIsImporting(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch(`/api/scheduled-matches/import/${tournamentId}`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Error al importar partidos');
-      }
-
-      // Show results
-      if (result.success > 0) {
-        toast({
-          title: "Importación exitosa",
-          description: `${result.success} partido${result.success > 1 ? 's' : ''} importado${result.success > 1 ? 's' : ''} correctamente.`,
-        });
-        
-        // Invalidate queries to refresh the list
-        queryClient.invalidateQueries({ 
-          predicate: (query) => 
-            query.queryKey[0] === "/api/scheduled-matches"
-        });
-      }
-
-      if (result.errors.length > 0) {
-        toast({
-          title: "Errores en importación",
-          description: `${result.errors.length} fila${result.errors.length > 1 ? 's' : ''} con errores. Revisa el archivo.`,
-          variant: "destructive",
-        });
-        console.error('Import errors:', result.errors);
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error al importar",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsImporting(false);
-      // Reset file input
-      event.target.value = '';
-    }
-  };
 
   if (isLoading) {
     return (
@@ -574,24 +520,19 @@ export default function ScheduledMatches({ tournamentId, userRole }: ScheduledMa
               <span className="hidden sm:inline">Programar Partido</span>
               <span className="sm:hidden">Programar</span>
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => document.getElementById('match-import-file')?.click()}
-              disabled={isImporting}
-              data-testid="button-import-matches"
-              size="sm"
-              className="flex-1 sm:flex-none"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {isImporting ? 'Importando...' : 'Importar'}
-            </Button>
-            <input
-              id="match-import-file"
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleFileImport}
-              className="hidden"
-            />
+            {onImportClick && (
+              <Button 
+                variant="outline" 
+                onClick={onImportClick}
+                data-testid="button-import-excel"
+                size="sm"
+                className="flex-1 sm:flex-none"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Importar Excel</span>
+                <span className="sm:hidden">Importar</span>
+              </Button>
+            )}
           </div>
         )}
       </div>

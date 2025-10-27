@@ -15,7 +15,7 @@ import SuperAdminPanel from "@/components/super-admin-panel";
 import PairsManagement from "@/components/pairs-management";
 import LiveScoreCapture from "@/components/live-score-capture";
 import TournamentQR from "@/components/tournament-qr";
-import ImportExcelCard from "@/components/import-excel-card";
+import ImportExcelModal from "@/components/modals/import-excel-modal";
 import RegisterPlayerModal from "@/components/modals/register-player-modal";
 import RecordResultModal from "@/components/modals/record-result-modal";
 import ManageCourtsModal from "@/components/modals/manage-courts-modal";
@@ -32,6 +32,7 @@ export default function Dashboard() {
   const [courtsModalOpen, setCourtsModalOpen] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [importPairsModalOpen, setImportPairsModalOpen] = useState(false);
+  const [importExcelModalOpen, setImportExcelModalOpen] = useState(false);
 
   const { data: user } = useQuery<{ user: { id: string; username: string; name: string; role: string } }>({
     queryKey: ["/api/auth/me"],
@@ -274,17 +275,11 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="schedule">
-            <div className="space-y-6">
-              {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && tournament && (
-                <ImportExcelCard 
-                  tournamentId={tournament.id} 
-                  onImportComplete={() => {
-                    queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
-                  }}
-                />
-              )}
-              <ScheduledMatches tournamentId={tournament?.id} userRole={tournament?.userRole} />
-            </div>
+            <ScheduledMatches 
+              tournamentId={tournament?.id} 
+              userRole={tournament?.userRole}
+              onImportClick={() => setImportExcelModalOpen(true)}
+            />
           </TabsContent>
 
           <TabsContent value="timeline">
@@ -339,6 +334,16 @@ export default function Dashboard() {
           open={importPairsModalOpen}
           onOpenChange={setImportPairsModalOpen}
           tournamentId={tournament?.id}
+        />
+      )}
+      {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && tournament && (
+        <ImportExcelModal 
+          open={importExcelModalOpen}
+          onOpenChange={setImportExcelModalOpen}
+          tournamentId={tournament.id}
+          onImportComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
+          }}
         />
       )}
     </div>
