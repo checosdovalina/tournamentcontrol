@@ -10,6 +10,7 @@ import CreateTournamentModal from "@/components/modals/create-tournament-modal";
 import CreateUserModal from "@/components/modals/create-user-modal";
 import CreateClubModal from "@/components/modals/create-club-modal";
 import AssignUserModal from "@/components/modals/assign-user-modal";
+import PDFConverterCard from "@/components/pdf-converter-card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -321,6 +322,9 @@ export default function SuperAdminPanel() {
           )}
         </CardContent>
       </Card>
+
+      {/* PDF Converter Section */}
+      <PDFConverterCard />
 
       {/* Modals */}
       <CreateClubModal
