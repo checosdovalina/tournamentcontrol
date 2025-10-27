@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { X, Clock, Users, Trophy, TrendingUp, Activity } from "lucide-react";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
+import { useKeepAwake } from "@/hooks/use-keep-awake";
 import { getTodayInTimezone, getCurrentDayTimeInTimezone } from "@/lib/utils";
 import courtflowLogoNew from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
 
@@ -14,6 +15,9 @@ export default function DisplayRotative() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('current');
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
+
+  useKeepAwake();
+  useWebSocket();
 
   const { data: tournament } = useQuery<{ 
     id: string; 
@@ -97,8 +101,6 @@ export default function DisplayRotative() {
     enabled: !!tournament?.id,
     refetchInterval: 10000,
   });
-
-  useWebSocket();
 
   // Time key for filtering ads - Uses tournament timezone when available, falls back to browser timezone
   const timeKey = useMemo(() => {
@@ -247,6 +249,10 @@ export default function DisplayRotative() {
             
             <div className="flex items-center space-x-4">
               <div className="text-right">
+                <div className="flex items-center justify-end space-x-2 mb-2">
+                  <div className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-500/50"></div>
+                  <span className="text-sm font-semibold text-green-300 uppercase tracking-wider">EN VIVO</span>
+                </div>
                 <div className="text-5xl font-bold text-white tabular-nums">
                   {formatTime(currentTime)}
                 </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { X, Volleyball } from "lucide-react";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
+import { useKeepAwake } from "@/hooks/use-keep-awake";
 import { getTodayInTimezone, getCurrentDayTimeInTimezone } from "@/lib/utils";
 import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
 import courtflowLogoNew from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
@@ -14,6 +15,9 @@ export default function Display() {
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [showAd, setShowAd] = useState(false);
   const activeAdsRef = useRef<any[]>([]);
+
+  useKeepAwake();
+  useWebSocket();
 
   const { data: tournament } = useQuery<{ 
     id: string; 
@@ -107,8 +111,6 @@ export default function Display() {
     queryKey: ["/api/courts"],
     refetchInterval: 3000,
   });
-
-  useWebSocket();
 
   // Create a time key that changes only when day or minute changes (not every second)
   // Uses tournament timezone instead of browser timezone when available
@@ -330,6 +332,12 @@ export default function Display() {
 
           <div className="flex items-center space-x-2">
             <div className="text-right text-white">
+              <div className="flex items-center justify-end space-x-2 mb-1">
+                <div className="flex items-center space-x-1.5">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">EN VIVO</span>
+                </div>
+              </div>
               <p className="text-4xl font-bold font-mono" data-testid="text-current-time">
                 {formatTime(currentTime)}
               </p>
