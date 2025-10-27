@@ -3452,5 +3452,193 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
+  // Excel Import for Scheduled Matches (Admin only)
+  app.post("/api/admin/tournaments/:tournamentId/import-excel-schedule", requireAdmin, upload.single('file'), async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No se subió ningún archivo Excel" });
+      }
+
+      // Verificar que sea un Excel
+      const validMimeTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel'
+      ];
+      if (!validMimeTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ message: "El archivo debe ser un Excel (.xlsx o .xls)" });
+      }
+
+      // Verificar que el torneo existe
+      const tournament = await storage.getTournament(tournamentId);
+      if (!tournament) {
+        return res.status(404).json({ message: "Torneo no encontrado" });
+      }
+
+      // Leer Excel
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // Obtener categorías del torneo
+      const categories = await storage.getCategoriesByTournament(tournamentId);
+      const categoryMap = new Map(categories.map(cat => [cat.name.toLowerCase().trim(), cat.id]));
+
+      // Obtener todos los jugadores
+      const allPlayers = await storage.getPlayers();
+      const playersByName = new Map(allPlayers.map(p => [p.name.toLowerCase().trim(), p]));
+
+      // Obtener todas las parejas del torneo
+      const allPairs = await storage.getPairsByTournament(tournamentId);
+
+      let createdCount = 0;
+      let skippedCount = 0;
+      const errors: string[] = [];
+
+      // Procesar cada fila (empezando desde la fila 2, índice 1)
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        
+        // Validar que la fila tenga suficientes columnas
+        if (!row || row.length < 9) {
+          skippedCount++;
+          continue;
+        }
+
+        try {
+          // Extraer datos (columnas en Excel son base-1, pero array es base-0)
+          const dateStr = row[0]?.toString().trim(); // Columna A
+          const timeStr = row[1]?.toString().trim(); // Columna B
+          const categoryStr = row[3]?.toString().trim(); // Columna D
+          const player1_1Name = row[5]?.toString().trim(); // Columna F - Pareja 1, Jugador 1
+          const player1_2Name = row[6]?.toString().trim(); // Columna G - Pareja 1, Jugador 2
+          const player2_1Name = row[7]?.toString().trim(); // Columna H - Pareja 2, Jugador 1
+          const player2_2Name = row[8]?.toString().trim(); // Columna I - Pareja 2, Jugador 2
+
+          // Validar datos requeridos
+          if (!dateStr || !player1_1Name || !player1_2Name || !player2_1Name || !player2_2Name) {
+            errors.push(`Fila ${i + 1}: Faltan datos requeridos`);
+            skippedCount++;
+            continue;
+          }
+
+          // Parsear fecha (puede venir en formato Excel serial number o string)
+          let matchDate: Date;
+          if (typeof row[0] === 'number') {
+            // Excel serial date
+            const excelEpoch = new Date(1899, 11, 30);
+            matchDate = new Date(excelEpoch.getTime() + row[0] * 86400000);
+          } else {
+            matchDate = new Date(dateStr);
+          }
+
+          if (isNaN(matchDate.getTime())) {
+            errors.push(`Fila ${i + 1}: Fecha inválida "${dateStr}"`);
+            skippedCount++;
+            continue;
+          }
+
+          // Buscar categoría (nullable)
+          let categoryId: string | null = null;
+          if (categoryStr) {
+            categoryId = categoryMap.get(categoryStr.toLowerCase().trim()) || null;
+          }
+
+          // Crear o buscar jugadores
+          const getOrCreatePlayer = async (name: string) => {
+            const normalizedName = name.toLowerCase().trim();
+            let player = playersByName.get(normalizedName);
+            
+            if (!player) {
+              player = await storage.createPlayer({ name, clubId: tournament.clubId });
+              playersByName.set(normalizedName, player);
+            }
+            
+            return player;
+          };
+
+          const player1_1 = await getOrCreatePlayer(player1_1Name);
+          const player1_2 = await getOrCreatePlayer(player1_2Name);
+          const player2_1 = await getOrCreatePlayer(player2_1Name);
+          const player2_2 = await getOrCreatePlayer(player2_2Name);
+
+          // Crear o buscar parejas
+          const getOrCreatePair = async (playerId1: string, playerId2: string) => {
+            // Buscar pareja existente (considerar ambos órdenes)
+            let pair = allPairs.find(p => 
+              (p.player1Id === playerId1 && p.player2Id === playerId2) ||
+              (p.player1Id === playerId2 && p.player2Id === playerId1)
+            );
+
+            if (!pair) {
+              const newPair = await storage.createPair({
+                player1Id: playerId1,
+                player2Id: playerId2,
+                tournamentId,
+                categoryId: categoryId || undefined,
+              });
+              allPairs.push(newPair as any); // Add to cache
+              return newPair;
+            }
+
+            return pair;
+          };
+
+          const pair1 = await getOrCreatePair(player1_1.id, player1_2.id);
+          const pair2 = await getOrCreatePair(player2_1.id, player2_2.id);
+
+          // Crear scheduled match
+          await storage.createScheduledMatch({
+            tournamentId,
+            day: matchDate,
+            plannedTime: timeStr || null,
+            pair1Id: pair1.id,
+            pair2Id: pair2.id,
+            categoryId: categoryId || undefined,
+            format: null,
+            status: "scheduled",
+            courtId: null,
+            matchId: null,
+            outcome: "normal",
+            outcomeReason: null,
+            defaultWinnerPairId: null,
+            pendingDqf: false,
+            preAssignedAt: null,
+            notes: null,
+          });
+
+          createdCount++;
+        } catch (error: any) {
+          errors.push(`Fila ${i + 1}: ${error.message}`);
+          skippedCount++;
+        }
+      }
+
+      // Broadcast update
+      broadcastUpdate({ 
+        type: "scheduled_matches_imported", 
+        data: { tournamentId } 
+      });
+
+      res.json({ 
+        success: true,
+        message: `Importación completada: ${createdCount} partidos creados, ${skippedCount} filas omitidas`,
+        stats: {
+          created: createdCount,
+          skipped: skippedCount,
+          errors: errors.length > 0 ? errors : undefined
+        }
+      });
+    } catch (error: any) {
+      console.error('Error importing Excel schedule:', error);
+      res.status(500).json({ 
+        message: "Error al importar cronograma desde Excel", 
+        error: error.message || "Error desconocido"
+      });
+    }
+  });
+
   return { server: httpServer, broadcastUpdate, storage };
 }
