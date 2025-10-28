@@ -181,11 +181,20 @@
 }
 
 .animate-scroll-vertical {
-  animation: scroll-vertical 60s linear infinite;
+  animation: scroll-vertical 180s linear infinite;
   will-change: transform;
 }
 
 .animate-scroll-vertical:hover {
+  animation-play-state: paused;
+}
+
+.animate-scroll-vertical-fast {
+  animation: scroll-vertical 40s linear infinite;
+  will-change: transform;
+}
+
+.animate-scroll-vertical-fast:hover {
   animation-play-state: paused;
 }
 

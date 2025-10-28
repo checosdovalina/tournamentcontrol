@@ -452,7 +452,7 @@ export default function Display() {
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
-                      <div key={`current-${currentCount}`} className="animate-scroll-vertical space-y-3">
+                      <div key={`current-${currentCount}`} className="animate-scroll-vertical-fast space-y-3">
                         {currentMatches.map((match: any) => (
                           <MatchCard key={match.id} match={match} formatMatchDuration={formatMatchDuration} formatScore={formatScore} />
                         ))}
@@ -487,7 +487,7 @@ export default function Display() {
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
-                      <div key={`results-${resultsCount}`} className="animate-scroll-vertical space-y-3">
+                      <div key={`results-${resultsCount}`} className="animate-scroll-vertical-fast space-y-3">
                         {recentResults.map((result: any) => (
                           <ResultCard key={result.id} result={result} formatResultScore={formatResultScore} />
                         ))}
