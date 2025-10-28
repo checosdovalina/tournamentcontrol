@@ -190,7 +190,7 @@
 }
 
 .animate-scroll-vertical-fast {
-  animation: scroll-vertical 40s linear infinite;
+  animation: scroll-vertical 25s linear infinite;
   will-change: transform;
 }
 
