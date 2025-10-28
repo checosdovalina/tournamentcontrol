@@ -1003,8 +1003,12 @@ export class DatabaseStorage implements IStorage {
       }
 
       const allPresent = allPlayers.every((p) => p.isPresent);
-      if (allPresent) {
-        await this.updateScheduledMatch(scheduledMatchId, { status: "ready" });
+      if (allPresent && match.status !== "ready") {
+        // Set readySince only when transitioning to ready state
+        await this.updateScheduledMatch(scheduledMatchId, { 
+          status: "ready",
+          readySince: new Date()
+        });
       }
     }
 
@@ -1063,7 +1067,10 @@ export class DatabaseStorage implements IStorage {
       }
 
       if (match.status === "ready") {
-        await this.updateScheduledMatch(scheduledMatchId, { status: "scheduled" });
+        await this.updateScheduledMatch(scheduledMatchId, { 
+          status: "scheduled",
+          readySince: null
+        });
       }
     }
 
@@ -1122,7 +1129,10 @@ export class DatabaseStorage implements IStorage {
       }
 
       if (match.status === "ready") {
-        await this.updateScheduledMatch(scheduledMatchId, { status: "scheduled" });
+        await this.updateScheduledMatch(scheduledMatchId, { 
+          status: "scheduled",
+          readySince: null
+        });
       }
     }
 
