@@ -35,7 +35,7 @@ export default function DisplayRotative() {
   const { data: currentMatches = [] } = useQuery<any[]>({
     queryKey: ["/api/matches/current", tournament?.id],
     enabled: !!tournament?.id,
-    refetchInterval: 5000,
+    refetchInterval: 8000,
     staleTime: 0,
   });
 
@@ -49,7 +49,7 @@ export default function DisplayRotative() {
       return response.json();
     },
     enabled: !!tournament?.id,
-    refetchInterval: 5000,
+    refetchInterval: 8000,
     staleTime: 0,
   });
 
@@ -60,7 +60,7 @@ export default function DisplayRotative() {
   const { data: allResults = [] } = useQuery<any[]>({
     queryKey: ["/api/results/recent", tournament?.id],
     enabled: !!tournament?.id,
-    refetchInterval: 5000,
+    refetchInterval: 8000,
     staleTime: 0,
   });
 
