@@ -1096,7 +1096,8 @@ export class DatabaseStorage implements IStorage {
         }
       }
 
-      const allPresent = allPlayers.every((p) => p.isPresent);
+      // Verify ALL 4 players are present (strict validation)
+      const allPresent = allPlayers.length === 4 && allPlayers.every((p) => p.isPresent === true);
       if (allPresent && match.status !== "ready") {
         // Set readySince only the FIRST time match becomes ready (preserve existing value if any)
         const updateData: any = { status: "ready" };
