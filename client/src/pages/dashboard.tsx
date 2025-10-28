@@ -7,6 +7,7 @@ import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, 
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
+import ReadyQueue from "@/components/ready-queue";
 import RecentResults from "@/components/recent-results";
 import TournamentStats from "@/components/tournament-stats";
 import ScheduledMatches from "@/components/scheduled-matches";
@@ -255,7 +256,12 @@ export default function Dashboard() {
                 <CourtStatus />
               </div>
 
-              {/* Waiting List */}
+              {/* Ready Queue - Matches with all 4 players confirmed */}
+              <div className="lg:col-span-2">
+                <ReadyQueue tournamentId={tournament?.id} />
+              </div>
+
+              {/* Waiting List - Matches with partial confirmation */}
               <div className="lg:col-span-2">
                 <WaitingList tournamentId={tournament?.id} />
               </div>

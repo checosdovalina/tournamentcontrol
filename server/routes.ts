@@ -2479,6 +2479,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
+  // Get ready queue: matches with all 4 players confirmed, ordered by plannedTime then readySince
+  app.get("/api/scheduled-matches/ready-queue/:tournamentId", requireTournamentAccess(), async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const queue = await storage.getReadyQueue(tournamentId);
+      res.json(queue);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch ready queue", error: error.message });
+    }
+  });
+
   // Get scheduled matches for a specific day (public endpoint for display)
   app.get("/api/scheduled-matches/day/:tournamentId", async (req, res) => {
     try {

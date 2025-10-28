@@ -75,7 +75,8 @@ export function useWebSocket(userId?: string) {
                   query.queryKey[0] === "/api/scheduled-matches" ||
                   query.queryKey[0] === "/api/scheduled-matches/day" ||
                   query.queryKey[0] === "/api/scheduled-matches/today" ||
-                  query.queryKey[0] === "/api/scheduled-matches/ready"
+                  query.queryKey[0] === "/api/scheduled-matches/ready" ||
+                  query.queryKey[0] === "/api/scheduled-matches/ready-queue"
               });
               queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
               break;
