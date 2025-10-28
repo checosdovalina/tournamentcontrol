@@ -168,8 +168,9 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
   const handlePendingDqf = async (storage: IStorage, match: any, presentPairId: string, broadcastUpdate: (data: any) => void) => {
     log(`[Timeout Processor] Match ${match.id} marked as pending DQF - present pair: ${presentPairId}`);
     
-    // Update scheduled match to mark it as pending DQF
+    // Update scheduled match to mark it as pending DQF and change status to scheduled
     const updatedMatch = await storage.updateScheduledMatch(match.id, {
+      status: 'scheduled', // Change from 'ready' to 'scheduled' to remove from ready queue
       pendingDqf: true,
       defaultWinnerPairId: presentPairId, // Track which pair is present (potential winner)
     });
