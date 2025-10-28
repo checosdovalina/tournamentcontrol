@@ -35,7 +35,7 @@ export default function Display() {
   const { data: currentMatches = [] } = useQuery<any[]>({
     queryKey: ["/api/matches/current", tournament?.id],
     enabled: !!tournament?.id,
-    refetchInterval: 8000,
+    refetchInterval: 3000,
     staleTime: 0,
   });
 
@@ -59,7 +59,7 @@ export default function Display() {
   const { data: allResults = [] } = useQuery<any[]>({
     queryKey: ["/api/results/recent", tournament?.id],
     enabled: !!tournament?.id,
-    refetchInterval: 8000,
+    refetchInterval: 3000,
     staleTime: 0,
   });
 
