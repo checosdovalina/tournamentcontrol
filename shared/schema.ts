@@ -165,6 +165,7 @@ export const scheduledMatches = pgTable("scheduled_matches", {
   categoryId: varchar("category_id"),
   format: text("format"), // e.g., "Round Robin", "8vos", "4tos", "Semifinal", "Final"
   status: text("status").default("scheduled"), // scheduled, ready, assigned, playing, completed, cancelled
+  readySince: timestamp("ready_since"), // When match became ready (all 4 players confirmed)
   courtId: varchar("court_id"), // Assigned court (nullable until assigned)
   matchId: varchar("match_id"), // Link to active match when playing (nullable)
   outcome: text("outcome").default("normal"), // normal, default, cancelled
