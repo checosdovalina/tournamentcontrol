@@ -44,7 +44,7 @@ async function parsePDFSchedule(pdfPath: string): Promise<Match[]> {
     }
     
     // Detectar categoría (al inicio O después de la hora)
-    const categoriaMatch = line.match(/(SUMA \d+ \w+|CUARTA \w+|QUINTA \w+|TERCERA \w+|SENIORS 50\+)/);
+    const categoriaMatch = line.match(/(SUMA \d+ \w+|CUARTA \w+|QUINTA \w+|TERCERA \w+|SEGUNDA \w+|PRIMERA \w+|SEXTA KIDS|SEPTIMA KIDS|KIDS \w+|SENIORS 50\+|MASTER)/);
     if (categoriaMatch && currentHora) {
       const categoria = categoriaMatch[1];
       
@@ -73,7 +73,7 @@ async function parsePDFSchedule(pdfPath: string): Promise<Match[]> {
         }
         
         // Saltar si es otra categoría o hora
-        if (currentLine.match(/^(SUMA|CUARTA|QUINTA|TERCERA|SENIORS|Cancha|Jornada|\d{2}:\d{2}|Hora)/)) {
+        if (currentLine.match(/^(SUMA|CUARTA|QUINTA|TERCERA|SEGUNDA|PRIMERA|SEXTA|SEPTIMA|KIDS|SENIORS|MASTER|Cancha|Jornada|\d{2}:\d{2}|Hora)/)) {
           break;
         }
         

@@ -42,7 +42,7 @@ export async function parseTableFormatPDF(buffer: Buffer): Promise<Match[]> {
     }
     
     // Detectar categoría
-    const categoriaMatch = line.match(/(SUMA \d+ \w+|CUARTA \w+|QUINTA \w+|TERCERA \w+|SEGUNDA \w+|PRIMERA \w+|SENIORS 50\+)/);
+    const categoriaMatch = line.match(/(SUMA \d+ \w+|CUARTA \w+|QUINTA \w+|TERCERA \w+|SEGUNDA \w+|PRIMERA \w+|SEXTA KIDS|SEPTIMA KIDS|KIDS \w+|SENIORS 50\+|MASTER)/);
     if (categoriaMatch && currentHora) {
       const categoria = categoriaMatch[1];
       
@@ -154,20 +154,20 @@ function parseMatchBlock(block: string[], fecha: string, hora: string, cancha: s
       }
       
       if (!categoria) {
-        const catMatch = line.match(/(SUMA \d+|CUARTA|QUINTA|TERCERA|SEGUNDA|PRIMERA|SEXTA KIDS|SEPTIMA KIDS|SENIORS 50\+|MASTER)/i);
+        const catMatch = line.match(/(SUMA \d+|CUARTA|QUINTA|TERCERA|SEGUNDA|PRIMERA|SEXTA KIDS|SEPTIMA KIDS|KIDS|SENIORS 50\+|MASTER)/i);
         if (catMatch) {
           categoria = catMatch[1];
           
           if (i + 1 < cleanBlock.length) {
             const nextLine = cleanBlock[i + 1];
-            if (nextLine.match(/^(FEMENIL|VARONIL)$/i)) {
+            if (nextLine.match(/^(FEMENIL|VARONIL|KIDS)$/i)) {
               categoria += ` ${nextLine}`;
             }
           }
         }
       }
       
-      const isSystemLine = line.match(/(SUMA|CUARTA|QUINTA|TERCERA|SEGUNDA|PRIMERA|SEXTA|SEPTIMA|SENIORS|MASTER|FEMENIL|VARONIL|PARQUE|ESPAÑA|EL CLUBSITO|LAS VILLAS|PLAY PADEL|RR-J\d+)/i);
+      const isSystemLine = line.match(/(SUMA|CUARTA|QUINTA|TERCERA|SEGUNDA|PRIMERA|SEXTA|SEPTIMA|KIDS|SENIORS|MASTER|FEMENIL|VARONIL|PARQUE|ESPAÑA|EL CLUBSITO|LAS VILLAS|PLAY PADEL|RR-J\d+)/i);
       
       if (!isSystemLine && line.length > 2 && jugadores.length < 4) {
         const nombreLimpio = line.replace(/\s*-\s*$/, '').trim();

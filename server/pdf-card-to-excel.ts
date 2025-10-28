@@ -101,7 +101,7 @@ function parseMatchBlock(block: string[], fecha: string, hora: string, cancha: s
       
       // Detectar categoría (palabras clave)
       if (!categoria) {
-        const catMatch = line.match(/(SUMA \d+|CUARTA|QUINTA|TERCERA|SEGUNDA|PRIMERA|SEXTA KIDS|SEPTIMA KIDS|SENIORS 50\+|MASTER)/i);
+        const catMatch = line.match(/(SUMA \d+|CUARTA|QUINTA|TERCERA|SEGUNDA|PRIMERA|SEXTA KIDS|SEPTIMA KIDS|KIDS|SENIORS 50\+|MASTER)/i);
         if (catMatch) {
           // Construir categoría completa mirando la siguiente línea
           categoria = catMatch[1];
@@ -109,7 +109,7 @@ function parseMatchBlock(block: string[], fecha: string, hora: string, cancha: s
           // Si la siguiente línea es FEMENIL o VARONIL, agregarla
           if (i + 1 < cleanBlock.length) {
             const nextLine = cleanBlock[i + 1];
-            if (nextLine.match(/^(FEMENIL|VARONIL)$/i)) {
+            if (nextLine.match(/^(FEMENIL|VARONIL|KIDS)$/i)) {
               categoria += ` ${nextLine}`;
             }
           }
@@ -117,7 +117,7 @@ function parseMatchBlock(block: string[], fecha: string, hora: string, cancha: s
       }
       
       // Detectar jugadores (líneas que NO contienen palabras clave de sistema)
-      const isSystemLine = line.match(/(SUMA|CUARTA|QUINTA|TERCERA|SEGUNDA|PRIMERA|SEXTA|SEPTIMA|SENIORS|MASTER|FEMENIL|VARONIL|PARQUE|ESPAÑA|EL CLUBSITO|LAS VILLAS|PLAY PADEL|RR-J\d+)/i);
+      const isSystemLine = line.match(/(SUMA|CUARTA|QUINTA|TERCERA|SEGUNDA|PRIMERA|SEXTA|SEPTIMA|KIDS|SENIORS|MASTER|FEMENIL|VARONIL|PARQUE|ESPAÑA|EL CLUBSITO|LAS VILLAS|PLAY PADEL|RR-J\d+)/i);
       
       if (!isSystemLine && line.length > 2 && jugadores.length < 4) {
         // Limpiar el nombre del jugador (quitar el "-" al final si existe)
