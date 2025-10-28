@@ -1098,11 +1098,12 @@ export class DatabaseStorage implements IStorage {
 
       const allPresent = allPlayers.every((p) => p.isPresent);
       if (allPresent && match.status !== "ready") {
-        // Set readySince only when transitioning to ready state
-        await this.updateScheduledMatch(scheduledMatchId, { 
-          status: "ready",
-          readySince: new Date()
-        });
+        // Set readySince only the FIRST time match becomes ready (preserve existing value if any)
+        const updateData: any = { status: "ready" };
+        if (!match.readySince) {
+          updateData.readySince = new Date();
+        }
+        await this.updateScheduledMatch(scheduledMatchId, updateData);
       }
     }
 
@@ -1161,9 +1162,9 @@ export class DatabaseStorage implements IStorage {
       }
 
       if (match.status === "ready") {
+        // Keep readySince when reverting to scheduled - preserves first ready timestamp
         await this.updateScheduledMatch(scheduledMatchId, { 
-          status: "scheduled",
-          readySince: null
+          status: "scheduled"
         });
       }
     }
@@ -1223,9 +1224,9 @@ export class DatabaseStorage implements IStorage {
       }
 
       if (match.status === "ready") {
+        // Keep readySince when reverting to scheduled - preserves first ready timestamp
         await this.updateScheduledMatch(scheduledMatchId, { 
-          status: "scheduled",
-          readySince: null
+          status: "scheduled"
         });
       }
     }
