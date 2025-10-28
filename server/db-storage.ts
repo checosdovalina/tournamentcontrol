@@ -453,46 +453,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCurrentMatches(tournamentId: string): Promise<MatchWithDetails[]> {
-    // Get all current matches
     const currentMatches = await db
       .select()
       .from(matches)
       .where(and(eq(matches.tournamentId, tournamentId), eq(matches.status, "playing")));
 
-    if (currentMatches.length === 0) return [];
-
-    // Get all related IDs
-    const courtIds = Array.from(new Set(currentMatches.map(m => m.courtId)));
-    const pairIds = Array.from(new Set(currentMatches.flatMap(m => [m.pair1Id, m.pair2Id])));
-
-    // Fetch all related data in parallel
-    const [courtsData, pairsData] = await Promise.all([
-      db.select().from(courts).where(inArray(courts.id, courtIds)),
-      db.select().from(pairs).where(inArray(pairs.id, pairIds))
-    ]);
-
-    // Get all player IDs
-    const playerIds = Array.from(new Set(pairsData.flatMap(p => [p.player1Id, p.player2Id])));
-    const playersData = await db.select().from(players).where(inArray(players.id, playerIds));
-
-    // Create lookup maps
-    const courtsMap = new Map(courtsData.map(c => [c.id, c]));
-    const pairsMap = new Map(pairsData.map(p => [p.id, p]));
-    const playersMap = new Map(playersData.map(p => [p.id, p]));
-
-    // Build result
     const result: MatchWithDetails[] = [];
     for (const match of currentMatches) {
-      const court = courtsMap.get(match.courtId);
-      const pair1 = pairsMap.get(match.pair1Id);
-      const pair2 = pairsMap.get(match.pair2Id);
+      const court = await this.getCourt(match.courtId);
+      const pair1 = await this.getPair(match.pair1Id);
+      const pair2 = await this.getPair(match.pair2Id);
 
       if (!court || !pair1 || !pair2) continue;
 
-      const player1_1 = playersMap.get(pair1.player1Id);
-      const player1_2 = playersMap.get(pair1.player2Id);
-      const player2_1 = playersMap.get(pair2.player1Id);
-      const player2_2 = playersMap.get(pair2.player2Id);
+      const player1_1 = await this.getPlayer(pair1.player1Id);
+      const player1_2 = await this.getPlayer(pair1.player2Id);
+      const player2_1 = await this.getPlayer(pair2.player1Id);
+      const player2_2 = await this.getPlayer(pair2.player2Id);
 
       if (!player1_1 || !player1_2 || !player2_1 || !player2_2) continue;
 

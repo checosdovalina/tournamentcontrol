@@ -35,7 +35,7 @@ export default function DisplayRotative() {
   const { data: currentMatches = [] } = useQuery<any[]>({
     queryKey: ["/api/matches/current", tournament?.id],
     enabled: !!tournament?.id,
-    refetchInterval: 3000,
+    refetchInterval: 1000,
     staleTime: 0,
   });
 
@@ -60,7 +60,7 @@ export default function DisplayRotative() {
   const { data: allResults = [] } = useQuery<any[]>({
     queryKey: ["/api/results/recent", tournament?.id],
     enabled: !!tournament?.id,
-    refetchInterval: 3000,
+    refetchInterval: 2000,
     staleTime: 0,
   });
 
@@ -351,7 +351,7 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
     
     const timer = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
-    }, 3000); // 3 segundos por página
+    }, 8000); // 8 segundos por página
     
     return () => clearInterval(timer);
   }, [totalPages]);
@@ -565,7 +565,7 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
     
     const timer = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
-    }, 3000); // 3 segundos por página
+    }, 8000); // 8 segundos por página
     
     return () => clearInterval(timer);
   }, [totalPages]);
