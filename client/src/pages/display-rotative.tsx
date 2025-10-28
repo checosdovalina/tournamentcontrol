@@ -49,7 +49,7 @@ export default function DisplayRotative() {
       return response.json();
     },
     enabled: !!tournament?.id,
-    refetchInterval: 8000,
+    refetchInterval: 5000,
     staleTime: 0,
   });
 
