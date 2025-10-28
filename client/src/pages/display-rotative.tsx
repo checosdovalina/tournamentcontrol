@@ -351,7 +351,7 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
     
     const timer = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
-    }, 2000); // 2 segundos por página
+    }, 9000); // 9 segundos por página
     
     return () => clearInterval(timer);
   }, [totalPages]);
@@ -565,7 +565,7 @@ function ResultsScreen({ results, formatScore }: { results: any[], formatScore: 
     
     const timer = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
-    }, 2000); // 2 segundos por página
+    }, 9000); // 9 segundos por página
     
     return () => clearInterval(timer);
   }, [totalPages]);
