@@ -775,6 +775,13 @@ export class DatabaseStorage implements IStorage {
       const court = match.courtId ? courtsMap.get(match.courtId) : undefined;
       const matchPlayers = matchPlayersMap.get(match.id) || [];
 
+      // CRITICAL VALIDATION: Only include matches where ALL 4 players are confirmed
+      const confirmedPlayers = matchPlayers.filter(mp => mp.isPresent === true);
+      if (confirmedPlayers.length !== 4) {
+        // Skip this match - not ready (missing player confirmations)
+        continue;
+      }
+
       matchesWithDetails.push({
         ...match,
         pair1: { ...pair1, player1: player1_1, player2: player1_2 },
