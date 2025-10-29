@@ -1104,13 +1104,18 @@ export class DatabaseStorage implements IStorage {
       }
 
       // Verify ALL 4 players are present (strict validation)
-      const allPresent = allPlayers.length === 4 && allPlayers.every((p) => p.isPresent === true);
+      const confirmedPlayers = allPlayers.filter(p => p.isPresent === true);
+      const allPresent = allPlayers.length === 4 && confirmedPlayers.length === 4;
+      
+      console.log(`[CHECK-IN DEBUG] Match ${scheduledMatchId}: Total players=${allPlayers.length}, Confirmed=${confirmedPlayers.length}, AllPresent=${allPresent}`);
+      
       if (allPresent && match.status !== "ready") {
         // Set readySince only the FIRST time match becomes ready (preserve existing value if any)
         const updateData: any = { status: "ready" };
         if (!match.readySince) {
           updateData.readySince = new Date();
         }
+        console.log(`[CHECK-IN] Marking match ${scheduledMatchId} as READY - all 4 players confirmed`);
         await this.updateScheduledMatch(scheduledMatchId, updateData);
       }
     }
@@ -1171,6 +1176,7 @@ export class DatabaseStorage implements IStorage {
 
       if (match.status === "ready") {
         // Keep readySince when reverting to scheduled - preserves first ready timestamp
+        console.log(`[CHECK-OUT] Reverting match ${scheduledMatchId} from READY to SCHEDULED - player removed`);
         await this.updateScheduledMatch(scheduledMatchId, { 
           status: "scheduled"
         });
@@ -1233,6 +1239,7 @@ export class DatabaseStorage implements IStorage {
 
       if (match.status === "ready") {
         // Keep readySince when reverting to scheduled - preserves first ready timestamp
+        console.log(`[RESET] Reverting match ${scheduledMatchId} from READY to SCHEDULED - player status reset`);
         await this.updateScheduledMatch(scheduledMatchId, { 
           status: "scheduled"
         });
