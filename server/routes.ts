@@ -2654,22 +2654,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         return res.status(404).json({ message: "Scheduled match or player not found" });
       }
       
-      // Get updated match details to check if ready
+      // Get updated match details (checkInPlayer already handles status updates)
       let match = await storage.getScheduledMatch(id);
-      
-      // Check if at least one complete pair is confirmed and update status to 'ready'
-      if (match && match.status === 'scheduled') {
-        const checkInRecords = await storage.getScheduledMatchPlayers(id);
-        const pair1CheckIns = checkInRecords.filter(p => p.pairId === match!.pair1Id && p.isPresent).length;
-        const pair2CheckIns = checkInRecords.filter(p => p.pairId === match!.pair2Id && p.isPresent).length;
-        
-        const pair1Complete = pair1CheckIns === 2;
-        const pair2Complete = pair2CheckIns === 2;
-        
-        if (pair1Complete || pair2Complete) {
-          match = await storage.updateScheduledMatch(id, { status: 'ready' });
-        }
-      }
       
       // Auto-start match if ALL players confirmed AND court assigned
       // Works with both 'ready' and 'assigned' status
