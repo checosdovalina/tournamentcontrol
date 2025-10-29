@@ -903,26 +903,22 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
 
                 {/* Court Assignment Controls */}
                 {(() => {
-                  // Check if at least one pair is confirmed
+                  // Check if ALL 4 players are confirmed (both pairs complete)
                   const pair1Players = match.players.filter(p => p.pairId === match.pair1Id);
                   const pair2Players = match.players.filter(p => p.pairId === match.pair2Id);
                   const pair1Confirmed = pair1Players.length === 2 && pair1Players.every(p => p.isPresent === true);
                   const pair2Confirmed = pair2Players.length === 2 && pair2Players.every(p => p.isPresent === true);
-                  const atLeastOnePairConfirmed = pair1Confirmed || pair2Confirmed;
                   const allPlayersConfirmed = pair1Confirmed && pair2Confirmed;
 
-                  // Don't show court assignment for completed or playing matches
-                  if (!atLeastOnePairConfirmed || !(userRole === 'admin' || userRole === 'scorekeeper') || match.status === 'completed' || match.status === 'playing') {
+                  // Don't show court assignment unless ALL 4 players are confirmed
+                  if (!allPlayersConfirmed || !(userRole === 'admin' || userRole === 'scorekeeper') || match.status === 'completed' || match.status === 'playing') {
                     return null;
                   }
 
                   return (
                     <div className="border-t pt-4 space-y-3">
                       <p className="text-sm font-medium text-green-600">
-                        {allPlayersConfirmed 
-                          ? "✓ Todos los jugadores presentes - Listo para asignar cancha"
-                          : "✓ Al menos una pareja confirmada - Puedes asignar cancha"
-                        }
+                        ✓ Todos los jugadores presentes - Listo para asignar cancha
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2">
                         <Button
