@@ -188,57 +188,65 @@ export default function Display() {
     return () => clearInterval(interval);
   }, []);
 
-  // Reset index if it's out of bounds when ads change
-  useEffect(() => {
-    if (activeAds.length > 0 && currentAdIndex >= activeAds.length) {
-      setCurrentAdIndex(0);
-    }
-  }, [activeAds, currentAdIndex]);
+  // Create stable hash of ad configurations to detect changes
+  const adsConfigHash = useMemo(() => {
+    return activeAds
+      .map((ad: any) => `${ad.id}-${ad.displayDuration}-${ad.displayInterval}`)
+      .join('|');
+  }, [activeAds]);
 
-  // Auto-rotate advertisements based on displayDuration and displayInterval
+  // Stable advertisement rotation system using refs to prevent timer resets
   useEffect(() => {
-    const ads = activeAdsRef.current;
-    
-    if (ads.length === 0) {
+    if (activeAds.length === 0) {
       setShowAd(false);
       setCurrentAdIndex(0);
       return;
     }
 
-    const currentAd = ads[currentAdIndex];
-    if (!currentAd) {
-      setShowAd(false);
-      setCurrentAdIndex(0);
-      return;
-    }
+    let showTimer: NodeJS.Timeout | null = null;
+    let hideTimer: NodeJS.Timeout | null = null;
+    let isActive = true;
 
-    let intervalTimer: NodeJS.Timeout | null = null;
+    const rotateAd = (index: number) => {
+      if (!isActive || activeAdsRef.current.length === 0) return;
 
-    // Show ad for displayDuration (in seconds)
-    setShowAd(true);
-    const displayDurationMs = (currentAd.displayDuration || 10) * 1000;
-    const displayIntervalMs = (currentAd.displayInterval || 30) * 1000;
-    
-    const showTimer = setTimeout(() => {
-      setShowAd(false);
-      
-      // Wait for remaining interval time before showing next ad
-      const waitTime = Math.max(displayIntervalMs - displayDurationMs, 1000);
-      intervalTimer = setTimeout(() => {
-        setCurrentAdIndex((prev) => {
-          // Access latest activeAds length from ref
-          const adsCount = activeAdsRef.current.length;
-          if (adsCount === 0) return 0;
-          return (prev + 1) % adsCount;
-        });
-      }, waitTime);
-    }, displayDurationMs);
+      const currentAd = activeAdsRef.current[index];
+      if (!currentAd) {
+        rotateAd(0);
+        return;
+      }
+
+      // Show the ad
+      setCurrentAdIndex(index);
+      setShowAd(true);
+
+      const displayDurationMs = (currentAd.displayDuration || 10) * 1000;
+      const displayIntervalMs = (currentAd.displayInterval || 30) * 1000;
+
+      // Hide after displayDuration
+      hideTimer = setTimeout(() => {
+        if (!isActive) return;
+        setShowAd(false);
+
+        // Wait for the interval gap, then show next ad
+        const waitTime = Math.max(displayIntervalMs - displayDurationMs, 1000);
+        showTimer = setTimeout(() => {
+          if (!isActive) return;
+          const nextIndex = (index + 1) % activeAdsRef.current.length;
+          rotateAd(nextIndex);
+        }, waitTime);
+      }, displayDurationMs);
+    };
+
+    // Start rotation
+    rotateAd(0);
 
     return () => {
-      clearTimeout(showTimer);
-      if (intervalTimer) clearTimeout(intervalTimer);
+      isActive = false;
+      if (showTimer) clearTimeout(showTimer);
+      if (hideTimer) clearTimeout(hideTimer);
     };
-  }, [currentAdIndex]);
+  }, [adsConfigHash]); // Recreate when ad configurations change
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('es-ES', { 

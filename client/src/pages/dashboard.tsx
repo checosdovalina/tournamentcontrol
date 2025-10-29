@@ -60,6 +60,10 @@ export default function Dashboard() {
     setLocation("/display-rotative");
   };
 
+  const openControlDisplay = () => {
+    setLocation("/display-control");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
@@ -228,6 +232,10 @@ export default function Dashboard() {
                   <DropdownMenuItem onClick={openRotativeDisplay} className="cursor-pointer">
                     <Repeat className="w-4 h-4 mr-2" />
                     Display Rotativo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={openControlDisplay} className="cursor-pointer">
+                    <Users className="w-4 h-4 mr-2" />
+                    Mesa de Control
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
