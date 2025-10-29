@@ -198,11 +198,23 @@
   animation-play-state: paused;
 }
 
+.animate-scroll-vertical-slow {
+  animation: scroll-vertical 120s linear infinite;
+  will-change: transform;
+}
+
+.animate-scroll-vertical-slow:hover {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee {
     animation: none;
   }
   .animate-scroll-vertical {
+    animation: none;
+  }
+  .animate-scroll-vertical-slow {
     animation: none;
   }
 }

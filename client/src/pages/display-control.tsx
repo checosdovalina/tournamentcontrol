@@ -80,62 +80,168 @@ export default function DisplayControl() {
                 Cola de Turnos
               </h2>
               
-              <div className="flex-1 overflow-y-auto space-y-3" data-testid="ready-queue-list">
+              <div className="flex-1 overflow-hidden relative" data-testid="ready-queue-list">
                 {readyQueue.length === 0 ? (
                   <div className="text-white/60 text-center py-12">
                     No hay partidos en cola
                   </div>
-                ) : (
-                  readyQueue.map((match: any, index: number) => {
-                    // Defensive checks for optional fields
-                    const pair1Player1 = match.pair1?.player1?.name || 'Jugador 1';
-                    const pair1Player2 = match.pair1?.player2?.name || 'Jugador 2';
-                    const pair2Player1 = match.pair2?.player1?.name || 'Jugador 3';
-                    const pair2Player2 = match.pair2?.player2?.name || 'Jugador 4';
-                    const categoryName = match.category?.name;
-                    const plannedTime = match.plannedTime || '--:--';
-                    
-                    return (
-                      <div 
-                        key={match.id}
-                        className="bg-white/5 rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-colors"
-                        data-testid={`ready-match-${index + 1}`}
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
-                              #{index + 1}
+                ) : readyQueue.length <= 3 ? (
+                  <div className="space-y-3">
+                    {readyQueue.map((match: any, index: number) => {
+                      // Defensive checks for optional fields
+                      const pair1Player1 = match.pair1?.player1?.name || 'Jugador 1';
+                      const pair1Player2 = match.pair1?.player2?.name || 'Jugador 2';
+                      const pair2Player1 = match.pair2?.player1?.name || 'Jugador 3';
+                      const pair2Player2 = match.pair2?.player2?.name || 'Jugador 4';
+                      const categoryName = match.category?.name;
+                      const plannedTime = match.plannedTime || '--:--';
+                      
+                      return (
+                        <div 
+                          key={match.id}
+                          className="bg-white/5 rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-colors"
+                          data-testid={`ready-match-${index + 1}`}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
+                                #{index + 1}
+                              </div>
+                              {categoryName && (
+                                <span className="px-3 py-1 bg-orange-600/80 text-white rounded-lg text-sm font-semibold">
+                                  {categoryName}
+                                </span>
+                              )}
                             </div>
-                            {categoryName && (
-                              <span className="px-3 py-1 bg-orange-600/80 text-white rounded-lg text-sm font-semibold">
-                                {categoryName}
-                              </span>
+                            <div className="flex items-center text-white/60 text-sm">
+                              <Clock className="w-4 h-4 mr-1" />
+                              {plannedTime}
+                            </div>
+                          </div>
+                          <div className="space-y-2 text-white">
+                            <div className="text-base font-medium">
+                              {pair1Player1} / {pair1Player2}
+                            </div>
+                            <div className="text-base font-medium">
+                              {pair2Player1} / {pair2Player2}
+                            </div>
+                          </div>
+                          {match.readySince && (
+                            <div className="mt-2 text-xs text-white/50">
+                              Esperando: {new Date(match.readySince).toLocaleTimeString('es-ES', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="h-full overflow-hidden">
+                    <div className="animate-scroll-vertical-slow space-y-3">
+                      {readyQueue.map((match: any, index: number) => {
+                        const pair1Player1 = match.pair1?.player1?.name || 'Jugador 1';
+                        const pair1Player2 = match.pair1?.player2?.name || 'Jugador 2';
+                        const pair2Player1 = match.pair2?.player1?.name || 'Jugador 3';
+                        const pair2Player2 = match.pair2?.player2?.name || 'Jugador 4';
+                        const categoryName = match.category?.name;
+                        const plannedTime = match.plannedTime || '--:--';
+                        
+                        return (
+                          <div 
+                            key={match.id}
+                            className="bg-white/5 rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-colors"
+                            data-testid={`ready-match-${index + 1}`}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
+                                  #{index + 1}
+                                </div>
+                                {categoryName && (
+                                  <span className="px-3 py-1 bg-orange-600/80 text-white rounded-lg text-sm font-semibold">
+                                    {categoryName}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center text-white/60 text-sm">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {plannedTime}
+                              </div>
+                            </div>
+                            <div className="space-y-2 text-white">
+                              <div className="text-base font-medium">
+                                {pair1Player1} / {pair1Player2}
+                              </div>
+                              <div className="text-base font-medium">
+                                {pair2Player1} / {pair2Player2}
+                              </div>
+                            </div>
+                            {match.readySince && (
+                              <div className="mt-2 text-xs text-white/50">
+                                Esperando: {new Date(match.readySince).toLocaleTimeString('es-ES', { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}
+                              </div>
                             )}
                           </div>
-                          <div className="flex items-center text-white/60 text-sm">
-                            <Clock className="w-4 h-4 mr-1" />
-                            {plannedTime}
+                        );
+                      })}
+                      {/* Duplicate for seamless loop */}
+                      {readyQueue.map((match: any, index: number) => {
+                        const pair1Player1 = match.pair1?.player1?.name || 'Jugador 1';
+                        const pair1Player2 = match.pair1?.player2?.name || 'Jugador 2';
+                        const pair2Player1 = match.pair2?.player1?.name || 'Jugador 3';
+                        const pair2Player2 = match.pair2?.player2?.name || 'Jugador 4';
+                        const categoryName = match.category?.name;
+                        const plannedTime = match.plannedTime || '--:--';
+                        
+                        return (
+                          <div 
+                            key={`${match.id}-dup`}
+                            className="bg-white/5 rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-colors"
+                            data-testid={`ready-match-${index + 1}-dup`}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
+                                  #{index + 1}
+                                </div>
+                                {categoryName && (
+                                  <span className="px-3 py-1 bg-orange-600/80 text-white rounded-lg text-sm font-semibold">
+                                    {categoryName}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center text-white/60 text-sm">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {plannedTime}
+                              </div>
+                            </div>
+                            <div className="space-y-2 text-white">
+                              <div className="text-base font-medium">
+                                {pair1Player1} / {pair1Player2}
+                              </div>
+                              <div className="text-base font-medium">
+                                {pair2Player1} / {pair2Player2}
+                              </div>
+                            </div>
+                            {match.readySince && (
+                              <div className="mt-2 text-xs text-white/50">
+                                Esperando: {new Date(match.readySince).toLocaleTimeString('es-ES', { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                        <div className="space-y-2 text-white">
-                          <div className="text-base font-medium">
-                            {pair1Player1} / {pair1Player2}
-                          </div>
-                          <div className="text-base font-medium">
-                            {pair2Player1} / {pair2Player2}
-                          </div>
-                        </div>
-                        {match.readySince && (
-                          <div className="mt-2 text-xs text-white/50">
-                            Esperando: {new Date(match.readySince).toLocaleTimeString('es-ES', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
