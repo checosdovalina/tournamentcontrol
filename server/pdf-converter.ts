@@ -16,10 +16,10 @@ interface Match {
 export async function parseTableFormatPDF(buffer: Buffer): Promise<Match[]> {
   const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data: buffer });
-  const data = await parser.getText();
+  const result = await parser.getText();
   
   const matches: Match[] = [];
-  const lines = data.text.split('\n').map((line: string) => line.trim()).filter((line: string) => line.length > 0);
+  const lines = result.text.split('\n').map((line: string) => line.trim()).filter((line: string) => line.length > 0);
   
   let currentDate = '';
   let currentHora = '';
@@ -98,9 +98,9 @@ export async function parseTableFormatPDF(buffer: Buffer): Promise<Match[]> {
 export async function parseCardFormatPDF(buffer: Buffer): Promise<Match[]> {
   const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data: buffer });
-  const data = await parser.getText();
+  const result = await parser.getText();
   
-  const lines = data.text.split('\n');
+  const lines = result.text.split('\n');
   const matches: Match[] = [];
   
   let fecha = '';
