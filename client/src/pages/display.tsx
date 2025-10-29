@@ -250,8 +250,12 @@ export default function Display() {
 
   const formatMatchDuration = (startTime: string | Date) => {
     const start = new Date(startTime);
-    const now = new Date();
-    const diffMinutes = Math.floor((now.getTime() - start.getTime()) / (1000 * 60));
+    
+    // Get current time in tournament timezone
+    const tournamentTz = tournament?.timezone || 'America/Mexico_City';
+    const nowInTournamentTz = new Date(new Date().toLocaleString('en-US', { timeZone: tournamentTz }));
+    
+    const diffMinutes = Math.floor((nowInTournamentTz.getTime() - start.getTime()) / (1000 * 60));
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
     

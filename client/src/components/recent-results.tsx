@@ -20,9 +20,10 @@ import {
 interface RecentResultsProps {
   tournamentId?: string;
   showActions?: boolean;
+  timezone?: string;
 }
 
-export default function RecentResults({ tournamentId, showActions = false }: RecentResultsProps) {
+export default function RecentResults({ tournamentId, showActions = false, timezone }: RecentResultsProps) {
   const [editingResult, setEditingResult] = useState<any>(null);
   const [deletingResultId, setDeletingResultId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -60,9 +61,12 @@ export default function RecentResults({ tournamentId, showActions = false }: Rec
   });
 
   const formatTimeAgo = (createdAt: string | Date) => {
-    const now = new Date();
+    // Get current time in tournament timezone
+    const tournamentTz = timezone || 'America/Mexico_City';
+    const nowInTournamentTz = new Date(new Date().toLocaleString('en-US', { timeZone: tournamentTz }));
+    
     const created = new Date(createdAt);
-    const diffMinutes = Math.floor((now.getTime() - created.getTime()) / (1000 * 60));
+    const diffMinutes = Math.floor((nowInTournamentTz.getTime() - created.getTime()) / (1000 * 60));
     
     if (diffMinutes < 1) return "Hace menos de 1 min";
     if (diffMinutes < 60) return `Hace ${diffMinutes} min`;

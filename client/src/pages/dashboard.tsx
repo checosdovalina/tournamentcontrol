@@ -39,7 +39,7 @@ export default function Dashboard() {
     queryKey: ["/api/auth/me"],
   });
 
-  const { data: tournament } = useQuery<{ id: string; name: string; clubId: string; startDate: Date; endDate: Date; isActive: boolean | null; config: any; userRole?: string }>({
+  const { data: tournament } = useQuery<{ id: string; name: string; clubId: string; startDate: Date; endDate: Date; isActive: boolean | null; config: any; userRole?: string; timezone?: string }>({
     queryKey: ["/api/tournament"],
   });
 
@@ -268,7 +268,7 @@ export default function Dashboard() {
 
               {/* Recent Results */}
               <div className="lg:col-span-1">
-                <RecentResults tournamentId={tournament?.id} showActions={true} />
+                <RecentResults tournamentId={tournament?.id} showActions={true} timezone={tournament?.timezone} />
               </div>
             </div>
 
