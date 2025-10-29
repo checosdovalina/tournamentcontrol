@@ -53,6 +53,14 @@ export default function Display() {
     staleTime: 0,
   });
 
+  // Get ready queue to calculate turn positions
+  const { data: readyQueue = [] } = useQuery<any[]>({
+    queryKey: ["/api/scheduled-matches/ready-queue", tournament?.id],
+    enabled: !!tournament?.id,
+    refetchInterval: 3000,
+    staleTime: 0,
+  });
+
   // Show all scheduled matches from today without time filtering
   const scheduledMatches = allScheduledMatches;
 
@@ -412,17 +420,17 @@ export default function Display() {
                   ) : scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').length <= 2 ? (
                     <div className="space-y-3">
                       {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
-                        <NextMatchCard key={match.id} match={match} />
+                        <NextMatchCard key={match.id} match={match} readyQueue={readyQueue} />
                       ))}
                     </div>
                   ) : (
                     <div className="h-full overflow-hidden">
                       <div key={`upcoming-${upcomingCount}`} className="animate-scroll-vertical space-y-3">
                         {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
-                          <NextMatchCard key={match.id} match={match} />
+                          <NextMatchCard key={match.id} match={match} readyQueue={readyQueue} />
                         ))}
                         {scheduledMatches.filter((m: any) => m.status !== 'playing' && m.status !== 'completed' && m.status !== 'cancelled').map((match: any) => (
-                          <NextMatchCard key={`${match.id}-dup`} match={match} />
+                          <NextMatchCard key={`${match.id}-dup`} match={match} readyQueue={readyQueue} />
                         ))}
                       </div>
                     </div>
@@ -679,7 +687,7 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
 }
 
 // Next Match Card Component
-function NextMatchCard({ match }: any) {
+function NextMatchCard({ match, readyQueue }: any) {
   const getStatusBadge = () => {
     if (match.status === 'assigned' && match.court) {
       // Check if it's a pre-assignment
@@ -689,6 +697,19 @@ function NextMatchCard({ match }: any) {
       return <span className="text-white bg-purple-600/80 text-sm px-2 py-1 rounded">Cancha asignada</span>;
     }
     if (match.status === 'ready') {
+      // Calculate turn position in ready queue
+      const queuePosition = readyQueue?.findIndex((m: any) => m.id === match.id);
+      if (queuePosition !== undefined && queuePosition >= 0) {
+        const turnNumber = queuePosition + 1;
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-white bg-green-600/80 text-sm px-2 py-1 rounded">✓ Listos</span>
+            <span className="text-white bg-blue-600/90 text-sm px-2 py-1 rounded font-bold">
+              Turno #{turnNumber}
+            </span>
+          </div>
+        );
+      }
       return <span className="text-white bg-green-600/80 text-sm px-2 py-1 rounded">✓ Listos</span>;
     }
     const presentCount = match.players?.filter((p: any) => p.isPresent).length || 0;
