@@ -50,6 +50,7 @@ export const courts = pgTable("courts", {
   clubId: varchar("club_id").notNull(),
   isAvailable: boolean("is_available").default(true),
   preAssignedScheduledMatchId: varchar("pre_assigned_scheduled_match_id"), // Pre-assigned match waiting for court to be free
+  streamUrl: text("stream_url"), // URL del stream de video en vivo de la cancha
   createdAt: timestamp("created_at").defaultNow(),
 });
 
