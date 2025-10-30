@@ -201,7 +201,7 @@ export default function DisplayStream() {
       <div className="h-screen flex flex-col p-4 gap-4">
         
         {/* Header with logos and court name */}
-        <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+        <div className="flex items-center justify-between bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-4 border border-gray-700 shadow-2xl">
           <div className="flex items-center gap-4">
             <img 
               src={getTournamentLogo()} 
@@ -296,7 +296,7 @@ export default function DisplayStream() {
 
           {/* Sponsor Banner */}
           {banners.length > 0 && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 h-24">
+            <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-4 border border-gray-700 shadow-xl h-24">
               <div className="h-full overflow-hidden relative">
                 <div 
                   className="flex gap-8 animate-marquee"
