@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus } from "lucide-react";
+import { Plus, Video } from "lucide-react";
 
 interface ManageCourtsModalProps {
   open: boolean;
@@ -184,6 +184,17 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                             data-testid={`button-end-match-${court.name.toLowerCase().replace(' ', '-')}`}
                           >
                             Finalizar
+                          </Button>
+                        )}
+                        {court.streamUrl && (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => window.open(`/display-stream/${court.id}`, '_blank')}
+                            data-testid={`button-view-stream-${court.name.toLowerCase().replace(' ', '-')}`}
+                          >
+                            <Video className="w-4 h-4 mr-1" />
+                            Ver Stream
                           </Button>
                         )}
                         <Button
