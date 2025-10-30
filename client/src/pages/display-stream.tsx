@@ -5,7 +5,7 @@ import { useWebSocket } from "@/hooks/use-websocket";
 import { useKeepAwake } from "@/hooks/use-keep-awake";
 import { getCurrentDayTimeInTimezone } from "@/lib/utils";
 import courtflowLogoNew from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
-import logoRecord from "@assets/logo-record.png";
+import logoRecord from "@assets/logo-record-new.png";
 import { X } from "lucide-react";
 
 export default function DisplayStream() {
