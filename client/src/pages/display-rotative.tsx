@@ -141,7 +141,7 @@ export default function DisplayRotative() {
         if (currentMinutes < startMinutes || currentMinutes > endMinutes) return false;
       }
       return true;
-    });
+    }).sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   }, [advertisements, timeKey]);
 
   const activeBanners = banners

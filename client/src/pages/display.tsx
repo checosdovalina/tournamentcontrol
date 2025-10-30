@@ -172,7 +172,7 @@ export default function Display() {
       }
 
       return true;
-    });
+    }).sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   }, [advertisements, timeKey]);
 
   // Keep ref updated with latest activeAds
