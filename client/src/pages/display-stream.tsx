@@ -56,12 +56,24 @@ export default function DisplayStream() {
 
   const { data: banners = [] } = useQuery<any[]>({
     queryKey: ["/api/banners", tournament?.id],
+    queryFn: async () => {
+      if (!tournament?.id) return [];
+      const response = await fetch(`/api/banners?tournamentId=${tournament.id}`);
+      if (!response.ok) return [];
+      return response.json();
+    },
     enabled: !!tournament?.id,
     refetchInterval: 60000,
   });
 
   const { data: advertisements = [] } = useQuery<any[]>({
     queryKey: ["/api/advertisements/active", tournament?.id],
+    queryFn: async () => {
+      if (!tournament?.id) return [];
+      const response = await fetch(`/api/advertisements/active?tournamentId=${tournament.id}`);
+      if (!response.ok) return [];
+      return response.json();
+    },
     enabled: !!tournament?.id,
     refetchInterval: 60000,
   });
