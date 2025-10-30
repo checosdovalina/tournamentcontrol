@@ -33,7 +33,7 @@ export function LocalFileUploader({
     formData.append('file', file);
 
     try {
-      const response = await fetch('/api/upload/advertisement', {
+      const response = await fetch('/api/advertisements/upload', {
         method: 'POST',
         body: formData,
       });
