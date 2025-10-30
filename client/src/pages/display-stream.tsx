@@ -256,9 +256,9 @@ export default function DisplayStream() {
             {currentMatch && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
                 <div className="text-white">
-                  <div className="flex items-start justify-between gap-6">
-                    {/* Players and scores */}
-                    <div className="flex-1 space-y-4">
+                  <div className="space-y-4">
+                    {/* Players */}
+                    <div className="space-y-4">
                       <p className="text-2xl font-bold">
                         {currentMatch.pair1.player1.name} / {currentMatch.pair1.player2.name}
                       </p>
@@ -267,9 +267,9 @@ export default function DisplayStream() {
                       </p>
                     </div>
                     
-                    {/* Vertical Score Display */}
+                    {/* Horizontal Score Display */}
                     {currentMatch.score && currentMatch.score.sets && (
-                      <div className="flex flex-col gap-2">
+                      <div className="flex gap-3 justify-start">
                         {currentMatch.score.sets.map((set: [number, number], index: number) => (
                           <div key={index} className="bg-white/10 rounded-lg px-4 py-2 min-w-[80px]">
                             <div className="text-center">
