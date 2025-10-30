@@ -5,6 +5,7 @@ import { useWebSocket } from "@/hooks/use-websocket";
 import { useKeepAwake } from "@/hooks/use-keep-awake";
 import { getCurrentDayTimeInTimezone } from "@/lib/utils";
 import courtflowLogoNew from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
+import logoRecord from "@assets/logo-record.png";
 import { X } from "lucide-react";
 
 export default function DisplayStream() {
@@ -200,7 +201,7 @@ export default function DisplayStream() {
       {/* Main Container */}
       <div className="h-screen flex flex-col p-4 gap-4">
         
-        {/* Header with logos and court name */}
+        {/* Header with logos and RECORD logo */}
         <div className="flex items-center justify-between bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-4 border border-gray-700 shadow-2xl">
           <div className="flex items-center gap-4">
             <img 
@@ -208,17 +209,14 @@ export default function DisplayStream() {
               alt="Tournament Logo" 
               className="h-12 md:h-16 object-contain drop-shadow-lg"
             />
-            {getClubLogo() && (
-              <img 
-                src={getClubLogo()!} 
-                alt="Club Logo" 
-                className="h-12 md:h-16 object-contain drop-shadow-lg"
-              />
-            )}
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white text-center flex-1">
-            {court?.name || 'Cargando...'}
-          </h1>
+          <div className="flex-1 flex justify-center">
+            <img 
+              src={logoRecord} 
+              alt="RECORD Highlight Recorder" 
+              className="h-12 md:h-16 object-contain drop-shadow-lg"
+            />
+          </div>
           <div className="flex items-center gap-4">
             <div className="text-right text-white">
               <p className="text-2xl font-bold">
@@ -258,25 +256,33 @@ export default function DisplayStream() {
             {currentMatch && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
                 <div className="text-white">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex-1">
+                  <div className="flex items-start justify-between gap-6">
+                    {/* Players and scores */}
+                    <div className="flex-1 space-y-4">
                       <p className="text-2xl font-bold">
                         {currentMatch.pair1.player1.name} / {currentMatch.pair1.player2.name}
                       </p>
-                    </div>
-                    {currentMatch.score && (
-                      <div className="text-4xl font-bold mx-8 px-6 py-2 bg-white/10 rounded-lg">
-                        {formatScore(currentMatch.score)}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
                       <p className="text-2xl font-bold">
                         {currentMatch.pair2.player1.name} / {currentMatch.pair2.player2.name}
                       </p>
                     </div>
+                    
+                    {/* Vertical Score Display */}
+                    {currentMatch.score && currentMatch.score.sets && (
+                      <div className="flex flex-col gap-2">
+                        {currentMatch.score.sets.map((set: [number, number], index: number) => (
+                          <div key={index} className="bg-white/10 rounded-lg px-4 py-2 min-w-[80px]">
+                            <div className="text-center">
+                              <div className="text-3xl font-bold">{set[0]}</div>
+                              <div className="text-xl opacity-60">-</div>
+                              <div className="text-3xl font-bold">{set[1]}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                  
                   {currentMatch.category && (
                     <div className="mt-4 flex items-center gap-4">
                       <span className="px-4 py-1 bg-orange-600/80 text-white rounded-lg text-sm font-semibold">
