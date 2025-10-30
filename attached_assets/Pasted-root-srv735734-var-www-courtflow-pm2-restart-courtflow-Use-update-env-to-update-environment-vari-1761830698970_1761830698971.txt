@@ -1,0 +1,132 @@
+root@srv735734:/var/www/courtflow# pm2 restart courtflow
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [courtflow](ids: [ 15 ])
+[PM2] [courtflow](15) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 53.5mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 51.4mb   │
+│ 1  │ Record             │ fork     │ 8    │ online    │ 0%       │ 54.7mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 52.5mb   │
+│ 15 │ courtflow          │ fork     │ 47   │ online    │ 0%       │ 14.7mb   │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 53.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# pm2 status
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 5  │ CourtFlow_showcase │ fork     │ 0    │ online    │ 0%       │ 53.5mb   │
+│ 0  │ Horarium           │ fork     │ 0    │ online    │ 0%       │ 51.4mb   │
+│ 1  │ Record             │ fork     │ 8    │ online    │ 0%       │ 54.7mb   │
+│ 2  │ RecordLivestreamA… │ fork     │ 0    │ online    │ 0%       │ 52.5mb   │
+│ 15 │ courtflow          │ fork     │ 62   │ errored   │ 0%       │ 0b       │
+│ 4  │ quickstock_rockoly │ fork     │ 0    │ online    │ 0%       │ 53.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv735734:/var/www/courtflow# pm2 logs courtflow --lines 50
+[TAILING] Tailing last 50 lines for [courtflow] process (change the value with --lines option)
+/var/log/courtflow-out-15.log last 50 lines:
+15|courtfl | 7:08:30 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:09:30 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:09:30 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:10:30 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:10:30 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:11:30 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:11:30 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:12:30 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:12:30 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:13:30 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:13:30 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:14:10 AM [express] GET /api/auth/me 304 in 16ms :: {"user":{"id":"6cb2a846-c3b5-41e5-8158-05c19b9e…
+15|courtfl | 7:14:10 AM [express] GET /api/courts 200 in 8ms :: [{"id":"c714b2c8-4019-421b-b1df-a4ed19d3469f","na…
+15|courtfl | 7:14:10 AM [express] GET /api/tournament 304 in 10ms :: {"id":"d5017921-d966-48e6-a0ac-b7c9cb95050d"…
+15|courtfl | 7:14:10 AM [express] GET /api/clubs 304 in 6ms :: [{"id":"650c6fef-e76c-4263-9945-00a63d3b90d6","nam…
+15|courtfl | 7:14:10 AM [express] GET /api/scheduled-matches/ready/d5017921-d966-48e6-a0ac-b7c9cb95050d 200 in 27…
+15|courtfl | 7:14:10 AM [express] GET /api/scheduled-matches/ready-queue/d5017921-d966-48e6-a0ac-b7c9cb95050d 200…
+15|courtfl | 7:14:10 AM [express] GET /api/results/recent/d5017921-d966-48e6-a0ac-b7c9cb95050d 304 in 48ms :: []
+15|courtfl | 7:14:10 AM [express] GET /api/stats/d5017921-d966-48e6-a0ac-b7c9cb95050d 200 in 39ms :: {"matchesPla…
+15|courtfl | 7:14:10 AM [express] GET /api/matches/current/d5017921-d966-48e6-a0ac-b7c9cb95050d 200 in 3ms :: []
+15|courtfl | 7:14:13 AM [express] GET /api/scheduled-matches/ready/d5017921-d966-48e6-a0ac-b7c9cb95050d 200 in 4m…
+15|courtfl | 7:14:13 AM [express] GET /api/scheduled-matches/ready-queue/d5017921-d966-48e6-a0ac-b7c9cb95050d 200…
+15|courtfl | 7:14:13 AM [express] POST /api/auth/logout 200 in 2ms :: {"message":"Logged out successfully"}
+15|courtfl | 7:14:13 AM [express] GET /api/auth/me 401 in 0ms :: {"message":"Authentication required"}
+15|courtfl | 7:14:17 AM [express] POST /api/auth/login 200 in 9ms :: {"user":{"id":"b2a23df9-e79a-454c-a4f7-f2d50…
+15|courtfl | 7:14:17 AM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":"b2a23df9-e79a-454c-a4f7-f2d50f503…
+15|courtfl | 7:14:18 AM [express] GET /api/tournament 200 in 4ms :: {"id":"d5017921-d966-48e6-a0ac-b7c9cb95050d",…
+15|courtfl | 7:14:18 AM [express] GET /api/admin/users 304 in 3ms :: [{"id":"b2a23df9-e79a-454c-a4f7-f2d50f503fec…
+15|courtfl | 7:14:18 AM [express] GET /api/admin/tournaments 304 in 19ms :: [{"id":"f10c017d-d997-478a-91d0-b8a0b…
+15|courtfl | 7:14:18 AM [express] GET /api/clubs 304 in 3ms :: [{"id":"650c6fef-e76c-4263-9945-00a63d3b90d6","nam…
+15|courtfl | 7:14:18 AM [express] GET /api/auth/me 304 in 3ms :: {"user":{"id":"b2a23df9-e79a-454c-a4f7-f2d50f503…
+15|courtfl | 7:14:18 AM [express] GET /api/admin/tournaments 200 in 3ms :: [{"id":"f10c017d-d997-478a-91d0-b8a0ba…
+15|courtfl | 7:14:18 AM [express] GET /api/admin/users 304 in 2ms :: [{"id":"b2a23df9-e79a-454c-a4f7-f2d50f503fec…
+15|courtfl | 7:14:18 AM [express] GET /api/clubs 200 in 5ms :: [{"id":"650c6fef-e76c-4263-9945-00a63d3b90d6","nam…
+15|courtfl | 7:14:18 AM [express] GET /api/tournament 304 in 3ms :: {"id":"d5017921-d966-48e6-a0ac-b7c9cb95050d",…
+15|courtfl | 7:14:30 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:14:30 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:15:30 AM [express] POST /api/superadmin/convert-pdf-to-excel 500 in 72ms :: {"message":"Error al c…
+15|courtfl | 7:15:30 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:15:30 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:16:30 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:16:30 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:17:31 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:17:31 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:18:31 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:18:31 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:19:31 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:19:31 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+15|courtfl | 7:20:31 AM [express] [Timeout Processor] Running timeout check...
+15|courtfl | 7:20:31 AM [express] [Timeout Processor] Found 0 total matches to evaluate
+
+/var/log/courtflow-error-15.log last 50 lines:
+15|courtfl | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'pdf-parse' imported from /var/www/courtflow/dist/index.js
+15|courtfl |     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:266:9)
+15|courtfl |     at packageResolve (node:internal/modules/esm/resolve:767:81)
+15|courtfl |     at moduleResolve (node:internal/modules/esm/resolve:853:18)
+15|courtfl |     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+15|courtfl |     at #cachedDefaultResolve (node:internal/modules/esm/loader:717:20)
+15|courtfl |     at ModuleLoader.resolve (node:internal/modules/esm/loader:694:38)
+15|courtfl |     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:308:38)
+15|courtfl |     at ModuleJob._link (node:internal/modules/esm/module_job:183:49)
+15|courtfl |     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+15|courtfl |   code: 'ERR_MODULE_NOT_FOUND'
+15|courtfl | }
+15|courtfl | 
+15|courtfl | Node.js v22.19.0
+15|courtfl | node:internal/modules/package_json_reader:266
+15|courtfl |   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+15|courtfl |         ^
+15|courtfl | 
+15|courtfl | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'pdf-parse' imported from /var/www/courtflow/dist/index.js
+15|courtfl |     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:266:9)
+15|courtfl |     at packageResolve (node:internal/modules/esm/resolve:767:81)
+15|courtfl |     at moduleResolve (node:internal/modules/esm/resolve:853:18)
+15|courtfl |     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+15|courtfl |     at #cachedDefaultResolve (node:internal/modules/esm/loader:717:20)
+15|courtfl |     at ModuleLoader.resolve (node:internal/modules/esm/loader:694:38)
+15|courtfl |     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:308:38)
+15|courtfl |     at ModuleJob._link (node:internal/modules/esm/module_job:183:49)
+15|courtfl |     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+15|courtfl |   code: 'ERR_MODULE_NOT_FOUND'
+15|courtfl | }
+15|courtfl | 
+15|courtfl | Node.js v22.19.0
+15|courtfl | node:internal/modules/package_json_reader:266
+15|courtfl |   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+15|courtfl |         ^
+15|courtfl | 
+15|courtfl | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'pdf-parse' imported from /var/www/courtflow/dist/index.js
+15|courtfl |     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:266:9)
+15|courtfl |     at packageResolve (node:internal/modules/esm/resolve:767:81)
+15|courtfl |     at moduleResolve (node:internal/modules/esm/resolve:853:18)
+15|courtfl |     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+15|courtfl |     at #cachedDefaultResolve (node:internal/modules/esm/loader:717:20)
+15|courtfl |     at ModuleLoader.resolve (node:internal/modules/esm/loader:694:38)
+15|courtfl |     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:308:38)
+15|courtfl |     at ModuleJob._link (node:internal/modules/esm/module_job:183:49)
+15|courtfl |     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+15|courtfl |   code: 'ERR_MODULE_NOT_FOUND'
+15|courtfl | }
+15|courtfl | 
+15|courtfl | Node.js v22.19.0
+
+
