@@ -17,6 +17,7 @@ interface ManageCourtsModalProps {
 export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsModalProps) {
   const [newCourtName, setNewCourtName] = useState("");
   const [selectedClub, setSelectedClub] = useState("");
+  const [streamUrl, setStreamUrl] = useState("");
   const { toast } = useToast();
 
   const { data: courts = [] } = useQuery<any[]>({
@@ -47,6 +48,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
       });
       setNewCourtName("");
       setSelectedClub("");
+      setStreamUrl("");
     },
     onError: (error: any) => {
       toast({
@@ -120,6 +122,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
       name: newCourtName,
       clubId: selectedClub,
       isAvailable: true,
+      streamUrl: streamUrl || null,
     });
   };
 
@@ -202,36 +205,53 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
           {/* Add New Court */}
           <div className="border-t border-border pt-6">
             <h4 className="text-sm font-semibold mb-3">Agregar Nueva Cancha</h4>
-            <form onSubmit={handleAddCourt} className="flex space-x-3">
-              <Input
-                type="text"
-                placeholder="Nombre de la cancha"
-                className="flex-1"
-                value={newCourtName}
-                onChange={(e) => setNewCourtName(e.target.value)}
-                data-testid="input-new-court-name"
-              />
-              <Select value={selectedClub} onValueChange={setSelectedClub}>
-                <SelectTrigger className="w-48" data-testid="select-new-court-club">
-                  <SelectValue placeholder="Seleccionar club" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clubs.map((club: any) => (
-                    <SelectItem key={club.id} value={club.id}>
-                      {club.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                type="submit"
-                disabled={addCourtMutation.isPending}
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/90 whitespace-nowrap"
-                data-testid="button-add-court"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {addCourtMutation.isPending ? "Agregando..." : "Agregar"}
-              </Button>
+            <form onSubmit={handleAddCourt} className="space-y-3">
+              <div className="flex space-x-3">
+                <Input
+                  type="text"
+                  placeholder="Nombre de la cancha"
+                  className="flex-1"
+                  value={newCourtName}
+                  onChange={(e) => setNewCourtName(e.target.value)}
+                  data-testid="input-new-court-name"
+                />
+                <Select value={selectedClub} onValueChange={setSelectedClub}>
+                  <SelectTrigger className="w-48" data-testid="select-new-court-club">
+                    <SelectValue placeholder="Seleccionar club" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clubs.map((club: any) => (
+                      <SelectItem key={club.id} value={club.id}>
+                        {club.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex space-x-3">
+                <div className="flex-1">
+                  <Label htmlFor="stream-url" className="text-xs text-muted-foreground mb-1 block">
+                    URL del Stream de Video (opcional)
+                  </Label>
+                  <Input
+                    id="stream-url"
+                    type="url"
+                    placeholder="https://ejemplo.com/stream/cam1"
+                    value={streamUrl}
+                    onChange={(e) => setStreamUrl(e.target.value)}
+                    data-testid="input-new-court-stream-url"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={addCourtMutation.isPending}
+                  className="bg-secondary text-secondary-foreground hover:bg-secondary/90 whitespace-nowrap self-end"
+                  data-testid="button-add-court"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {addCourtMutation.isPending ? "Agregando..." : "Agregar"}
+                </Button>
+              </div>
             </form>
           </div>
         </div>
