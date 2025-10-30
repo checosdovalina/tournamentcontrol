@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { PDFParse } from 'pdf-parse';
 
 interface Match {
   fecha: string;
@@ -14,7 +15,6 @@ interface Match {
 
 // Parser para formato "tabla" (PDF vertical con VS)
 export async function parseTableFormatPDF(buffer: Buffer): Promise<Match[]> {
-  const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data: buffer });
   const result = await parser.getText();
   
@@ -96,7 +96,6 @@ export async function parseTableFormatPDF(buffer: Buffer): Promise<Match[]> {
 
 // Parser para formato "tarjeta" (PDF con layout lado a lado)
 export async function parseCardFormatPDF(buffer: Buffer): Promise<Match[]> {
-  const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data: buffer });
   const result = await parser.getText();
   
