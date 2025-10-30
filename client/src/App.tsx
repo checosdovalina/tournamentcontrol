@@ -9,6 +9,7 @@ import Dashboard from "@/pages/dashboard";
 import Display from "@/pages/display";
 import DisplayRotative from "@/pages/display-rotative";
 import DisplayControl from "@/pages/display-control";
+import DisplayStream from "@/pages/display-stream";
 import Login from "@/pages/login";
 import Setup from "@/pages/setup";
 import GuestScore from "@/pages/guest-score";
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/display" component={Display} />
       <Route path="/display-rotative" component={DisplayRotative} />
       <Route path="/display-control" component={DisplayControl} />
+      <Route path="/display-stream/:courtId" component={DisplayStream} />
       <Route path="/score-capture/:tournamentId" component={ScoreSelect} />
       <Route path="/score/:token" component={GuestScore} />
       <Route path="/login" component={Login} />

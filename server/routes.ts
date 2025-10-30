@@ -431,6 +431,19 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
+  app.get("/api/courts/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const court = await storage.getCourt(id);
+      if (!court) {
+        return res.status(404).json({ message: "Court not found" });
+      }
+      res.json(court);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get court", error: error.message });
+    }
+  });
+
   app.post("/api/courts", requireAdmin, async (req, res) => {
     try {
       const court = insertCourtSchema.parse(req.body);
