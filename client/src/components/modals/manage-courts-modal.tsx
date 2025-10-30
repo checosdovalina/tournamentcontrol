@@ -208,6 +208,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                               data-testid={`input-edit-court-name-${court.id}`}
                             />
                           </div>
+                          {/* Stream URL field hidden per user request
                           <div className="flex items-center space-x-3">
                             <Label className="text-xs text-muted-foreground whitespace-nowrap">
                               URL del Stream:
@@ -221,6 +222,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                               data-testid={`input-edit-stream-url-${court.id}`}
                             />
                           </div>
+                          */}
                           <div className="flex justify-end space-x-2">
                             <Button
                               size="sm"
@@ -255,12 +257,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                                   {currentMatch.pair1.player1.name}/{currentMatch.pair1.player2.name} vs {currentMatch.pair2.player1.name}/{currentMatch.pair2.player2.name}
                                 </p>
                               ) : (
-                                <>
-                                  <p className="text-sm text-success">Disponible</p>
-                                  {court.streamUrl && (
-                                    <p className="text-xs text-muted-foreground">Stream configurado ✓</p>
-                                  )}
-                                </>
+                                <p className="text-sm text-success">Disponible</p>
                               )}
                             </div>
                           </div>
@@ -276,6 +273,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                                 Finalizar
                               </Button>
                             )}
+                            {/* Stream button hidden per user request
                             {court.streamUrl && (
                               <Button
                                 size="sm"
@@ -287,6 +285,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                                 Ver Stream
                               </Button>
                             )}
+                            */}
                             <Button
                               size="sm"
                               variant="outline"
@@ -331,7 +330,17 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                     ))}
                   </SelectContent>
                 </Select>
+                <Button
+                  type="submit"
+                  disabled={addCourtMutation.isPending}
+                  className="bg-secondary text-secondary-foreground hover:bg-secondary/90 whitespace-nowrap"
+                  data-testid="button-add-court"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {addCourtMutation.isPending ? "Agregando..." : "Agregar"}
+                </Button>
               </div>
+              {/* Stream URL field hidden per user request
               <div className="flex space-x-3">
                 <div className="flex-1">
                   <Label htmlFor="stream-url" className="text-xs text-muted-foreground mb-1 block">
@@ -346,16 +355,8 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                     data-testid="input-new-court-stream-url"
                   />
                 </div>
-                <Button
-                  type="submit"
-                  disabled={addCourtMutation.isPending}
-                  className="bg-secondary text-secondary-foreground hover:bg-secondary/90 whitespace-nowrap self-end"
-                  data-testid="button-add-court"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {addCourtMutation.isPending ? "Agregando..." : "Agregar"}
-                </Button>
               </div>
+              */}
             </form>
           </div>
         </div>
