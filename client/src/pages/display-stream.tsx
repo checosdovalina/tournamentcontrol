@@ -256,31 +256,38 @@ export default function DisplayStream() {
             {currentMatch && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
                 <div className="text-white">
-                  <div className="space-y-4">
-                    {/* Players */}
-                    <div className="space-y-4">
-                      <p className="text-2xl font-bold">
+                  <div className="space-y-3">
+                    {/* Pair 1 - Name and Scores */}
+                    <div className="flex items-center gap-4">
+                      <p className="text-2xl font-bold flex-1">
                         {currentMatch.pair1.player1.name} / {currentMatch.pair1.player2.name}
                       </p>
-                      <p className="text-2xl font-bold">
-                        {currentMatch.pair2.player1.name} / {currentMatch.pair2.player2.name}
-                      </p>
+                      {currentMatch.score && currentMatch.score.sets && (
+                        <div className="flex gap-3">
+                          {currentMatch.score.sets.map((set: [number, number], index: number) => (
+                            <div key={index} className="bg-white/10 rounded-lg px-4 py-3 min-w-[70px]">
+                              <div className="text-3xl font-bold text-center">{set[0]}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     
-                    {/* Horizontal Score Display */}
-                    {currentMatch.score && currentMatch.score.sets && (
-                      <div className="flex gap-3 justify-start">
-                        {currentMatch.score.sets.map((set: [number, number], index: number) => (
-                          <div key={index} className="bg-white/10 rounded-lg px-4 py-2 min-w-[80px]">
-                            <div className="text-center">
-                              <div className="text-3xl font-bold">{set[0]}</div>
-                              <div className="text-xl opacity-60">-</div>
-                              <div className="text-3xl font-bold">{set[1]}</div>
+                    {/* Pair 2 - Name and Scores */}
+                    <div className="flex items-center gap-4">
+                      <p className="text-2xl font-bold flex-1">
+                        {currentMatch.pair2.player1.name} / {currentMatch.pair2.player2.name}
+                      </p>
+                      {currentMatch.score && currentMatch.score.sets && (
+                        <div className="flex gap-3">
+                          {currentMatch.score.sets.map((set: [number, number], index: number) => (
+                            <div key={index} className="bg-white/10 rounded-lg px-4 py-3 min-w-[70px]">
+                              <div className="text-3xl font-bold text-center">{set[1]}</div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   {currentMatch.category && (
