@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Video } from "lucide-react";
+import { Plus, Video, Edit, Save, X } from "lucide-react";
 
 interface ManageCourtsModalProps {
   open: boolean;
@@ -18,6 +18,9 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
   const [newCourtName, setNewCourtName] = useState("");
   const [selectedClub, setSelectedClub] = useState("");
   const [streamUrl, setStreamUrl] = useState("");
+  const [editingCourtId, setEditingCourtId] = useState<string | null>(null);
+  const [editCourtName, setEditCourtName] = useState("");
+  const [editStreamUrl, setEditStreamUrl] = useState("");
   const { toast } = useToast();
 
   const { data: courts = [] } = useQuery<any[]>({
@@ -134,6 +137,38 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
     return currentMatches.find((match: any) => match.courtId === courtId);
   };
 
+  const handleEditCourt = (court: any) => {
+    setEditingCourtId(court.id);
+    setEditCourtName(court.name);
+    setEditStreamUrl(court.streamUrl || "");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCourtId(null);
+    setEditCourtName("");
+    setEditStreamUrl("");
+  };
+
+  const handleSaveEdit = () => {
+    if (!editCourtName.trim()) {
+      toast({
+        title: "Error",
+        description: "El nombre de la cancha no puede estar vacío",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateCourtMutation.mutate({
+      courtId: editingCourtId!,
+      updates: {
+        name: editCourtName,
+        streamUrl: editStreamUrl || null,
+      },
+    });
+    handleCancelEdit();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
@@ -153,59 +188,117 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
               <div className="space-y-3" data-testid="courts-management-list">
                 {courts.map((court: any) => {
                   const currentMatch = getCurrentMatch(court.id);
+                  const isEditing = editingCourtId === court.id;
+                  
                   return (
                     <div
                       key={court.id}
-                      className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border border-border"
+                      className="p-4 bg-muted/50 rounded-lg border border-border"
                       data-testid={`court-management-${court.name.toLowerCase().replace(' ', '-')}`}
                     >
-                      <div className="flex items-center space-x-4">
-                        <span className={`status-indicator ${court.isAvailable ? 'status-available' : 'status-occupied'}`}></span>
-                        <div>
-                          <p className="font-medium" data-testid={`court-management-name-${court.name.toLowerCase().replace(' ', '-')}`}>
-                            {court.name}
-                          </p>
-                          {currentMatch ? (
-                            <p className="text-sm text-muted-foreground" data-testid={`court-management-match-${court.name.toLowerCase().replace(' ', '-')}`}>
-                              {currentMatch.pair1.player1.name}/{currentMatch.pair1.player2.name} vs {currentMatch.pair2.player1.name}/{currentMatch.pair2.player2.name}
-                            </p>
-                          ) : (
-                            <p className="text-sm text-success">Disponible</p>
-                          )}
+                      {isEditing ? (
+                        <div className="space-y-3">
+                          <div className="flex items-center space-x-3">
+                            <span className={`status-indicator ${court.isAvailable ? 'status-available' : 'status-occupied'}`}></span>
+                            <Input
+                              value={editCourtName}
+                              onChange={(e) => setEditCourtName(e.target.value)}
+                              placeholder="Nombre de la cancha"
+                              className="flex-1"
+                              data-testid={`input-edit-court-name-${court.id}`}
+                            />
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                              URL del Stream:
+                            </Label>
+                            <Input
+                              value={editStreamUrl}
+                              onChange={(e) => setEditStreamUrl(e.target.value)}
+                              placeholder="https://ejemplo.com/stream/cam1"
+                              className="flex-1"
+                              type="url"
+                              data-testid={`input-edit-stream-url-${court.id}`}
+                            />
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleCancelEdit}
+                              data-testid={`button-cancel-edit-${court.id}`}
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={handleSaveEdit}
+                              disabled={updateCourtMutation.isPending}
+                              data-testid={`button-save-edit-${court.id}`}
+                            >
+                              <Save className="w-4 h-4 mr-1" />
+                              {updateCourtMutation.isPending ? "Guardando..." : "Guardar"}
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {currentMatch && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleEndMatch(currentMatch.id)}
-                            disabled={endMatchMutation.isPending}
-                            data-testid={`button-end-match-${court.name.toLowerCase().replace(' ', '-')}`}
-                          >
-                            Finalizar
-                          </Button>
-                        )}
-                        {court.streamUrl && (
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => window.open(`/display-stream/${court.id}`, '_blank')}
-                            data-testid={`button-view-stream-${court.name.toLowerCase().replace(' ', '-')}`}
-                          >
-                            <Video className="w-4 h-4 mr-1" />
-                            Ver Stream
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={!court.isAvailable}
-                          data-testid={`button-reassign-${court.name.toLowerCase().replace(' ', '-')}`}
-                        >
-                          Reasignar
-                        </Button>
-                      </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <span className={`status-indicator ${court.isAvailable ? 'status-available' : 'status-occupied'}`}></span>
+                            <div>
+                              <p className="font-medium" data-testid={`court-management-name-${court.name.toLowerCase().replace(' ', '-')}`}>
+                                {court.name}
+                              </p>
+                              {currentMatch ? (
+                                <p className="text-sm text-muted-foreground" data-testid={`court-management-match-${court.name.toLowerCase().replace(' ', '-')}`}>
+                                  {currentMatch.pair1.player1.name}/{currentMatch.pair1.player2.name} vs {currentMatch.pair2.player1.name}/{currentMatch.pair2.player2.name}
+                                </p>
+                              ) : (
+                                <>
+                                  <p className="text-sm text-success">Disponible</p>
+                                  {court.streamUrl && (
+                                    <p className="text-xs text-muted-foreground">Stream configurado ✓</p>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {currentMatch && (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleEndMatch(currentMatch.id)}
+                                disabled={endMatchMutation.isPending}
+                                data-testid={`button-end-match-${court.name.toLowerCase().replace(' ', '-')}`}
+                              >
+                                Finalizar
+                              </Button>
+                            )}
+                            {court.streamUrl && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => window.open(`/display-stream/${court.id}`, '_blank')}
+                                data-testid={`button-view-stream-${court.name.toLowerCase().replace(' ', '-')}`}
+                              >
+                                <Video className="w-4 h-4 mr-1" />
+                                Ver Stream
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditCourt(court)}
+                              data-testid={`button-edit-${court.name.toLowerCase().replace(' ', '-')}`}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Editar
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
