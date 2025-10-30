@@ -353,33 +353,39 @@ export default function DisplayStream() {
               {currentAd.contentType === 'image' && (
                 <div className="relative">
                   <img 
-                    src={currentAd.imageUrl} 
-                    alt={currentAd.title}
+                    src={currentAd.contentUrl} 
+                    alt="Advertisement"
                     className="w-full h-auto max-h-[80vh] object-contain"
                   />
-                  {currentAd.textOverlay && (
+                  {currentAd.text && (
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8">
-                      <h3 className="text-white text-4xl font-bold mb-2">{currentAd.title}</h3>
-                      <p className="text-white/90 text-xl">{currentAd.textOverlay}</p>
+                      <p className="text-white/90 text-xl">{currentAd.text}</p>
                     </div>
                   )}
                 </div>
               )}
 
               {currentAd.contentType === 'video' && (
-                <video 
-                  src={currentAd.videoUrl} 
-                  autoPlay 
-                  muted 
-                  loop
-                  className="w-full h-auto max-h-[80vh]"
-                />
+                <div className="relative">
+                  <video 
+                    src={currentAd.contentUrl} 
+                    autoPlay 
+                    muted 
+                    loop
+                    className="w-full h-auto max-h-[80vh]"
+                    controls
+                  />
+                  {currentAd.text && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8">
+                      <p className="text-white/90 text-xl">{currentAd.text}</p>
+                    </div>
+                  )}
+                </div>
               )}
 
               {currentAd.contentType === 'text' && (
                 <div className="p-16 text-center">
-                  <h2 className="text-6xl font-bold text-primary mb-6">{currentAd.title}</h2>
-                  <p className="text-3xl text-gray-700 leading-relaxed">{currentAd.textOverlay}</p>
+                  <p className="text-3xl text-gray-700 leading-relaxed">{currentAd.text}</p>
                 </div>
               )}
             </div>
