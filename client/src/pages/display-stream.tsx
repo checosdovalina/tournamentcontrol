@@ -214,7 +214,7 @@ export default function DisplayStream() {
             <img 
               src={logoRecord} 
               alt="RECORD Highlight Recorder" 
-              className="h-12 md:h-16 object-contain drop-shadow-lg"
+              className="h-20 md:h-24 object-contain drop-shadow-lg"
             />
           </div>
           <div className="flex items-center gap-4">
