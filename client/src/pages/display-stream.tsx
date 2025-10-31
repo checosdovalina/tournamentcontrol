@@ -71,7 +71,7 @@ export default function DisplayStream() {
     queryKey: ["/api/advertisements/active", tournament?.id],
     queryFn: async () => {
       if (!tournament?.id) return [];
-      const response = await fetch(`/api/advertisements/active?tournamentId=${tournament.id}`);
+      const response = await fetch(`/api/advertisements/active/${tournament.id}`);
       if (!response.ok) return [];
       return response.json();
     },
