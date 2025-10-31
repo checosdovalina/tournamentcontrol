@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
-import { Plus, Video, Edit, Save, X } from "lucide-react";
+import { Plus, Video, Edit, Save, X, Share2, Copy, Check } from "lucide-react";
+import QRCode from "qrcode";
 
 interface ManageCourtsModalProps {
   open: boolean;
@@ -22,6 +23,10 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
   const [editingCourtId, setEditingCourtId] = useState<string | null>(null);
   const [editCourtName, setEditCourtName] = useState("");
   const [editStreamUrl, setEditStreamUrl] = useState("");
+  const [shareStreamCourtId, setShareStreamCourtId] = useState<string | null>(null);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+  const [urlCopied, setUrlCopied] = useState(false);
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -174,8 +179,58 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
     handleCancelEdit();
   };
 
+  const getStreamUrl = (courtId: string) => {
+    const origin = window.location.origin;
+    return `${origin}/display-stream/${courtId}`;
+  };
+
+  const handleCopyUrl = () => {
+    if (shareStreamCourtId) {
+      const url = getStreamUrl(shareStreamCourtId);
+      navigator.clipboard.writeText(url).then(() => {
+        setUrlCopied(true);
+        toast({
+          title: "URL copiada",
+          description: "El enlace del stream ha sido copiado al portapapeles",
+        });
+        setTimeout(() => setUrlCopied(false), 2000);
+      });
+    }
+  };
+
+  // Generate QR code when share dialog opens
+  useEffect(() => {
+    if (shareStreamCourtId) {
+      const url = getStreamUrl(shareStreamCourtId);
+      QRCode.toDataURL(url, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF',
+        },
+      }).then((dataUrl) => {
+        setQrCodeDataUrl(dataUrl);
+      }).catch((err) => {
+        console.error('Error generating QR code:', err);
+      });
+    }
+  }, [shareStreamCourtId]);
+
+  const shareStreamCourt = courts.find((c: any) => c.id === shareStreamCourtId);
+
+  const handleCloseMainModal = (isOpen: boolean) => {
+    if (!isOpen) {
+      // Reset share dialog state when main modal closes
+      setShareStreamCourtId(null);
+      setQrCodeDataUrl("");
+      setUrlCopied(false);
+    }
+    onOpenChange(isOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleCloseMainModal}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Gestionar Canchas</DialogTitle>
@@ -284,15 +339,26 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                               </Button>
                             )}
                             {canViewStreams && court.streamUrl && (
-                              <Button
-                                size="sm"
-                                variant="default"
-                                onClick={() => window.open(`/display-stream/${court.id}`, '_blank')}
-                                data-testid={`button-view-stream-${court.name.toLowerCase().replace(' ', '-')}`}
-                              >
-                                <Video className="w-4 h-4 mr-1" />
-                                Ver Stream
-                              </Button>
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => window.open(`/display-stream/${court.id}`, '_blank')}
+                                  data-testid={`button-view-stream-${court.name.toLowerCase().replace(' ', '-')}`}
+                                >
+                                  <Video className="w-4 h-4 mr-1" />
+                                  Ver Stream
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => setShareStreamCourtId(court.id)}
+                                  data-testid={`button-share-stream-${court.name.toLowerCase().replace(' ', '-')}`}
+                                >
+                                  <Share2 className="w-4 h-4 mr-1" />
+                                  Compartir
+                                </Button>
+                              </>
                             )}
                             <Button
                               size="sm"
@@ -369,13 +435,84 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
         
         <div className="flex justify-end pt-4 border-t border-border">
           <Button 
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleCloseMainModal(false)}
             data-testid="button-close-manage-courts"
           >
             Cerrar
           </Button>
         </div>
       </DialogContent>
+
+      {/* Share Stream Dialog */}
+      <Dialog open={!!shareStreamCourtId} onOpenChange={(isOpen) => !isOpen && setShareStreamCourtId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Compartir Stream - {shareStreamCourt?.name}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* QR Code */}
+            {qrCodeDataUrl && (
+              <div className="flex flex-col items-center justify-center bg-white p-6 rounded-lg border">
+                <img 
+                  src={qrCodeDataUrl} 
+                  alt="QR Code del Stream" 
+                  className="w-64 h-64"
+                  data-testid="qr-code-image"
+                />
+                <p className="text-sm text-muted-foreground mt-4 text-center">
+                  Escanea este código QR para acceder al stream
+                </p>
+              </div>
+            )}
+
+            {/* URL */}
+            <div className="space-y-2">
+              <Label htmlFor="stream-url-share">URL del Stream</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="stream-url-share"
+                  value={shareStreamCourtId ? getStreamUrl(shareStreamCourtId) : ''}
+                  readOnly
+                  className="flex-1 font-mono text-sm"
+                  data-testid="input-stream-url"
+                />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleCopyUrl}
+                  data-testid="button-copy-url"
+                >
+                  {urlCopied ? (
+                    <>
+                      <Check className="w-4 h-4 mr-1" />
+                      Copiado
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 mr-1" />
+                      Copiar
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Comparte esta URL para que otros puedan ver el stream en vivo
+              </p>
+            </div>
+
+            {/* Close Button */}
+            <div className="flex justify-end pt-4 border-t">
+              <Button 
+                onClick={() => setShareStreamCourtId(null)}
+                data-testid="button-close-share"
+              >
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
