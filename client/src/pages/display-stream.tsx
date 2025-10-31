@@ -358,8 +358,9 @@ export default function DisplayStream() {
       {/* Advertisement Overlay */}
       {showAd && currentAd && (
         <div 
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-fadeIn backdrop-blur-sm"
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] animate-fadeIn backdrop-blur-sm"
           data-testid="advertisement-overlay"
+          style={{ isolation: 'isolate' }}
         >
           <div className="relative max-w-6xl max-h-[90vh] w-full mx-8">
             <button
