@@ -15,6 +15,8 @@ export default function DisplayStream() {
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [showAd, setShowAd] = useState(false);
   const activeAdsRef = useRef<any[]>([]);
+  const lastScoreRef = useRef<string | null>(null);
+  const adTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useKeepAwake();
   useWebSocket();
@@ -139,58 +141,64 @@ export default function DisplayStream() {
     activeAdsRef.current = activeAds;
   }, [activeAds]);
 
-  // Stable advertisement rotation system using refs to prevent timer resets
+  // Detect odd-numbered points (court changes) and trigger ad rotation
   useEffect(() => {
-    if (activeAds.length === 0) {
-      setShowAd(false);
-      setCurrentAdIndex(0);
+    if (!currentMatch || !currentMatch.score || !currentMatch.score.sets || activeAds.length === 0) {
       return;
     }
 
-    let showTimer: NodeJS.Timeout | null = null;
-    let hideTimer: NodeJS.Timeout | null = null;
-    let isActive = true;
+    // Get current set (last set in array)
+    const currentSet = currentMatch.score.sets[currentMatch.score.sets.length - 1];
+    if (!currentSet || !Array.isArray(currentSet) || currentSet.length !== 2) {
+      return;
+    }
 
-    const rotateAd = (index: number) => {
-      if (!isActive || activeAdsRef.current.length === 0) return;
+    const [pair1Score, pair2Score] = currentSet;
+    const scoreKey = `${pair1Score}-${pair2Score}`;
+    const totalPoints = pair1Score + pair2Score;
 
-      const currentAd = activeAdsRef.current[index];
-      if (!currentAd) {
-        rotateAd(0);
-        return;
-      }
+    // Check if score changed and total points is odd (court change)
+    if (lastScoreRef.current !== scoreKey && totalPoints % 2 === 1) {
+      lastScoreRef.current = scoreKey;
 
-      // Show the ad
-      setCurrentAdIndex(index);
+      // Move to next ad in rotation and show it
+      const nextIndex = (currentAdIndex + 1) % activeAds.length;
+      setCurrentAdIndex(nextIndex);
       setShowAd(true);
+    } else if (lastScoreRef.current !== scoreKey) {
+      // Score changed but not odd, update reference
+      lastScoreRef.current = scoreKey;
+    }
+  }, [currentMatch, activeAds, currentAdIndex]);
 
-      const displayDurationMs = (currentAd.displayDuration || 10) * 1000;
-      const displayIntervalMs = (currentAd.displayInterval || 30) * 1000;
+  // Manage ad display timer separately to survive score refetches
+  useEffect(() => {
+    if (!showAd || activeAdsRef.current.length === 0) {
+      return;
+    }
 
-      // Hide after displayDuration
-      hideTimer = setTimeout(() => {
-        if (!isActive) return;
-        setShowAd(false);
+    // Clear any existing timer
+    if (adTimerRef.current) {
+      clearTimeout(adTimerRef.current);
+      adTimerRef.current = null;
+    }
 
-        // Wait for the interval gap, then show next ad
-        const waitTime = Math.max(displayIntervalMs - displayDurationMs, 1000);
-        showTimer = setTimeout(() => {
-          if (!isActive) return;
-          const nextIndex = (index + 1) % activeAdsRef.current.length;
-          rotateAd(nextIndex);
-        }, waitTime);
-      }, displayDurationMs);
-    };
-
-    // Start rotation
-    rotateAd(0);
+    // Read displayDuration from ref to avoid dependency on activeAds array
+    const currentAd = activeAdsRef.current[currentAdIndex];
+    const displayDurationMs = (currentAd?.displayDuration || 10) * 1000;
+    
+    adTimerRef.current = setTimeout(() => {
+      setShowAd(false);
+      adTimerRef.current = null;
+    }, displayDurationMs);
 
     return () => {
-      isActive = false;
-      if (showTimer) clearTimeout(showTimer);
-      if (hideTimer) clearTimeout(hideTimer);
+      if (adTimerRef.current) {
+        clearTimeout(adTimerRef.current);
+        adTimerRef.current = null;
+      }
     };
-  }, [adsConfigHash]);
+  }, [showAd, currentAdIndex]);
 
   // Update current time every second
   useEffect(() => {
