@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
 import { Plus, Video, Edit, Save, X } from "lucide-react";
 
 interface ManageCourtsModalProps {
@@ -22,6 +23,10 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
   const [editCourtName, setEditCourtName] = useState("");
   const [editStreamUrl, setEditStreamUrl] = useState("");
   const { toast } = useToast();
+  const { user } = useAuth();
+  
+  // Stream features only visible to sflores user
+  const canViewStreams = user?.username === "sflores";
 
   const { data: courts = [] } = useQuery<any[]>({
     queryKey: ["/api/courts"],
@@ -208,21 +213,21 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                               data-testid={`input-edit-court-name-${court.id}`}
                             />
                           </div>
-                          {/* Stream URL field hidden per user request
-                          <div className="flex items-center space-x-3">
-                            <Label className="text-xs text-muted-foreground whitespace-nowrap">
-                              URL del Stream:
-                            </Label>
-                            <Input
-                              value={editStreamUrl}
-                              onChange={(e) => setEditStreamUrl(e.target.value)}
-                              placeholder="https://ejemplo.com/stream/cam1"
-                              className="flex-1"
-                              type="url"
-                              data-testid={`input-edit-stream-url-${court.id}`}
-                            />
-                          </div>
-                          */}
+                          {canViewStreams && (
+                            <div className="flex items-center space-x-3">
+                              <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                                URL del Stream:
+                              </Label>
+                              <Input
+                                value={editStreamUrl}
+                                onChange={(e) => setEditStreamUrl(e.target.value)}
+                                placeholder="https://ejemplo.com/stream/cam1"
+                                className="flex-1"
+                                type="url"
+                                data-testid={`input-edit-stream-url-${court.id}`}
+                              />
+                            </div>
+                          )}
                           <div className="flex justify-end space-x-2">
                             <Button
                               size="sm"
@@ -257,7 +262,12 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                                   {currentMatch.pair1.player1.name}/{currentMatch.pair1.player2.name} vs {currentMatch.pair2.player1.name}/{currentMatch.pair2.player2.name}
                                 </p>
                               ) : (
-                                <p className="text-sm text-success">Disponible</p>
+                                <>
+                                  <p className="text-sm text-success">Disponible</p>
+                                  {canViewStreams && court.streamUrl && (
+                                    <p className="text-xs text-muted-foreground">Stream configurado ✓</p>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>
@@ -273,8 +283,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                                 Finalizar
                               </Button>
                             )}
-                            {/* Stream button hidden per user request
-                            {court.streamUrl && (
+                            {canViewStreams && court.streamUrl && (
                               <Button
                                 size="sm"
                                 variant="default"
@@ -285,7 +294,6 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                                 Ver Stream
                               </Button>
                             )}
-                            */}
                             <Button
                               size="sm"
                               variant="outline"
@@ -340,9 +348,8 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                   {addCourtMutation.isPending ? "Agregando..." : "Agregar"}
                 </Button>
               </div>
-              {/* Stream URL field hidden per user request
-              <div className="flex space-x-3">
-                <div className="flex-1">
+              {canViewStreams && (
+                <div>
                   <Label htmlFor="stream-url" className="text-xs text-muted-foreground mb-1 block">
                     URL del Stream de Video (opcional)
                   </Label>
@@ -355,8 +362,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
                     data-testid="input-new-court-stream-url"
                   />
                 </div>
-              </div>
-              */}
+              )}
             </form>
           </div>
         </div>
