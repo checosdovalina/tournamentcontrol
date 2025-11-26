@@ -843,7 +843,9 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
                   { pairId: match.pair1Id, pair: match.pair1, label: "Pareja 1" },
                   { pairId: match.pair2Id, pair: match.pair2, label: "Pareja 2" }
                 ].map(({ pairId, pair, label }) => {
-                  const pairPlayers = match.players.filter(p => p.pairId === pairId);
+                  const pairPlayers = match.players
+                    .filter(p => p.pairId === pairId)
+                    .sort((a, b) => a.playerId.localeCompare(b.playerId));
                   const allPresent = pairPlayers.every(p => p.isPresent === true);
                   const anyAbsent = pairPlayers.some(p => p.isPresent === false);
                   
