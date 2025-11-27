@@ -133,15 +133,15 @@ export default function DisplayControl() {
                             <div className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
                               #{index + 1}
                             </div>
+                            <div className="flex items-center bg-white/20 text-white px-3 py-2 rounded-lg font-bold text-lg">
+                              <Clock className="w-5 h-5 mr-2" />
+                              {plannedTime}
+                            </div>
                             {categoryName && (
                               <span className="px-3 py-1 bg-orange-600/80 text-white rounded-lg text-sm font-semibold">
                                 {categoryName}
                               </span>
                             )}
-                          </div>
-                          <div className="flex items-center text-white/60 text-sm">
-                            <Clock className="w-4 h-4 mr-1" />
-                            {plannedTime}
                           </div>
                         </div>
                         <div className="space-y-2 text-white">
@@ -205,11 +205,22 @@ export default function DisplayControl() {
                         
                         {isOccupied && activeMatch ? (
                           <div className="space-y-3">
-                            {activeMatch.category && (
-                              <div className="text-sm text-white/70">
-                                {activeMatch.category.name}
-                              </div>
-                            )}
+                            <div className="flex items-center justify-between">
+                              {activeMatch.category && (
+                                <span className="text-sm text-white/70">
+                                  {activeMatch.category.name}
+                                </span>
+                              )}
+                              {activeMatch.startedAt && (
+                                <div className="flex items-center bg-white/20 text-white px-2 py-1 rounded-lg text-sm font-medium">
+                                  <Clock className="w-4 h-4 mr-1" />
+                                  {new Date(activeMatch.startedAt).toLocaleTimeString('es-ES', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                  })}
+                                </div>
+                              )}
+                            </div>
                             
                             {/* Team 1 */}
                             <div className="bg-white/10 rounded-lg p-3">
@@ -247,16 +258,6 @@ export default function DisplayControl() {
                                 </div>
                               </div>
                             </div>
-                            
-                            {/* Match duration */}
-                            {activeMatch.startedAt && (
-                              <div className="text-center text-xs text-white/50">
-                                Iniciado: {new Date(activeMatch.startedAt).toLocaleTimeString('es-ES', { 
-                                  hour: '2-digit', 
-                                  minute: '2-digit' 
-                                })}
-                              </div>
-                            )}
                           </div>
                         ) : (
                           <div className="text-center py-4 text-white/60">
