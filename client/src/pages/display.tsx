@@ -61,8 +61,49 @@ export default function Display() {
     staleTime: 0,
   });
 
-  // Show all scheduled matches from today without time filtering
-  const scheduledMatches = allScheduledMatches;
+  // Filter scheduled matches to show:
+  // 1. Matches that are in the ready queue (have a turn assigned)
+  // 2. Matches within current hour + 2 hours ahead
+  const scheduledMatches = useMemo(() => {
+    const readyQueueIds = new Set(readyQueue.map((m: any) => m.id));
+    
+    // Get current time in tournament timezone
+    let currentHour: number;
+    let currentMinutes: number;
+    
+    if (tournament?.timezone) {
+      const { hours, minutes } = getCurrentDayTimeInTimezone(tournament.timezone);
+      currentHour = hours;
+      currentMinutes = minutes;
+    } else {
+      const now = new Date();
+      currentHour = now.getHours();
+      currentMinutes = now.getMinutes();
+    }
+    
+    const currentTotalMinutes = currentHour * 60 + currentMinutes;
+    const twoHoursAheadMinutes = currentTotalMinutes + 120; // 2 hours = 120 minutes
+    
+    return allScheduledMatches.filter((match: any) => {
+      // Always show matches that are in the ready queue
+      if (readyQueueIds.has(match.id)) {
+        return true;
+      }
+      
+      // Filter by time: show matches from current time to 2 hours ahead
+      if (match.plannedTime) {
+        const [hours, mins] = match.plannedTime.split(':').map(Number);
+        const matchTotalMinutes = hours * 60 + mins;
+        
+        // Show if match time is between now and 2 hours ahead
+        if (matchTotalMinutes >= currentTotalMinutes && matchTotalMinutes <= twoHoursAheadMinutes) {
+          return true;
+        }
+      }
+      
+      return false;
+    });
+  }, [allScheduledMatches, readyQueue, tournament?.timezone, currentTime]);
 
   const { data: allResults = [] } = useQuery<any[]>({
     queryKey: ["/api/results/recent", tournament?.id],
