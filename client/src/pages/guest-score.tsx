@@ -209,24 +209,35 @@ export default function GuestScore() {
   }, [scoreHistory, updateScoreMutation, toast]);
 
   const addGame = (playerIndex: 0 | 1) => {
-    // Save current state to history before making changes
+    // Save current state to history before making changes (deep copy)
     saveToHistory(liveScore);
     
-    const newScore = { ...liveScore };
+    // Deep copy to avoid mutating the original object
+    const newScore = JSON.parse(JSON.stringify(liveScore));
     const currentSetIndex = newScore.currentSet - 1;
     
-    if (!newScore.sets[currentSetIndex]) {
-      newScore.sets[currentSetIndex] = [0, 0];
-    }
-    
-    newScore.sets[currentSetIndex][playerIndex]++;
-    
-    const games = newScore.sets[currentSetIndex];
-    const otherIndex = playerIndex === 0 ? 1 : 0;
-    
-    if ((games[playerIndex] >= 6 && games[playerIndex] - games[otherIndex] >= 2) ||
-        (games[playerIndex] === 7 && games[otherIndex] === 6)) {
+    // Check if current set is already complete - don't add more games
+    if (newScore.sets[currentSetIndex] && isSetComplete(newScore.sets[currentSetIndex])) {
+      // Set is already complete, advance to next set
       newScore.currentSet++;
+      if (!newScore.sets[newScore.currentSet - 1]) {
+        newScore.sets[newScore.currentSet - 1] = [0, 0];
+      }
+      newScore.sets[newScore.currentSet - 1][playerIndex]++;
+    } else {
+      if (!newScore.sets[currentSetIndex]) {
+        newScore.sets[currentSetIndex] = [0, 0];
+      }
+      
+      newScore.sets[currentSetIndex][playerIndex]++;
+      
+      const games = newScore.sets[currentSetIndex];
+      const otherIndex = playerIndex === 0 ? 1 : 0;
+      
+      if ((games[playerIndex] >= 6 && games[playerIndex] - games[otherIndex] >= 2) ||
+          (games[playerIndex] === 7 && games[otherIndex] === 6)) {
+        newScore.currentSet++;
+      }
     }
     
     setLiveScore(newScore);
@@ -234,11 +245,24 @@ export default function GuestScore() {
   };
 
   const subtractGame = (playerIndex: 0 | 1) => {
-    // Save current state to history before making changes
+    // Save current state to history before making changes (deep copy)
     saveToHistory(liveScore);
     
-    const newScore = { ...liveScore };
-    const currentSetIndex = newScore.currentSet - 1;
+    // Deep copy to avoid mutating the original object
+    const newScore = JSON.parse(JSON.stringify(liveScore));
+    let currentSetIndex = newScore.currentSet - 1;
+    
+    // If current set has no games but previous set exists, go back to previous set
+    if ((!newScore.sets[currentSetIndex] || 
+        (newScore.sets[currentSetIndex][0] === 0 && newScore.sets[currentSetIndex][1] === 0)) &&
+        currentSetIndex > 0) {
+      // Remove empty current set and go back
+      if (newScore.sets[currentSetIndex]) {
+        newScore.sets.pop();
+      }
+      newScore.currentSet--;
+      currentSetIndex = newScore.currentSet - 1;
+    }
     
     if (newScore.sets[currentSetIndex] && newScore.sets[currentSetIndex][playerIndex] > 0) {
       newScore.sets[currentSetIndex][playerIndex]--;
