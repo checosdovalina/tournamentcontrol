@@ -21,6 +21,7 @@ export default function GuestScore() {
   const [scoreHistory, setScoreHistory] = useState<any[]>([]);
   const [autoFinishCountdown, setAutoFinishCountdown] = useState<number | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const winnerIdRef = useRef<string | null>(null);
 
   const { data: match, isLoading, error } = useQuery({
     queryKey: ["/api/matches/public", token],
@@ -291,7 +292,7 @@ export default function GuestScore() {
     return setsWon[0] >= 2 || setsWon[1] >= 2;
   };
 
-  const getWinnerId = () => {
+  const getWinnerId = useCallback(() => {
     const setsWon = [0, 0];
     
     liveScore.sets.forEach((set: number[]) => {
@@ -301,10 +302,14 @@ export default function GuestScore() {
       }
     });
     
-    if (setsWon[0] >= 2) return match.pair1Id;
-    if (setsWon[1] >= 2) return match.pair2Id;
-    return null;
-  };
+    let winnerId = null;
+    if (setsWon[0] >= 2) winnerId = match?.pair1Id;
+    else if (setsWon[1] >= 2) winnerId = match?.pair2Id;
+    
+    // Keep ref updated for the countdown timer
+    winnerIdRef.current = winnerId;
+    return winnerId;
+  }, [liveScore, match?.pair1Id, match?.pair2Id]);
 
   const getCurrentSetGames = () => {
     const currentSetIndex = liveScore.currentSet - 1;
@@ -328,7 +333,11 @@ export default function GuestScore() {
               clearInterval(countdownIntervalRef.current);
               countdownIntervalRef.current = null;
             }
-            completeMatchMutation.mutate(winnerId);
+            // Use the ref to get the current winnerId
+            const currentWinnerId = winnerIdRef.current;
+            if (currentWinnerId) {
+              completeMatchMutation.mutate(currentWinnerId);
+            }
             return null;
           }
           return prev - 1;
@@ -342,7 +351,7 @@ export default function GuestScore() {
         clearInterval(countdownIntervalRef.current);
       }
     };
-  }, [liveScore]);
+  }, [liveScore, getWinnerId, match?.status, autoFinishCountdown]);
 
   // Cancel countdown if match becomes incomplete (e.g., user undid an action)
   useEffect(() => {
