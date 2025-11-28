@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Plus, Minus, ArrowLeft } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Trophy, Plus, Minus, ArrowLeft, Undo2, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import courtflowLogo from "@assets/_LogosCOURTFLOW  sin fondo_1760488965348.png";
@@ -17,6 +18,9 @@ export default function GuestScore() {
   const [, setLocation] = useLocation();
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isClaimed, setIsClaimed] = useState(false);
+  const [scoreHistory, setScoreHistory] = useState<any[]>([]);
+  const [autoFinishCountdown, setAutoFinishCountdown] = useState<number | null>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: match, isLoading, error } = useQuery({
     queryKey: ["/api/matches/public", token],
@@ -179,7 +183,35 @@ export default function GuestScore() {
     };
   }, [isClaimed, match?.id]);
 
+  const saveToHistory = useCallback((score: any) => {
+    setScoreHistory(prev => [...prev, JSON.parse(JSON.stringify(score))]);
+  }, []);
+
+  const undoLastAction = useCallback(() => {
+    if (scoreHistory.length === 0) return;
+    
+    const previousScore = scoreHistory[scoreHistory.length - 1];
+    setScoreHistory(prev => prev.slice(0, -1));
+    setLiveScore(previousScore);
+    updateScoreMutation.mutate(previousScore);
+    
+    // Cancel auto-finish countdown when undoing
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    setAutoFinishCountdown(null);
+    
+    toast({
+      title: "Acción deshecha",
+      description: "Se restauró el marcador anterior",
+    });
+  }, [scoreHistory, updateScoreMutation, toast]);
+
   const addGame = (playerIndex: 0 | 1) => {
+    // Save current state to history before making changes
+    saveToHistory(liveScore);
+    
     const newScore = { ...liveScore };
     const currentSetIndex = newScore.currentSet - 1;
     
@@ -202,6 +234,9 @@ export default function GuestScore() {
   };
 
   const subtractGame = (playerIndex: 0 | 1) => {
+    // Save current state to history before making changes
+    saveToHistory(liveScore);
+    
     const newScore = { ...liveScore };
     const currentSetIndex = newScore.currentSet - 1;
     
@@ -251,6 +286,50 @@ export default function GuestScore() {
     const currentSetIndex = liveScore.currentSet - 1;
     return liveScore.sets[currentSetIndex] || [0, 0];
   };
+
+  // Auto-finish countdown when match is complete
+  useEffect(() => {
+    const matchComplete = isMatchComplete();
+    const winnerId = getWinnerId();
+    
+    if (matchComplete && match?.status !== "finished" && winnerId && autoFinishCountdown === null) {
+      // Start 15 second countdown
+      setAutoFinishCountdown(15);
+      
+      countdownIntervalRef.current = setInterval(() => {
+        setAutoFinishCountdown(prev => {
+          if (prev === null || prev <= 1) {
+            // Time's up - auto-complete the match
+            if (countdownIntervalRef.current) {
+              clearInterval(countdownIntervalRef.current);
+              countdownIntervalRef.current = null;
+            }
+            completeMatchMutation.mutate(winnerId);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+    };
+  }, [liveScore]);
+
+  // Cancel countdown if match becomes incomplete (e.g., user undid an action)
+  useEffect(() => {
+    if (!isMatchComplete() && autoFinishCountdown !== null) {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
+      setAutoFinishCountdown(null);
+    }
+  }, [liveScore, autoFinishCountdown]);
 
   if (isLoading) {
     return (
@@ -413,14 +492,66 @@ export default function GuestScore() {
                   </div>
                 </div>
 
+                {/* Undo button - always visible when there's history */}
+                {scoreHistory.length > 0 && match.status !== "finished" && (
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={undoLastAction}
+                      className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                      data-testid="button-undo-score"
+                    >
+                      <Undo2 className="h-4 w-4 mr-2" />
+                      Deshacer último cambio
+                    </Button>
+                  </div>
+                )}
+
                 {isMatchComplete() && match.status !== "finished" && (
-                  <div className="mt-6 pt-6 border-t">
+                  <div className="mt-6 pt-6 border-t space-y-4">
+                    {/* Auto-finish countdown */}
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        <Clock className="h-5 w-5 text-yellow-600" />
+                        <span className="font-semibold text-yellow-800">
+                          Finalizando automáticamente en {autoFinishCountdown || 0} segundos
+                        </span>
+                      </div>
+                      <Progress 
+                        value={((autoFinishCountdown || 0) / 15) * 100} 
+                        className="h-2"
+                      />
+                      <p className="text-xs text-center text-yellow-600 mt-2">
+                        Puedes deshacer el último cambio si hubo un error
+                      </p>
+                    </div>
+
+                    {/* Undo button during countdown */}
+                    {scoreHistory.length > 0 && (
+                      <Button
+                        variant="outline"
+                        className="w-full text-orange-600 border-orange-300 hover:bg-orange-50"
+                        size="lg"
+                        onClick={undoLastAction}
+                        data-testid="button-undo-final"
+                      >
+                        <Undo2 className="h-5 w-5 mr-2" />
+                        Deshacer y corregir
+                      </Button>
+                    )}
+
+                    {/* Manual finish button */}
                     <Button
                       className="w-full"
                       size="lg"
                       onClick={() => {
                         const winnerId = getWinnerId();
                         if (winnerId) {
+                          if (countdownIntervalRef.current) {
+                            clearInterval(countdownIntervalRef.current);
+                            countdownIntervalRef.current = null;
+                          }
                           completeMatchMutation.mutate(winnerId);
                         }
                       }}
@@ -428,7 +559,7 @@ export default function GuestScore() {
                       data-testid="button-complete-match"
                     >
                       <Trophy className="h-5 w-5 mr-2" />
-                      {completeMatchMutation.isPending ? "Finalizando..." : "Finalizar Partido"}
+                      {completeMatchMutation.isPending ? "Finalizando..." : "Finalizar Ahora"}
                     </Button>
                   </div>
                 )}
