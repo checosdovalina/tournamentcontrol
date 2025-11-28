@@ -316,53 +316,41 @@ export default function GuestScore() {
     return liveScore.sets[currentSetIndex] || [0, 0];
   };
 
-  // Auto-finish countdown when match is complete
+  // Start countdown when match becomes complete
+  const matchIsComplete = isMatchComplete();
+  const currentWinnerId = getWinnerId();
+  
   useEffect(() => {
-    const matchComplete = isMatchComplete();
-    const winnerId = getWinnerId();
-    
-    if (matchComplete && match?.status !== "finished" && winnerId && autoFinishCountdown === null) {
-      // Start 15 second countdown
+    // Only start if match is complete, not finished, and countdown hasn't started
+    if (matchIsComplete && match?.status !== "finished" && currentWinnerId && autoFinishCountdown === null) {
       setAutoFinishCountdown(15);
-      
-      countdownIntervalRef.current = setInterval(() => {
-        setAutoFinishCountdown(prev => {
-          if (prev === null || prev <= 1) {
-            // Time's up - auto-complete the match
-            if (countdownIntervalRef.current) {
-              clearInterval(countdownIntervalRef.current);
-              countdownIntervalRef.current = null;
-            }
-            // Use the ref to get the current winnerId
-            const currentWinnerId = winnerIdRef.current;
-            if (currentWinnerId) {
-              completeMatchMutation.mutate(currentWinnerId);
-            }
-            return null;
-          }
-          return prev - 1;
-        });
-      }, 1000);
     }
     
-    // Cleanup on unmount
-    return () => {
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
-      }
-    };
-  }, [liveScore, getWinnerId, match?.status, autoFinishCountdown]);
-
-  // Cancel countdown if match becomes incomplete (e.g., user undid an action)
-  useEffect(() => {
-    if (!isMatchComplete() && autoFinishCountdown !== null) {
+    // Cancel countdown if match becomes incomplete
+    if (!matchIsComplete && autoFinishCountdown !== null) {
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
         countdownIntervalRef.current = null;
       }
       setAutoFinishCountdown(null);
     }
-  }, [liveScore, autoFinishCountdown]);
+  }, [matchIsComplete, match?.status, currentWinnerId]);
+
+  // Handle countdown timer separately
+  useEffect(() => {
+    if (autoFinishCountdown !== null && autoFinishCountdown > 0) {
+      const timer = setTimeout(() => {
+        setAutoFinishCountdown(prev => (prev !== null ? prev - 1 : null));
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+    
+    // When countdown reaches 0, complete the match
+    if (autoFinishCountdown === 0 && winnerIdRef.current) {
+      completeMatchMutation.mutate(winnerIdRef.current);
+      setAutoFinishCountdown(null);
+    }
+  }, [autoFinishCountdown]);
 
   if (isLoading) {
     return (
