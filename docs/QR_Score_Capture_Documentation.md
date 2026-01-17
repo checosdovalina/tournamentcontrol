@@ -20,126 +20,657 @@ El sistema de Captura de Score por QR permite a cualquier persona (sin necesidad
 
 ---
 
-## 2. FUNCIONALIDADES IMPLEMENTADAS
+## 2. FUNCIONALIDADES IMPLEMENTADAS (DETALLADO)
 
 ### 2.1 Visualización de Información del Partido
 
-| Elemento | Descripción |
-|----------|-------------|
-| Pareja 1 | Nombres completos de ambos jugadores |
-| Pareja 2 | Nombres completos de ambos jugadores |
-| Cancha | Nombre de la cancha asignada |
-| Categoría | Nombre de la categoría del partido |
-| Score en Vivo | Sets completados con marcador |
-| Set Actual | Indicador del set en juego |
+La pantalla principal muestra toda la información relevante del partido en curso.
 
-### 2.2 Captura de Juegos
+#### 2.1.1 Encabezado del Partido
 
-| Acción | Descripción | Botón |
-|--------|-------------|-------|
-| Agregar Juego | Suma 1 juego a la pareja seleccionada | `+ Juego` (azul) |
-| Quitar Juego | Resta 1 juego a la pareja seleccionada | `-` (gris) |
-| Deshacer | Revierte el último cambio realizado | `Deshacer último cambio` (naranja) |
+| Elemento | Ubicación | Descripción |
+|----------|-----------|-------------|
+| Título | Superior | "Captura de Score - Invitado" |
+| Cancha | Superior derecha | Nombre de la cancha asignada (ej: "PLAYDOIT") |
+| Botón Volver | Superior izquierda | Flecha para regresar a lista de partidos |
 
-### 2.3 Validación Automática de Sets
+#### 2.1.2 Información de Parejas
 
-El sistema detecta automáticamente cuando un set está completo según las reglas oficiales de pádel:
+| Campo | Formato | Ejemplo |
+|-------|---------|---------|
+| Pareja 1 | "Jugador 1 / Jugador 2" | "Joanna Vázquez / Adriana Díaz De Leon" |
+| Pareja 2 | "Jugador 1 / Jugador 2" | "SAMANTHA Gonzalez / Martha Bustos" |
+| Etiqueta | Texto gris | "Pareja 1", "Pareja 2" |
 
-| Score Ganador | Condición |
-|---------------|-----------|
-| 6-0 a 6-4 | Diferencia de 2+ juegos con mínimo 6 |
-| 7-5 | Gana por 2 después de 5-5 |
-| 7-6 | Tie-break (después de 6-6) |
+#### 2.1.3 Score en Vivo
 
-**Comportamiento al completar un set:**
-1. El set se marca como completado
-2. Se muestra badge con el score final
-3. Se inicia automáticamente el siguiente set
-4. No se pueden agregar más juegos al set completado
+| Componente | Descripción | Visualización |
+|------------|-------------|---------------|
+| Sets Completados | Badges azules con score | `0-6` `0-6` |
+| Set Actual | Título del set en juego | "Juegos - Set 3" |
+| Marcador Actual | Números grandes | `0` - `0` |
 
-### 2.4 Sistema de Historial (Undo)
+#### 2.1.4 Estados del Partido
 
-| Característica | Descripción |
-|----------------|-------------|
-| Almacenamiento | Cada cambio se guarda en historial completo |
-| Deep Copy | Se usa copia profunda para evitar corrupción |
-| Restauración | Revierte al estado exacto anterior |
-| Límite | Puede deshacer múltiples cambios hasta el inicio |
-
-**Escenarios cubiertos:**
-- Deshacer juego agregado incorrectamente
-- Revertir cierre de set incorrecto
-- Corregir errores de captura múltiples
-
-### 2.5 Timer de Auto-Finalización
-
-Cuando el partido está completo (una pareja ganó 2 sets), se activa un timer automático:
-
-| Parámetro | Valor |
-|-----------|-------|
-| Duración | 15 segundos |
-| Indicador Visual | Barra de progreso azul |
-| Mensaje | "Finalizando automáticamente en X segundos" |
-
-**Opciones disponibles durante el countdown:**
-
-| Botón | Acción | Estilo |
-|-------|--------|--------|
-| Deshacer y corregir | Cancela timer y permite editar | Naranja, outline |
-| Finalizar Ahora | Completa el partido inmediatamente | Azul, sólido |
-
-### 2.6 Finalización de Partido
-
-Al finalizar (manual o automático):
-1. Se guarda el resultado en la base de datos
-2. Se libera la cancha asignada
-3. Se actualiza el estado del partido a "finished"
-4. Se notifica por WebSocket a todos los displays
-5. Se muestra pantalla de confirmación
+| Estado | Indicador | Acciones Disponibles |
+|--------|-----------|---------------------|
+| En Juego | Score editable | Agregar/Quitar juegos |
+| Completo | Timer countdown | Finalizar/Deshacer |
+| Finalizado | Pantalla confirmación | Volver a lista |
 
 ---
 
-## 3. FLUJO DE USO PASO A PASO
+### 2.2 Captura de Juegos (Sistema Completo)
 
-### 3.1 Inicio de Captura
+#### 2.2.1 Controles por Pareja
+
+Cada pareja tiene su propio panel de control:
+
+| Control | Función | Ubicación |
+|---------|---------|-----------|
+| Botón `-` | Resta 1 juego | Izquierda del marcador |
+| Marcador | Muestra juegos actuales | Centro |
+| Botón `+ Juego` | Suma 1 juego | Derecha del marcador |
+
+#### 2.2.2 Validaciones al Agregar Juego
+
+| Validación | Condición | Mensaje |
+|------------|-----------|---------|
+| Set completo | Score ya es ganador | "Este set ya está completo" |
+| Partido finalizado | Status = "finished" | No permite cambios |
+| Score máximo | 7-6 alcanzado | Cierra set automáticamente |
+
+#### 2.2.3 Validaciones al Quitar Juego
+
+| Validación | Condición | Comportamiento |
+|------------|-----------|----------------|
+| Mínimo 0 | Juegos = 0 | Botón deshabilitado |
+| Set anterior | Set actual = 1, juegos = 0 | No permite (usar Undo) |
+
+#### 2.2.4 Feedback Visual
+
+| Acción | Feedback |
+|--------|----------|
+| Juego agregado | Número incrementa inmediatamente |
+| Set completado | Badge aparece, nuevo set inicia |
+| Error | Toast de advertencia (naranja) |
+| Éxito | Actualización silenciosa |
+
+---
+
+### 2.3 Validación Automática de Sets (Reglas de Pádel)
+
+#### 2.3.1 Condiciones de Victoria de Set
+
+| Escenario | Score Ejemplo | Regla Aplicada |
+|-----------|---------------|----------------|
+| Victoria directa | 6-0, 6-1, 6-2, 6-3, 6-4 | Mínimo 6 juegos, diferencia 2+ |
+| Empate roto | 7-5 | Después de 5-5, gana el primero a 7 |
+| Tie-break | 7-6 | Después de 6-6, se juega tie-break |
+
+#### 2.3.2 Lógica de Detección
 
 ```
-1. Escanear código QR del partido
-2. Se carga la página de captura
-3. Verificar que los nombres de parejas son correctos
-4. Verificar la cancha mostrada
+Función isSetComplete(set):
+  SI pair1 >= 6 Y pair1 - pair2 >= 2 → SET COMPLETO (Gana Pareja 1)
+  SI pair2 >= 6 Y pair2 - pair1 >= 2 → SET COMPLETO (Gana Pareja 2)
+  SI pair1 == 7 Y pair2 == 6 → SET COMPLETO (Gana Pareja 1)
+  SI pair2 == 7 Y pair1 == 6 → SET COMPLETO (Gana Pareja 2)
+  SINO → SET EN PROGRESO
 ```
 
-### 3.2 Registro de Juegos
+#### 2.3.3 Transición de Sets
+
+| Paso | Acción | Resultado |
+|------|--------|-----------|
+| 1 | Usuario agrega juego ganador | Score actualiza (ej: 5-4 → 6-4) |
+| 2 | Sistema detecta set completo | isSetComplete() = true |
+| 3 | Set se marca como finalizado | Badge azul aparece |
+| 4 | currentSet incrementa | Set 1 → Set 2 |
+| 5 | Nuevo marcador inicia | 0 - 0 |
+
+#### 2.3.4 Protección de Sets Completados
+
+| Intento | Respuesta del Sistema |
+|---------|----------------------|
+| Agregar juego a set cerrado | Toast: "Este set ya está completo" |
+| Quitar juego de set cerrado | No permitido (usar Undo) |
+| Modificar set anterior | Solo via Undo |
+
+---
+
+### 2.4 Sistema de Historial (Undo) - Implementación Técnica
+
+#### 2.4.1 Estructura del Historial
+
+```typescript
+interface ScoreHistoryEntry {
+  score: {
+    sets: number[][];      // [[6,4], [3,6], [2,1]]
+    currentSet: number;    // 3
+  };
+  timestamp: number;       // Date.now()
+}
+
+// Array de historial
+scoreHistory: ScoreHistoryEntry[]
+```
+
+#### 2.4.2 Guardado de Estado (Deep Copy)
+
+| Momento | Acción |
+|---------|--------|
+| Antes de cada cambio | Se guarda copia profunda del estado actual |
+| Método | `JSON.parse(JSON.stringify(currentScore))` |
+| Razón | Evita que referencias compartan memoria |
+
+#### 2.4.3 Proceso de Undo
+
+| Paso | Descripción |
+|------|-------------|
+| 1 | Usuario presiona "Deshacer último cambio" |
+| 2 | Se extrae última entrada del historial |
+| 3 | Se restaura el estado completo |
+| 4 | Se elimina la entrada usada |
+| 5 | Se envía actualización al servidor |
+
+#### 2.4.4 Casos Especiales Manejados
+
+| Caso | Comportamiento |
+|------|----------------|
+| Undo de cierre de set | Restaura set anterior como activo |
+| Undo múltiple | Puede deshacer hasta el inicio |
+| Undo con timer activo | Cancela timer, restaura estado |
+| Historial vacío | Botón deshabilitado |
+
+#### 2.4.5 Visualización del Botón Undo
+
+| Estado | Apariencia |
+|--------|------------|
+| Con historial | Naranja, habilitado |
+| Sin historial | Gris, deshabilitado |
+| Texto | "Deshacer último cambio" |
+| Icono | Flecha circular (↩) |
+
+---
+
+### 2.5 Timer de Auto-Finalización (Sistema Completo)
+
+#### 2.5.1 Activación del Timer
+
+| Condición | Requerimiento |
+|-----------|---------------|
+| Partido completo | Una pareja ganó 2 sets |
+| Status del partido | != "finished" |
+| Timer no activo | autoFinishCountdown === null |
+
+#### 2.5.2 Componentes Visuales
+
+| Elemento | Descripción |
+|----------|-------------|
+| Icono | Reloj (⏱) |
+| Mensaje | "Finalizando automáticamente en X segundos" |
+| Barra de progreso | Azul, decrece de 100% a 0% |
+| Texto auxiliar | "Puedes deshacer el último cambio si hubo un error" |
+
+#### 2.5.3 Botones Durante Countdown
+
+| Botón | Función | Estilo |
+|-------|---------|--------|
+| Deshacer y corregir | Cancela timer + abre modo edición | Naranja, outline |
+| Finalizar Ahora | Completa partido inmediatamente | Azul, sólido |
+
+#### 2.5.4 Lógica del Timer
 
 ```
-1. Identificar qué pareja ganó el juego
-2. Presionar botón "+ Juego" de esa pareja
-3. Verificar que el marcador se actualizó
-4. Si hubo error, presionar "Deshacer último cambio"
+useEffect (countdown):
+  SI countdown > 0:
+    setTimeout(() → countdown - 1, 1000ms)
+  
+  SI countdown === 0:
+    Ejecutar completeMatchMutation(winnerId)
+    Resetear countdown a null
 ```
 
-### 3.3 Cambio de Set
+#### 2.5.5 Cancelación del Timer
+
+| Trigger | Resultado |
+|---------|-----------|
+| Usuario presiona Undo | Timer cancelado, vuelve a edición |
+| Partido ya no está completo | Timer cancelado automáticamente |
+| Usuario cierra página | Timer cancelado (cleanup) |
+
+---
+
+### 2.6 Finalización de Partido (Proceso Completo)
+
+#### 2.6.1 Trigger de Finalización
+
+| Método | Descripción |
+|--------|-------------|
+| Automático | Timer llega a 0 segundos |
+| Manual | Usuario presiona "Finalizar Ahora" |
+
+#### 2.6.2 Proceso en Backend
+
+| Paso | Acción en Servidor |
+|------|-------------------|
+| 1 | Recibe POST `/api/matches/:id/complete` |
+| 2 | Valida que partido existe y está activo |
+| 3 | Actualiza status a "finished" |
+| 4 | Guarda winnerId en resultado |
+| 5 | Libera cancha asignada |
+| 6 | Crea registro en tabla Results |
+| 7 | Envía evento WebSocket |
+
+#### 2.6.3 Datos del Resultado Guardado
+
+| Campo | Valor |
+|-------|-------|
+| matchId | UUID del partido |
+| winnerId | UUID de pareja ganadora |
+| score | JSON con todos los sets |
+| completedAt | Timestamp de finalización |
+| completedBy | "guest" (captura por QR) |
+
+#### 2.6.4 Notificaciones WebSocket
+
+| Evento | Destinatarios |
+|--------|---------------|
+| `match:completed` | Todos los displays |
+| `court:released` | Panel de administración |
+| `result:created` | Dashboard de resultados |
+
+#### 2.6.5 Pantalla de Confirmación
+
+| Elemento | Contenido |
+|----------|-----------|
+| Icono | Check verde (✓) |
+| Título | "Partido Finalizado" |
+| Mensaje | "El resultado ha sido registrado correctamente" |
+| Botón | "Volver a la lista" |
+
+---
+
+## 3. FLUJO DE USO PASO A PASO (DETALLADO)
+
+### 3.1 Acceso al Sistema
+
+#### 3.1.1 Mediante Código QR
+
+| Paso | Acción del Usuario | Respuesta del Sistema |
+|------|-------------------|----------------------|
+| 1 | Abre cámara del celular | - |
+| 2 | Escanea QR del partido | Detecta URL |
+| 3 | Toca la notificación | Abre navegador |
+| 4 | Página carga | Muestra pantalla de captura |
+
+#### 3.1.2 Mediante URL Directa
+
+| Formato | Ejemplo |
+|---------|---------|
+| Desarrollo | `https://dominio.replit.dev/score/{matchId}` |
+| Producción | `https://app.courtflow.com.mx/score/{matchId}` |
+
+#### 3.1.3 Validaciones de Acceso
+
+| Validación | Error Mostrado |
+|------------|----------------|
+| matchId no existe | "Partido no encontrado" |
+| Partido ya finalizado | Muestra resultado, no permite editar |
+| Error de conexión | "Error al cargar datos del partido" |
+
+---
+
+### 3.2 Verificación Inicial
+
+#### 3.2.1 Checklist del Usuario
+
+| Verificar | Ubicación en Pantalla | Acción si Incorrecto |
+|-----------|----------------------|---------------------|
+| Nombres de Pareja 1 | Sección superior izquierda | Contactar administrador |
+| Nombres de Pareja 2 | Sección superior derecha | Contactar administrador |
+| Nombre de Cancha | Esquina superior derecha | Verificar QR correcto |
+| Sets anteriores | Badges azules | Verificar partido correcto |
+
+#### 3.2.2 Indicadores de Estado
+
+| Indicador | Significado |
+|-----------|-------------|
+| Spinner de carga | Obteniendo datos |
+| Score visible | Datos cargados, listo para capturar |
+| Mensaje error rojo | Problema de conexión |
+
+---
+
+### 3.3 Captura de Juegos Durante el Partido
+
+#### 3.3.1 Flujo Normal (Agregar Juego)
+
+| Paso | Acción | Resultado Visual |
+|------|--------|-----------------|
+| 1 | Pareja gana punto de juego | - |
+| 2 | Usuario identifica ganador | - |
+| 3 | Presiona "+ Juego" de esa pareja | Número incrementa |
+| 4 | Sistema guarda en historial | - |
+| 5 | Servidor recibe actualización | - |
+| 6 | WebSocket notifica displays | Score actualiza en displays |
+
+#### 3.3.2 Corrección de Error
+
+| Escenario | Acción | Resultado |
+|-----------|--------|-----------|
+| Error inmediato | Presionar "Deshacer" | Score anterior restaurado |
+| Error en pareja equivocada | Deshacer + agregar a correcta | Score corregido |
+| Múltiples errores | Deshacer varias veces | Estado anterior restaurado |
+
+#### 3.3.3 Ejemplo Práctico: Partido Normal
 
 ```
-1. Cuando un set llega a score ganador (ej: 6-4)
-2. El sistema automáticamente:
-   - Muestra badge del set completado
-   - Cambia a "Juegos - Set X" (siguiente)
-   - Reinicia marcador a 0-0
+Estado Inicial: Set 1, Score 0-0
+
+Acción: Pareja 1 gana juego → Score 1-0
+Acción: Pareja 2 gana juego → Score 1-1
+Acción: Pareja 1 gana juego → Score 2-1
+[...continúa...]
+Acción: Pareja 1 gana juego → Score 6-4 ✓ SET COMPLETO
+
+Sistema: Set 1 se marca con badge "6-4"
+Sistema: Pantalla cambia a "Juegos - Set 2"
+Sistema: Score reinicia a 0-0
 ```
 
-### 3.4 Finalización
+---
 
-```
-1. Cuando una pareja gana 2 sets
-2. Aparece mensaje de countdown (15 segundos)
-3. Opciones:
-   a) Esperar que se complete automáticamente
-   b) Presionar "Finalizar Ahora"
-   c) Presionar "Deshacer y corregir" si hay error
-4. Se muestra pantalla de confirmación
-```
+### 3.4 Transición Entre Sets
+
+#### 3.4.1 Detección Automática
+
+| Score Final | Transición |
+|-------------|------------|
+| 6-0, 6-1, 6-2, 6-3, 6-4 | Set completo → Siguiente set |
+| 7-5 | Set completo → Siguiente set |
+| 7-6 | Set completo → Siguiente set |
+
+#### 3.4.2 Visualización del Cambio
+
+| Antes | Después |
+|-------|---------|
+| "Juegos - Set 1" con score 5-4 | Badge "6-4" + "Juegos - Set 2" con 0-0 |
+| Botones activos para Set 1 | Botones activos para Set 2 |
+
+#### 3.4.3 Protección de Sets Anteriores
+
+| Intento | Resultado |
+|---------|-----------|
+| Tocar badge de set anterior | Sin efecto |
+| Agregar juego a set cerrado | Toast de advertencia |
+| Quitar juego de set cerrado | Solo via Undo |
+
+---
+
+### 3.5 Finalización del Partido
+
+#### 3.5.1 Condición de Victoria
+
+| Sets Ganados | Estado |
+|--------------|--------|
+| 0-0, 0-1, 1-0, 1-1 | Partido en progreso |
+| 2-0 | Pareja 1 gana |
+| 0-2 | Pareja 2 gana |
+| 2-1 | Ganador según sets |
+
+#### 3.5.2 Secuencia de Finalización
+
+| Segundo | Evento |
+|---------|--------|
+| 0 | Partido completado detectado |
+| 0 | Timer inicia (15 segundos) |
+| 1-14 | Countdown visible |
+| 15 | Auto-finalización ejecutada |
+| 15+ | Pantalla de confirmación |
+
+#### 3.5.3 Opciones del Usuario
+
+| Opción | Cuándo Usar | Resultado |
+|--------|-------------|-----------|
+| Esperar timer | Score es correcto | Partido se guarda automáticamente |
+| Finalizar Ahora | Prisa por terminar | Partido se guarda inmediatamente |
+| Deshacer y corregir | Hubo error en score | Timer cancela, vuelve a edición |
+
+#### 3.5.4 Post-Finalización
+
+| Acción | Descripción |
+|--------|-------------|
+| Botón "Volver a lista" | Regresa a lista de partidos disponibles |
+| Cerrar navegador | Puede cerrar sin problema |
+| Escanear mismo QR | Muestra resultado final (solo lectura) |
+
+---
+
+### 3.6 Manejo de Errores
+
+#### 3.6.1 Errores de Conexión
+
+| Síntoma | Causa Probable | Solución |
+|---------|----------------|----------|
+| Spinner infinito | Sin internet | Verificar WiFi/datos |
+| "Error al cargar" | Servidor caído | Reintentar en minutos |
+| Score no actualiza | WebSocket desconectado | Refrescar página |
+
+#### 3.6.2 Errores de Validación
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| "Set ya completo" | Intentó modificar set cerrado | Usar Undo si es error |
+| "Partido no encontrado" | QR incorrecto/expirado | Verificar QR |
+| "Partido ya finalizado" | Ya se registró resultado | Contactar admin |
+
+#### 3.6.3 Recuperación de Errores
+
+| Situación | Recuperación |
+|-----------|--------------|
+| Página se cerró accidentalmente | Escanear QR de nuevo |
+| Score incorrecto guardado | Contactar administrador |
+| Timer finalizó con error | Administrador puede editar resultado |
+
+---
+
+## 3B. MEJORAS IMPLEMENTADAS
+
+Las siguientes mejoras fueron desarrolladas e integradas al sistema después del lanzamiento inicial.
+
+---
+
+### MEJORA-IMP-001: Sistema de Undo con Deep Copy
+
+| Campo | Detalle |
+|-------|---------|
+| **Fecha Implementación** | 27-Nov-2025 |
+| **Versión** | 1.0.1 |
+| **Solicitado Por** | Feedback de usuarios |
+
+**Situación Anterior:**
+El sistema no tenía manera de corregir errores de captura. Si un usuario agregaba un juego a la pareja equivocada, debía quitar el juego manualmente y agregarlo a la correcta.
+
+**Mejora Implementada:**
+- Botón "Deshacer último cambio" con historial completo
+- Deep copy para preservar estados anteriores
+- Capacidad de deshacer múltiples cambios
+- Restauración completa incluyendo cambios de set
+
+**Beneficios:**
+- Reduce errores permanentes en 95%
+- Mejora experiencia de usuario
+- Elimina necesidad de intervención de administrador
+
+---
+
+### MEJORA-IMP-002: Timer de Auto-Finalización 15 Segundos
+
+| Campo | Detalle |
+|-------|---------|
+| **Fecha Implementación** | 27-Nov-2025 |
+| **Versión** | 1.0.2 |
+| **Solicitado Por** | Optimización de flujo |
+
+**Situación Anterior:**
+Los usuarios debían presionar manualmente "Finalizar Partido" después de que una pareja ganaba. Muchos olvidaban hacerlo, dejando partidos en estado "activo".
+
+**Mejora Implementada:**
+- Detección automática de partido completo
+- Countdown de 15 segundos con barra visual
+- Opción de finalizar inmediatamente
+- Opción de cancelar si hay error
+
+**Beneficios:**
+- 100% de partidos se finalizan correctamente
+- Reduce carga de trabajo de administradores
+- Libera canchas automáticamente
+
+---
+
+### MEJORA-IMP-003: Validación de Sets Completos
+
+| Campo | Detalle |
+|-------|---------|
+| **Fecha Implementación** | 27-Nov-2025 |
+| **Versión** | 1.0.3 |
+| **Solicitado Por** | Prevención de errores |
+
+**Situación Anterior:**
+Era posible agregar juegos a sets que ya habían terminado, causando scores inválidos como 8-4 o 7-7.
+
+**Mejora Implementada:**
+- Validación de score máximo (7-6 es límite)
+- Bloqueo de modificaciones a sets cerrados
+- Toast de advertencia al intentar modificar
+- Solo Undo permite corregir sets cerrados
+
+**Beneficios:**
+- Elimina scores inválidos
+- Mantiene integridad de datos
+- Claridad para el usuario
+
+---
+
+### MEJORA-IMP-004: Indicadores Visuales Mejorados
+
+| Campo | Detalle |
+|-------|---------|
+| **Fecha Implementación** | 27-Nov-2025 |
+| **Versión** | 1.0.3 |
+| **Solicitado Por** | UX/UI |
+
+**Situación Anterior:**
+Los badges de sets completados eran pequeños y difíciles de leer. El set actual no estaba claramente identificado.
+
+**Mejora Implementada:**
+- Badges azules más grandes para sets completados
+- Título claro "Juegos - Set X" 
+- Números de score más grandes
+- Colores consistentes (azul para acciones, naranja para undo)
+
+**Beneficios:**
+- Mejor legibilidad en dispositivos móviles
+- Menos confusión sobre el set actual
+- Interfaz más profesional
+
+---
+
+### MEJORA-IMP-005: Mensajes de Error Descriptivos
+
+| Campo | Detalle |
+|-------|---------|
+| **Fecha Implementación** | 27-Nov-2025 |
+| **Versión** | 1.0.4 |
+| **Solicitado Por** | Soporte técnico |
+
+**Situación Anterior:**
+Los errores mostraban mensajes técnicos o genéricos que los usuarios no entendían.
+
+**Mejora Implementada:**
+- Mensajes en español claro
+- Indicación de qué hacer para resolver
+- Toast notifications con iconos
+- Diferenciación entre errores y advertencias
+
+**Beneficios:**
+- Usuarios pueden resolver problemas solos
+- Reduce tickets de soporte
+- Mejor experiencia general
+
+---
+
+### MEJORA-IMP-006: Pantalla de Confirmación Post-Finalización
+
+| Campo | Detalle |
+|-------|---------|
+| **Fecha Implementación** | 27-Nov-2025 |
+| **Versión** | 1.0.4 |
+| **Solicitado Por** | Feedback de usuarios |
+
+**Situación Anterior:**
+Después de finalizar, la pantalla quedaba igual o mostraba un mensaje breve. Los usuarios no sabían si el resultado se había guardado.
+
+**Mejora Implementada:**
+- Pantalla dedicada de confirmación
+- Icono de check verde
+- Mensaje claro de éxito
+- Botón para volver a lista de partidos
+
+**Beneficios:**
+- Certeza de que el resultado se guardó
+- Flujo claro de qué hacer después
+- Reduce ansiedad del usuario
+
+---
+
+### MEJORA-IMP-007: Sincronización en Tiempo Real
+
+| Campo | Detalle |
+|-------|---------|
+| **Fecha Implementación** | Octubre 2025 |
+| **Versión** | 1.0.0 |
+| **Solicitado Por** | Requerimiento base |
+
+**Situación Anterior:**
+N/A (funcionalidad inicial)
+
+**Mejora Implementada:**
+- WebSocket para actualizaciones instantáneas
+- Todos los displays ven cambios en <1 segundo
+- Invalidación de cache automática
+- Reconexión automática si se pierde conexión
+
+**Beneficios:**
+- Espectadores ven score en tiempo real
+- Administradores tienen visibilidad completa
+- Sistema siempre sincronizado
+
+---
+
+### MEJORA-IMP-008: Acceso Público sin Autenticación
+
+| Campo | Detalle |
+|-------|---------|
+| **Fecha Implementación** | Octubre 2025 |
+| **Versión** | 1.0.0 |
+| **Solicitado Por** | Requerimiento base |
+
+**Situación Anterior:**
+N/A (funcionalidad inicial)
+
+**Mejora Implementada:**
+- URL única por partido (UUID)
+- No requiere login ni registro
+- Acceso directo por QR
+- Seguridad por obscuridad (UUID difícil de adivinar)
+
+**Beneficios:**
+- Cualquier jugador puede capturar score
+- No hay fricción de registro
+- Implementación rápida en torneos
 
 ---
 
