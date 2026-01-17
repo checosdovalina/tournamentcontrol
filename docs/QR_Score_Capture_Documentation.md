@@ -220,6 +220,304 @@ Se simplificó completamente la arquitectura:
 
 ---
 
+## 4B. DEFECTOS HISTÓRICOS DEL SISTEMA COURTFLOW
+
+Los siguientes defectos fueron identificados y corregidos durante el desarrollo del sistema completo.
+
+---
+
+### 4.4 Defecto: Timeout Processor cancelaba partidos prematuramente
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-004 |
+| **Módulo** | Timeout Processor (Backend) |
+| **Severidad** | Crítica |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+El procesador de timeouts cancelaba partidos programados antes de tiempo cuando el servidor estaba en una zona horaria diferente a la del torneo.
+
+**Causa Raíz:**
+El sistema usaba la hora del servidor en lugar de la zona horaria configurada del torneo para calcular los 15 minutos de timeout.
+
+**Solución Implementada:**
+Se creó la utilidad `combineDateTimeInTimezone()` que combina `match.day` con `match.plannedTime` respetando la zona horaria del torneo (formato IANA como "America/Mexico_City").
+
+**Código Afectado:**
+- `server/routes.ts` - Timeout Processor
+- `shared/utils/timezone.ts`
+
+---
+
+### 4.5 Defecto: Partidos retroactivos eran procesados por timeout
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-005 |
+| **Módulo** | Timeout Processor (Backend) |
+| **Severidad** | Alta |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+Cuando se importaban partidos programados para horas pasadas (ej: importación de Excel a las 3pm con partidos de las 10am), el timeout processor los marcaba incorrectamente como DQF o cancelados.
+
+**Causa Raíz:**
+No existía validación para detectar partidos creados después de su período de timeout.
+
+**Solución Implementada:**
+El timeout processor ahora omite completamente partidos donde `createdAt >= timeoutThreshold`. Solo partidos que existían ANTES de que expirara su timeout son elegibles para procesamiento.
+
+**Código Afectado:**
+- `server/routes.ts` - Timeout Processor
+- Log: "SKIPPED - created after timeout"
+
+---
+
+### 4.6 Defecto: Partidos completados bloqueaban asignación de canchas
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-006 |
+| **Módulo** | Court Assignment (Backend) |
+| **Severidad** | Alta |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+Al intentar asignar una cancha a un nuevo partido, el sistema mostraba error de conflicto aunque el partido anterior en esa cancha ya había terminado.
+
+**Causa Raíz:**
+La detección de conflictos verificaba si `matchId` estaba asignado, pero no excluía partidos con status "completed".
+
+**Solución Implementada:**
+La lógica de conflicto ahora solo bloquea cuando: (1) hay un `matchId` asignado Y status !== 'completed', O (2) hay `preAssignedAt` activo.
+
+**Código Afectado:**
+- `server/routes.ts` - Court assignment endpoints
+- `server/storage.ts`
+
+---
+
+### 4.7 Defecto: Display mostraba fecha incorrecta en zonas horarias diferentes
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-007 |
+| **Módulo** | Display Público |
+| **Severidad** | Media |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+Los displays públicos mostraban partidos de "mañana" como si fueran de "hoy" cuando el espectador estaba en una zona horaria diferente al torneo.
+
+**Causa Raíz:**
+Se usaba `new Date()` del navegador en lugar de la zona horaria del torneo para calcular "hoy".
+
+**Solución Implementada:**
+Se implementó `getTodayInTimezone()` que usa `Intl.DateTimeFormat` para convertir la hora del servidor a la zona horaria del torneo.
+
+**Código Afectado:**
+- `client/src/pages/display.tsx`
+- `client/src/pages/display-rotative.tsx`
+- `client/src/utils/timezone.ts`
+
+---
+
+### 4.8 Defecto: Diálogo de compartir stream quedaba atascado
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-008 |
+| **Módulo** | Manage Courts Modal |
+| **Severidad** | Media |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+Al cerrar el modal de gestión de canchas mientras el diálogo de "Compartir Stream" estaba abierto, el overlay del diálogo quedaba visible permanentemente.
+
+**Causa Raíz:**
+El estado `showShareDialog` no se reseteaba cuando el modal padre se cerraba.
+
+**Solución Implementada:**
+Se agregó cleanup del estado del diálogo en todas las rutas de cierre: click en overlay, tecla ESC, y botón de cerrar.
+
+**Código Afectado:**
+- `client/src/components/modals/manage-courts-modal.tsx`
+
+---
+
+### 4.9 Defecto: Posición en cola se perdía al hacer check-out/check-in
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-009 |
+| **Módulo** | Ready Queue System |
+| **Severidad** | Alta |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+Cuando un jugador hacía check-out y luego check-in nuevamente, el partido perdía su posición original en la cola de espera.
+
+**Causa Raíz:**
+El timestamp `readySince` se actualizaba cada vez que el partido volvía a estado "ready".
+
+**Solución Implementada:**
+El `readySince` ahora solo se establece en la PRIMERA transición a estado ready. Check-outs posteriores y re-check-ins preservan el timestamp original.
+
+**Código Afectado:**
+- `server/routes.ts` - Check-in endpoint
+- `shared/schema.ts` - readySince field
+
+---
+
+### 4.10 Defecto: Excel imports creaban inconsistencias de fecha/hora
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-010 |
+| **Módulo** | Scheduled Match Import |
+| **Severidad** | Media |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+Al importar partidos desde Excel, algunos tenían componentes de hora en el campo `day` que causaban cálculos incorrectos de timeout.
+
+**Causa Raíz:**
+Excel almacena fechas con timestamps completos. Al importar, estos timestamps se preservaban en el campo `day`.
+
+**Solución Implementada:**
+La utilidad `combineDateTimeInTimezone()` ahora extrae SOLO la porción de fecha del campo `match.day`, ignorando cualquier componente de hora.
+
+**Código Afectado:**
+- `server/routes.ts` - Import endpoint
+- `shared/utils/timezone.ts`
+
+---
+
+### 4.11 Defecto: DQF automático era demasiado agresivo
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-011 |
+| **Módulo** | Timeout Processor |
+| **Severidad** | Crítica |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+Cuando solo una pareja completaba check-in después del timeout, el sistema automáticamente otorgaba victoria por default sin supervisión.
+
+**Causa Raíz:**
+La lógica original asumía que la ausencia siempre justificaba DQF automático.
+
+**Solución Implementada:**
+En lugar de DQF automático, el sistema ahora:
+1. Marca el partido con `pendingDqf: true`
+2. Guarda la pareja presente en `defaultWinnerPairId`
+3. Muestra botón "DQF" a administradores para decisión manual
+
+**Código Afectado:**
+- `server/routes.ts` - Timeout Processor
+- `client/src/pages/programming.tsx` - DQF button
+- `shared/schema.ts` - pendingDqf, defaultWinnerPairId fields
+
+---
+
+### 4.12 Defecto: Pre-asignación permitía iniciar partidos en conflicto
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-012 |
+| **Módulo** | Court Pre-Assignment |
+| **Severidad** | Alta |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+Un partido pre-asignado a una cancha podía iniciarse mientras el partido anterior aún estaba en juego.
+
+**Causa Raíz:**
+No existía validación que verificara si la cancha tenía un partido activo antes de permitir el inicio.
+
+**Solución Implementada:**
+El botón "Iniciar Partido" ahora se deshabilita cuando la cancha tiene un partido activo. El display muestra status "Pre-asignada" hasta que la cancha se libere.
+
+**Código Afectado:**
+- `client/src/pages/programming.tsx`
+- `client/src/pages/display.tsx`
+
+---
+
+### 4.13 Defecto: Lista de espera mostraba partidos muy antiguos
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-013 |
+| **Módulo** | Waiting List Display |
+| **Severidad** | Baja |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+La lista de espera acumulaba entradas de días anteriores, haciendo difícil encontrar los partidos relevantes.
+
+**Causa Raíz:**
+No existía filtro temporal para las entradas de la lista.
+
+**Solución Implementada:**
+Se implementó filtro de 8 horas (480 minutos) que oculta automáticamente partidos con check-in más antiguo.
+
+**Código Afectado:**
+- `client/src/pages/display-control.tsx`
+- `client/src/pages/display.tsx`
+
+---
+
+### 4.14 Defecto: Pantallas se apagaban durante displays de torneo
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-014 |
+| **Módulo** | Public Display |
+| **Severidad** | Media |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+Las pantallas de TV usadas para mostrar scores y partidos próximos se apagaban por inactividad.
+
+**Causa Raíz:**
+Los navegadores activan ahorro de energía por defecto en páginas sin interacción.
+
+**Solución Implementada:**
+Se implementó Wake Lock API con fallback de video invisible para navegadores sin soporte. Auto-recuperación cuando la pestaña vuelve a estar visible.
+
+**Código Afectado:**
+- `client/src/pages/display.tsx`
+- `client/src/pages/display-stream.tsx`
+- `client/src/hooks/useWakeLock.ts`
+
+---
+
+### 4.15 Defecto: Anuncios interrumpían durante puntos activos (Streaming)
+
+| Campo | Detalle |
+|-------|---------|
+| **ID** | BUG-015 |
+| **Módulo** | Streaming Display |
+| **Severidad** | Media |
+| **Estado** | CORREGIDO |
+
+**Descripción del Problema:**
+Los anuncios en el display de streaming aparecían aleatoriamente, incluyendo durante puntos activos.
+
+**Causa Raíz:**
+La rotación de anuncios no consideraba el estado del juego.
+
+**Solución Implementada:**
+Los anuncios ahora solo aparecen durante puntos impares (1-0, 2-1, 2-3, etc.) cuando los jugadores cambian de lado, evitando interrupciones durante juego activo.
+
+**Código Afectado:**
+- `client/src/pages/display-stream.tsx`
+
+---
+
 ## 5. MEJORAS SUGERIDAS (BACKLOG)
 
 ### 5.1 Confirmación de Cambios Críticos
