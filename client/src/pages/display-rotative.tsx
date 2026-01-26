@@ -190,45 +190,10 @@ export default function DisplayRotative() {
     return () => clearInterval(timer);
   }, []);
 
-  // Screen rotation logic: current -> ad -> upcoming -> ad -> results -> ad -> repeat
-  // Only include screens with data and ads between actual content
+  // Only show current matches screen (no rotation)
   useEffect(() => {
-    const screens: ScreenType[] = [];
-    const hasAds = activeAds.length > 0;
-    
-    // Always show current matches
-    screens.push('current');
-    
-    // Add upcoming if there are matches, with ad before it
-    if (upcomingMatches.length > 0) {
-      if (hasAds) screens.push('advertisement');
-      screens.push('upcoming');
-    }
-    
-    // Add results if available, with ad before it
-    if (recentResults.length > 0) {
-      if (hasAds) screens.push('advertisement');
-      screens.push('results');
-    }
-    
-    // Add final ad before looping back to current (only if we have other content)
-    if (hasAds && screens.length > 1) {
-      screens.push('advertisement');
-    }
-
-    let currentIndex = 0;
-    const rotationTimer = setInterval(() => {
-      currentIndex = (currentIndex + 1) % screens.length;
-      setCurrentScreen(screens[currentIndex]);
-      
-      // Rotate ads when showing advertisement screen
-      if (screens[currentIndex] === 'advertisement') {
-        setCurrentAdIndex(prev => (prev + 1) % activeAds.length);
-      }
-    }, 15000); // 15 seconds per screen
-
-    return () => clearInterval(rotationTimer);
-  }, [activeAds.length, upcomingMatches.length, recentResults.length]);
+    setCurrentScreen('current');
+  }, []);
 
   const formatScore = (match: any) => {
     if (!match.score?.sets || match.score.sets.length === 0) return "0-0";
@@ -376,10 +341,10 @@ export default function DisplayRotative() {
   );
 }
 
-// Current Matches Screen Component
+// Current Matches Screen Component - Large Cards (6 per page)
 function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], formatScore: (match: any) => string }) {
   const [currentPage, setCurrentPage] = useState(0);
-  const cardsPerPage = 10; // 2x5 grid
+  const cardsPerPage = 6; // 2x3 grid with larger cards
   const totalPages = Math.ceil(matches.length / cardsPerPage);
 
   useEffect(() => {
@@ -387,7 +352,7 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
     
     const timer = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
-    }, 8000); // 8 segundos por página
+    }, 10000); // 10 segundos por página
     
     return () => clearInterval(timer);
   }, [totalPages]);
@@ -396,9 +361,9 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
-          <Clock className="h-24 w-24 text-[#6B7280] mx-auto mb-6" />
-          <h2 className="text-4xl font-bold text-white mb-3">No hay partidos en curso</h2>
-          <p className="text-2xl text-[#9CA3AF]">Esperando próximos partidos...</p>
+          <Clock className="h-32 w-32 text-[#6B7280] mx-auto mb-8" />
+          <h2 className="text-5xl font-bold text-white mb-4">No hay partidos en curso</h2>
+          <p className="text-3xl text-[#9CA3AF]">Esperando próximos partidos...</p>
         </div>
       </div>
     );
@@ -407,21 +372,21 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
   const visibleMatches = matches.slice(currentPage * cardsPerPage, (currentPage + 1) * cardsPerPage);
 
   return (
-    <div className="h-full p-3 flex flex-col overflow-hidden">
-      <div className="mb-2 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-full bg-[#10B981] flex items-center justify-center animate-pulse">
-            <Activity className="h-4 w-4 text-white" />
+    <div className="h-full p-6 flex flex-col overflow-hidden">
+      <div className="mb-4 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center space-x-3">
+          <div className="h-12 w-12 rounded-full bg-[#10B981] flex items-center justify-center animate-pulse">
+            <Activity className="h-6 w-6 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-white">Partidos en Curso</h2>
+          <h2 className="text-3xl font-bold text-white">Partidos en Curso</h2>
         </div>
         {totalPages > 1 && (
-          <div className="flex items-center space-x-1.5">
+          <div className="flex items-center space-x-2">
             {Array.from({ length: totalPages }).map((_, idx) => (
               <div
                 key={idx}
-                className={`h-1.5 rounded-full transition-all ${
-                  idx === currentPage ? 'w-6 bg-[#10B981]' : 'w-1.5 bg-[#374151]'
+                className={`h-2 rounded-full transition-all ${
+                  idx === currentPage ? 'w-8 bg-[#10B981]' : 'w-2 bg-[#374151]'
                 }`}
               />
             ))}
@@ -430,30 +395,38 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-x-1.5 gap-y-1 h-full">
+        <div className="grid grid-cols-2 gap-4 h-full auto-rows-fr">
           {visibleMatches.map((match: any) => (
-            <div key={match.id} className="bg-[#1F2937] rounded-lg p-2 border border-[#10B981] h-fit">
-              <div className="flex justify-between items-center mb-1.5">
-                <div className="flex items-center gap-1">
-                  <div className="bg-[#3B82F6] text-white px-1.5 py-0.5 rounded text-xs font-bold">
+            <div key={match.id} className="bg-[#1F2937] rounded-xl p-4 border-2 border-[#10B981] flex flex-col justify-between">
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="bg-[#3B82F6] text-white px-3 py-1 rounded-lg text-base font-bold">
                     {match.court?.name || 'Sin cancha'}
                   </div>
+                  {match.category?.name && (
+                    <div className="bg-[#374151] text-[#9CA3AF] px-2 py-1 rounded text-sm">
+                      {match.category.name}
+                    </div>
+                  )}
                 </div>
-                <div className="text-[#10B981] font-bold text-xs">EN VIVO</div>
+                <div className="text-[#10B981] font-bold text-base flex items-center gap-1">
+                  <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
+                  EN VIVO
+                </div>
               </div>
               
-              <div className="bg-[#111827] rounded p-1.5 mb-1">
-                <div className="text-white text-sm font-bold truncate">
+              <div className="bg-[#111827] rounded-lg p-3 mb-2">
+                <div className="text-white text-lg font-bold truncate">
                   {match.pair1?.player1?.name} / {match.pair1?.player2?.name}
                 </div>
               </div>
               
-              <div className="text-center my-1">
-                <div className="text-[#F59E0B] text-lg font-bold">{formatScore(match)}</div>
+              <div className="text-center my-2">
+                <div className="text-[#F59E0B] text-3xl font-bold">{formatScore(match)}</div>
               </div>
               
-              <div className="bg-[#111827] rounded p-1.5">
-                <div className="text-white text-sm font-bold truncate">
+              <div className="bg-[#111827] rounded-lg p-3">
+                <div className="text-white text-lg font-bold truncate">
                   {match.pair2?.player1?.name} / {match.pair2?.player2?.name}
                 </div>
               </div>
