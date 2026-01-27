@@ -341,10 +341,10 @@ export default function DisplayRotative() {
   );
 }
 
-// Current Matches Screen Component - Large Cards (6 per page)
+// Current Matches Screen Component - Large Cards (4 per page)
 function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], formatScore: (match: any) => string }) {
   const [currentPage, setCurrentPage] = useState(0);
-  const cardsPerPage = 6; // 2x3 grid with larger cards
+  const cardsPerPage = 4; // 2x2 grid with larger cards
   const totalPages = Math.ceil(matches.length / cardsPerPage);
 
   useEffect(() => {
