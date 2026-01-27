@@ -395,9 +395,9 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-4 h-full auto-rows-fr">
+        <div className="grid grid-cols-2 grid-rows-2 gap-4 h-full">
           {visibleMatches.map((match: any) => (
-            <div key={match.id} className="bg-[#1F2937] rounded-xl p-4 border-2 border-[#10B981] flex flex-col justify-between">
+            <div key={match.id} className="bg-[#1F2937] rounded-xl p-4 border-2 border-[#10B981] flex flex-col justify-between max-h-[calc(50%-0.5rem)]">
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-2">
                   <div className="bg-[#3B82F6] text-white px-3 py-1 rounded-lg text-base font-bold">
