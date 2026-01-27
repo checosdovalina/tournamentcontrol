@@ -395,10 +395,10 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 grid-rows-2 gap-4 h-full">
+        <div className="grid grid-cols-2 gap-4 content-start" style={{ gridTemplateRows: 'repeat(2, minmax(0, 200px))' }}>
           {visibleMatches.map((match: any) => (
-            <div key={match.id} className="bg-[#1F2937] rounded-xl p-4 border-2 border-[#10B981] flex flex-col justify-between max-h-[calc(50%-0.5rem)]">
-              <div className="flex justify-between items-center mb-3">
+            <div key={match.id} className="bg-[#1F2937] rounded-xl p-4 border-2 border-[#10B981] flex flex-col justify-between h-[200px]">
+              <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <div className="bg-[#3B82F6] text-white px-3 py-1 rounded-lg text-base font-bold">
                     {match.court?.name || 'Sin cancha'}
@@ -415,13 +415,13 @@ function CurrentMatchesScreen({ matches, formatScore }: { matches: any[], format
                 </div>
               </div>
               
-              <div className="bg-[#111827] rounded-lg p-3 mb-2">
+              <div className="bg-[#111827] rounded-lg p-3">
                 <div className="text-white text-lg font-bold truncate">
                   {match.pair1?.player1?.name} / {match.pair1?.player2?.name}
                 </div>
               </div>
               
-              <div className="text-center my-2">
+              <div className="text-center">
                 <div className="text-[#F59E0B] text-3xl font-bold">{formatScore(match)}</div>
               </div>
               
