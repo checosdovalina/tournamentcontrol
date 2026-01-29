@@ -1,0 +1,107 @@
+root@srv735734:/var/www/courtflow# pm2 logs courtflow --lines 100
+[TAILING] Tailing last 100 lines for [courtflow] process (change the value with --lines option)
+/var/log/courtflow-error-15.log last 100 lines:
+15|courtfl |           },
+15|courtfl |           [Function: bound onceWrapper] {
+15|courtfl |             listener: [Function (anonymous)]
+15|courtfl |           }
+15|courtfl |         ]
+15|courtfl |       },
+15|courtfl |       _eventsCount: 23,
+15|courtfl |       _maxListeners: undefined,
+15|courtfl |       stream: Socket {
+15|courtfl |         connecting: false,
+15|courtfl |         _hadError: false,
+15|courtfl |         _parent: null,
+15|courtfl |         _host: 'localhost',
+15|courtfl |         _closeAfterHandlingError: false,
+15|courtfl |         _events: {
+15|courtfl |           close: [Function (anonymous)],
+15|courtfl |           error: [Function: reportStreamError],
+15|courtfl |           prefinish: undefined,
+15|courtfl |           finish: undefined,
+15|courtfl |           drain: undefined,
+15|courtfl |           data: [Function (anonymous)],
+15|courtfl |           end: [ [Function: onReadableStreamEnd], [Function (anonymous)] ],
+15|courtfl |           readable: undefined,
+15|courtfl |           connect: undefined
+15|courtfl |         },
+15|courtfl |         _readableState: ReadableState {
+15|courtfl |           highWaterMark: 65536,
+15|courtfl |           buffer: [],
+15|courtfl |           bufferIndex: 0,
+15|courtfl |           length: 0,
+15|courtfl |           pipes: [],
+15|courtfl |           awaitDrainWriters: null,
+15|courtfl |           [Symbol(kState)]: 194519348
+15|courtfl |         },
+15|courtfl |         _writableState: WritableState {
+15|courtfl |           highWaterMark: 65536,
+15|courtfl |           length: 0,
+15|courtfl |           corked: 0,
+15|courtfl |           onwrite: [Function: bound onwrite],
+15|courtfl |           writelen: 0,
+15|courtfl |           bufferedIndex: 0,
+15|courtfl |           pendingcb: 0,
+15|courtfl |           [Symbol(kState)]: 17563956,
+15|courtfl |           [Symbol(kBufferedValue)]: null,
+15|courtfl |           [Symbol(kWriteCbValue)]: null
+15|courtfl |         },
+15|courtfl |         allowHalfOpen: false,
+15|courtfl |         _maxListeners: undefined,
+15|courtfl |         _eventsCount: 4,
+15|courtfl |         _sockname: null,
+15|courtfl |         _pendingData: null,
+15|courtfl |         _pendingEncoding: '',
+15|courtfl |         server: null,
+15|courtfl |         _server: null,
+15|courtfl |         autoSelectFamilyAttemptedAddresses: [ '::1:5432' ],
+15|courtfl |         [Symbol(async_id_symbol)]: 45985476,
+15|courtfl |         [Symbol(kHandle)]: null,
+15|courtfl |         [Symbol(lastWriteQueueSize)]: 0,
+15|courtfl |         [Symbol(timeout)]: null,
+15|courtfl |         [Symbol(kBuffer)]: null,
+15|courtfl |         [Symbol(kBufferCb)]: null,
+15|courtfl |         [Symbol(kBufferGen)]: null,
+15|courtfl |         [Symbol(shapeMode)]: true,
+15|courtfl |         [Symbol(kCapture)]: false,
+15|courtfl |         [Symbol(kSetNoDelay)]: true,
+15|courtfl |         [Symbol(kSetKeepAlive)]: false,
+15|courtfl |         [Symbol(kSetKeepAliveInitialDelay)]: 0,
+15|courtfl |         [Symbol(kBytesRead)]: 104867,
+15|courtfl |         [Symbol(kBytesWritten)]: 39816
+15|courtfl |       },
+15|courtfl |       _keepAlive: false,
+15|courtfl |       _keepAliveInitialDelayMillis: 0,
+15|courtfl |       lastBuffer: false,
+15|courtfl |       parsedStatements: {},
+15|courtfl |       ssl: false,
+15|courtfl |       _ending: true,
+15|courtfl |       _emitMessage: false,
+15|courtfl |       _connecting: true,
+15|courtfl |       [Symbol(shapeMode)]: false,
+15|courtfl |       [Symbol(kCapture)]: false
+15|courtfl |     },
+15|courtfl |     queryQueue: [],
+15|courtfl |     binary: false,
+15|courtfl |     processID: 2427695,
+15|courtfl |     secretKey: -1145200366,
+15|courtfl |     ssl: false,
+15|courtfl |     _connectionTimeoutMillis: 0,
+15|courtfl |     _connectionCallback: null,
+15|courtfl |     saslSession: null,
+15|courtfl |     release: [Function (anonymous)],
+15|courtfl |     activeQuery: null,
+15|courtfl |     readyForQuery: true,
+15|courtfl |     hasExecuted: true,
+15|courtfl |     _poolUseCount: 187,
+15|courtfl |     [Symbol(shapeMode)]: false,
+15|courtfl |     [Symbol(kCapture)]: false
+15|courtfl |   }
+15|courtfl | }
+15|courtfl | 
+15|courtfl | Node.js v22.19.0
+
+/var/log/courtflow-out-15.log last 100 lines:
+15|courtfl | 12:09:39 PM [express] [Timeout Processor] Match 8daf9c89-07a5-4809-8452-65cecc20d8ed [America/Mexico_City]: planned=28-01-2026, 22:15:00, timeout=28-01-2026, 22:30:00, now=29-01-2026, 12:09:38, overdue=true
+15|courtfl | 12:09:39 PM [express] [Timeout Processor] Match 8daf9c89-07a5-4809-8452-65cecc20d8ed check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
