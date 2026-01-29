@@ -39,8 +39,9 @@ export default function Dashboard() {
     queryKey: ["/api/auth/me"],
   });
 
-  const { data: tournament } = useQuery<{ id: string; name: string; clubId: string; startDate: Date; endDate: Date; isActive: boolean | null; config: any; userRole?: string; timezone?: string }>({
+  const { data: tournament, isLoading: tournamentLoading, isError: tournamentError } = useQuery<{ id: string; name: string; clubId: string; startDate: Date; endDate: Date; isActive: boolean | null; config: any; userRole?: string; timezone?: string }>({
     queryKey: ["/api/tournament"],
+    retry: false,
   });
 
   const handleLogout = async () => {
@@ -63,6 +64,40 @@ export default function Dashboard() {
   const openControlDisplay = () => {
     setLocation("/display-control");
   };
+
+  if (tournamentLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando torneo...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (tournamentError || !tournament) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-6 mb-4">
+            <h2 className="text-xl font-semibold text-yellow-500 mb-2">No hay torneo activo</h2>
+            <p className="text-muted-foreground mb-4">
+              No se encontró un torneo activo. Por favor contacta al administrador para activar un torneo.
+            </p>
+            {user?.user?.role === 'superadmin' && (
+              <p className="text-sm text-muted-foreground">
+                Como superadmin, puedes activar un torneo desde el panel de administración.
+              </p>
+            )}
+          </div>
+          <Button onClick={handleLogout} variant="outline" data-testid="button-logout-no-tournament">
+            Cerrar sesión
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
