@@ -294,10 +294,98 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
-  // Tournament routes
+  // Get active tournaments available for the current user
+  app.get("/api/tournaments/active", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get all active tournaments
+      const allTournaments = await storage.getTournaments();
+      const activeTournaments = allTournaments.filter(t => t.isActive);
+      
+      // Superadmins can access all active tournaments
+      if (user.role === 'superadmin') {
+        return res.json(activeTournaments);
+      }
+      
+      // Other users can only access tournaments they're assigned to
+      const userTournaments = await storage.getTournamentUsersByUser(userId);
+      const userTournamentIds = userTournaments.map(tu => tu.tournamentId);
+      const accessibleTournaments = activeTournaments.filter(t => userTournamentIds.includes(t.id));
+      
+      res.json(accessibleTournaments);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get active tournaments", error: error.message });
+    }
+  });
+
+  // Select a tournament for the current session
+  app.post("/api/tournaments/select/:tournamentId", requireAuth, async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Verify tournament exists and is active
+      const tournament = await storage.getTournament(tournamentId);
+      if (!tournament) {
+        return res.status(404).json({ message: "Tournament not found" });
+      }
+      if (!tournament.isActive) {
+        return res.status(400).json({ message: "Tournament is not active" });
+      }
+      
+      // Check user has access (superadmin can access all, others need assignment)
+      if (user.role !== 'superadmin') {
+        const tournamentUser = await storage.getTournamentUserByUserAndTournament(userId, tournamentId);
+        if (!tournamentUser) {
+          return res.status(403).json({ message: "You don't have access to this tournament" });
+        }
+      }
+      
+      // Save selected tournament in session
+      req.session.selectedTournamentId = tournamentId;
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ message: "Failed to save session" });
+        }
+        res.json({ message: "Tournament selected", tournamentId });
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to select tournament", error: error.message });
+    }
+  });
+
+  // Tournament routes - now uses selected tournament from session
   app.get("/api/tournament", async (req, res) => {
     try {
-      const tournament = await storage.getActiveTournament();
+      let tournament;
+      
+      // If user has a selected tournament in session, use that
+      if (req.session.selectedTournamentId) {
+        tournament = await storage.getTournament(req.session.selectedTournamentId);
+        // Verify it's still active
+        if (tournament && !tournament.isActive) {
+          tournament = null;
+          req.session.selectedTournamentId = undefined;
+        }
+      }
+      
+      // Fallback to first active tournament if no selection
+      if (!tournament) {
+        tournament = await storage.getActiveTournament();
+      }
+      
       if (!tournament) {
         return res.status(404).json({ message: "No active tournament found" });
       }
