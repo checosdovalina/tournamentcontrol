@@ -24,12 +24,15 @@ export default function WaitingList({ tournamentId }: WaitingListProps) {
       if (!tournamentId) return [];
       const response = await fetch(`/api/scheduled-matches/ready/${tournamentId}`, {
         cache: 'no-cache',
+        credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
         }
       });
-      return response.json();
+      if (!response.ok) return [];
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
     },
     enabled: !!tournamentId,
     staleTime: 0,

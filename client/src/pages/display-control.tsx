@@ -21,6 +21,15 @@ export default function DisplayControl() {
 
   const { data: readyQueue = [] } = useQuery<any[]>({
     queryKey: ["/api/scheduled-matches/ready-queue", tournament?.id],
+    queryFn: async () => {
+      if (!tournament?.id) return [];
+      const response = await fetch(`/api/scheduled-matches/ready-queue/${tournament.id}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) return [];
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    },
     enabled: !!tournament?.id,
     refetchInterval: 2000,
     staleTime: 0,
