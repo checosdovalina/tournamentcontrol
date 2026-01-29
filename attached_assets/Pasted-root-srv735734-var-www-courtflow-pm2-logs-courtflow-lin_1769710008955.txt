@@ -1,0 +1,206 @@
+root@srv735734:/var/www/courtflow# pm2 logs courtflow --lines 100
+[TAILING] Tailing last 100 lines for [courtflow] process (change the value with --lines option)
+/var/log/courtflow-error-15.log last 100 lines:
+15|courtfl |           },
+15|courtfl |           [Function: bound onceWrapper] {
+15|courtfl |             listener: [Function (anonymous)]
+15|courtfl |           }
+15|courtfl |         ]
+15|courtfl |       },
+15|courtfl |       _eventsCount: 23,
+15|courtfl |       _maxListeners: undefined,
+15|courtfl |       stream: Socket {
+15|courtfl |         connecting: false,
+15|courtfl |         _hadError: false,
+15|courtfl |         _parent: null,
+15|courtfl |         _host: 'localhost',
+15|courtfl |         _closeAfterHandlingError: false,
+15|courtfl |         _events: {
+15|courtfl |           close: [Function (anonymous)],
+15|courtfl |           error: [Function: reportStreamError],
+15|courtfl |           prefinish: undefined,
+15|courtfl |           finish: undefined,
+15|courtfl |           drain: undefined,
+15|courtfl |           data: [Function (anonymous)],
+15|courtfl |           end: [ [Function: onReadableStreamEnd], [Function (anonymous)] ],
+15|courtfl |           readable: undefined,
+15|courtfl |           connect: undefined
+15|courtfl |         },
+15|courtfl |         _readableState: ReadableState {
+15|courtfl |           highWaterMark: 65536,
+15|courtfl |           buffer: [],
+15|courtfl |           bufferIndex: 0,
+15|courtfl |           length: 0,
+15|courtfl |           pipes: [],
+15|courtfl |           awaitDrainWriters: null,
+15|courtfl |           [Symbol(kState)]: 194519348
+15|courtfl |         },
+15|courtfl |         _writableState: WritableState {
+15|courtfl |           highWaterMark: 65536,
+15|courtfl |           length: 0,
+15|courtfl |           corked: 0,
+15|courtfl |           onwrite: [Function: bound onwrite],
+15|courtfl |           writelen: 0,
+15|courtfl |           bufferedIndex: 0,
+15|courtfl |           pendingcb: 0,
+15|courtfl |           [Symbol(kState)]: 17563956,
+15|courtfl |           [Symbol(kBufferedValue)]: null,
+15|courtfl |           [Symbol(kWriteCbValue)]: null
+15|courtfl |         },
+15|courtfl |         allowHalfOpen: false,
+15|courtfl |         _maxListeners: undefined,
+15|courtfl |         _eventsCount: 4,
+15|courtfl |         _sockname: null,
+15|courtfl |         _pendingData: null,
+15|courtfl |         _pendingEncoding: '',
+15|courtfl |         server: null,
+15|courtfl |         _server: null,
+15|courtfl |         autoSelectFamilyAttemptedAddresses: [ '::1:5432' ],
+15|courtfl |         [Symbol(async_id_symbol)]: 45985476,
+15|courtfl |         [Symbol(kHandle)]: null,
+15|courtfl |         [Symbol(lastWriteQueueSize)]: 0,
+15|courtfl |         [Symbol(timeout)]: null,
+15|courtfl |         [Symbol(kBuffer)]: null,
+15|courtfl |         [Symbol(kBufferCb)]: null,
+15|courtfl |         [Symbol(kBufferGen)]: null,
+15|courtfl |         [Symbol(shapeMode)]: true,
+15|courtfl |         [Symbol(kCapture)]: false,
+15|courtfl |         [Symbol(kSetNoDelay)]: true,
+15|courtfl |         [Symbol(kSetKeepAlive)]: false,
+15|courtfl |         [Symbol(kSetKeepAliveInitialDelay)]: 0,
+15|courtfl |         [Symbol(kBytesRead)]: 104867,
+15|courtfl |         [Symbol(kBytesWritten)]: 39816
+15|courtfl |       },
+15|courtfl |       _keepAlive: false,
+15|courtfl |       _keepAliveInitialDelayMillis: 0,
+15|courtfl |       lastBuffer: false,
+15|courtfl |       parsedStatements: {},
+15|courtfl |       ssl: false,
+15|courtfl |       _ending: true,
+15|courtfl |       _emitMessage: false,
+15|courtfl |       _connecting: true,
+15|courtfl |       [Symbol(shapeMode)]: false,
+15|courtfl |       [Symbol(kCapture)]: false
+15|courtfl |     },
+15|courtfl |     queryQueue: [],
+15|courtfl |     binary: false,
+15|courtfl |     processID: 2427695,
+15|courtfl |     secretKey: -1145200366,
+15|courtfl |     ssl: false,
+15|courtfl |     _connectionTimeoutMillis: 0,
+15|courtfl |     _connectionCallback: null,
+15|courtfl |     saslSession: null,
+15|courtfl |     release: [Function (anonymous)],
+15|courtfl |     activeQuery: null,
+15|courtfl |     readyForQuery: true,
+15|courtfl |     hasExecuted: true,
+15|courtfl |     _poolUseCount: 187,
+15|courtfl |     [Symbol(shapeMode)]: false,
+15|courtfl |     [Symbol(kCapture)]: false
+15|courtfl |   }
+15|courtfl | }
+15|courtfl | 
+15|courtfl | Node.js v22.19.0
+
+/var/log/courtflow-out-15.log last 100 lines:
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 8daf9c89-07a5-4809-8452-65cecc20d8ed [America/Mexico_City]: planned=28-01-2026, 22:15:00, timeout=28-01-2026, 22:30:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 8daf9c89-07a5-4809-8452-65cecc20d8ed check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 8daf9c89-07a5-4809-8452-65cecc20d8ed: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match c182b871-2b2c-490d-bcc6-fc8c3f87a6b4 [America/Mexico_City]: planned=28-01-2026, 22:15:00, timeout=28-01-2026, 22:30:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match c182b871-2b2c-490d-bcc6-fc8c3f87a6b4 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match c182b871-2b2c-490d-bcc6-fc8c3f87a6b4: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match f0513294-9503-4226-8e2c-4741a1981ad1 [America/Mexico_City]: planned=28-01-2026, 09:00:00, timeout=28-01-2026, 09:15:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match f0513294-9503-4226-8e2c-4741a1981ad1 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match f0513294-9503-4226-8e2c-4741a1981ad1: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 4f1266e0-5ca4-447c-b59f-0ab510e674fd [America/Mexico_City]: planned=28-01-2026, 15:45:00, timeout=28-01-2026, 16:00:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 4f1266e0-5ca4-447c-b59f-0ab510e674fd check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 4f1266e0-5ca4-447c-b59f-0ab510e674fd: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 2f3013ae-f81c-46d9-9a7c-8255ce3815c3 [America/Mexico_City]: planned=28-01-2026, 17:00:00, timeout=28-01-2026, 17:15:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 2f3013ae-f81c-46d9-9a7c-8255ce3815c3 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 2f3013ae-f81c-46d9-9a7c-8255ce3815c3: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match a8ff4f1c-909d-42d9-8594-f81c46a5f9d6 [America/Mexico_City]: planned=28-01-2026, 17:00:00, timeout=28-01-2026, 17:15:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match a8ff4f1c-909d-42d9-8594-f81c46a5f9d6 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match a8ff4f1c-909d-42d9-8594-f81c46a5f9d6: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match bca3cb2f-f077-463b-83a7-6701058fcdbc [America/Mexico_City]: planned=28-01-2026, 18:15:00, timeout=28-01-2026, 18:30:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match bca3cb2f-f077-463b-83a7-6701058fcdbc check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match bca3cb2f-f077-463b-83a7-6701058fcdbc: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match a9f4cf24-efa3-4ea6-9ee0-24fd2547c01e [America/Mexico_City]: planned=28-01-2026, 19:30:00, timeout=28-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match a9f4cf24-efa3-4ea6-9ee0-24fd2547c01e check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match a9f4cf24-efa3-4ea6-9ee0-24fd2547c01e: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match cd0ff204-a940-46cf-820e-18360d0e48bd [America/Mexico_City]: planned=28-01-2026, 19:30:00, timeout=28-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match cd0ff204-a940-46cf-820e-18360d0e48bd check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match cd0ff204-a940-46cf-820e-18360d0e48bd: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 57c6a087-47e6-4416-a0c9-3954d8c9f843 [America/Mexico_City]: planned=28-01-2026, 18:00:00, timeout=28-01-2026, 18:15:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 57c6a087-47e6-4416-a0c9-3954d8c9f843 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 57c6a087-47e6-4416-a0c9-3954d8c9f843: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match b21b3813-6799-4525-b231-a774ed6d4c3d [America/Mexico_City]: planned=28-01-2026, 19:00:00, timeout=28-01-2026, 19:15:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match b21b3813-6799-4525-b231-a774ed6d4c3d check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match b21b3813-6799-4525-b231-a774ed6d4c3d: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 70e82aca-952e-4c92-9315-1f7503d80e9b [America/Mexico_City]: planned=28-01-2026, 19:00:00, timeout=28-01-2026, 19:15:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 70e82aca-952e-4c92-9315-1f7503d80e9b check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 70e82aca-952e-4c92-9315-1f7503d80e9b: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match d52aa4d2-dc00-4b84-b375-8509fb4c849c [America/Mexico_City]: planned=28-01-2026, 19:30:00, timeout=28-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match d52aa4d2-dc00-4b84-b375-8509fb4c849c check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match d52aa4d2-dc00-4b84-b375-8509fb4c849c: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 27ab6429-59ba-4a2c-bcef-0d3cc2144ed9 [America/Mexico_City]: planned=29-01-2026, 08:00:00, timeout=29-01-2026, 08:15:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 27ab6429-59ba-4a2c-bcef-0d3cc2144ed9 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 27ab6429-59ba-4a2c-bcef-0d3cc2144ed9: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 11ee2982-6918-4e09-ae46-ebacb924f206 [America/Mexico_City]: planned=29-01-2026, 08:30:00, timeout=29-01-2026, 08:45:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 11ee2982-6918-4e09-ae46-ebacb924f206 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 11ee2982-6918-4e09-ae46-ebacb924f206: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 96dfa7af-cc87-45f4-abdf-a2bec5f16d51 [America/Mexico_City]: planned=29-01-2026, 08:30:00, timeout=29-01-2026, 08:45:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 96dfa7af-cc87-45f4-abdf-a2bec5f16d51 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 96dfa7af-cc87-45f4-abdf-a2bec5f16d51: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 9626c3e7-e08a-44c1-b844-fab7d08c6cb9 [America/Mexico_City]: planned=29-01-2026, 08:00:00, timeout=29-01-2026, 08:15:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 9626c3e7-e08a-44c1-b844-fab7d08c6cb9 check-ins: pair1=2/2 (confirmed=true), pair2=2/2 (confirmed=true)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 9626c3e7-e08a-44c1-b844-fab7d08c6cb9: CASE 3 - Both pairs present, no action needed
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match c0ad2d96-2e12-4c53-8929-768fc74b224b [America/Mexico_City]: planned=29-01-2026, 09:00:00, timeout=29-01-2026, 09:15:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match c0ad2d96-2e12-4c53-8929-768fc74b224b check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match c0ad2d96-2e12-4c53-8929-768fc74b224b: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 3c300f9c-f2bf-4db8-a1d1-0fd5cb5261b9 [America/Mexico_City]: planned=29-01-2026, 10:30:00, timeout=29-01-2026, 10:45:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 3c300f9c-f2bf-4db8-a1d1-0fd5cb5261b9 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 3c300f9c-f2bf-4db8-a1d1-0fd5cb5261b9: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 4fedefc6-2b4c-4e26-a210-3172d8d2f175 [America/Mexico_City]: planned=29-01-2026, 15:45:00, timeout=29-01-2026, 16:00:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 36229f16-1d30-483e-9b3c-17ac45498d82 [America/Mexico_City]: planned=29-01-2026, 15:45:00, timeout=29-01-2026, 16:00:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 2244f03b-379c-4ad7-a3ab-52f0a2995994 [America/Mexico_City]: planned=29-01-2026, 15:45:00, timeout=29-01-2026, 16:00:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match cca2375d-507d-4ca4-a294-de3cd8d15c47 [America/Mexico_City]: planned=29-01-2026, 15:45:00, timeout=29-01-2026, 16:00:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 9f885db6-d9d6-476b-988b-50a7370211be [America/Mexico_City]: planned=29-01-2026, 15:45:00, timeout=29-01-2026, 16:00:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 6e9f750d-a342-4b16-bdc9-ececae608bab [America/Mexico_City]: planned=29-01-2026, 17:00:00, timeout=29-01-2026, 17:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 15f263d9-4cdc-4228-9ff9-2349386ae68e [America/Mexico_City]: planned=29-01-2026, 17:00:00, timeout=29-01-2026, 17:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 75ed41b0-74e8-481e-9f01-390fd1e5ee94 [America/Mexico_City]: planned=29-01-2026, 17:00:00, timeout=29-01-2026, 17:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match d40de326-1375-494b-bbdd-0908f6afd8d2 [America/Mexico_City]: planned=29-01-2026, 17:00:00, timeout=29-01-2026, 17:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match ecad03e1-c1a0-4622-9acb-b6e5d270332f [America/Mexico_City]: planned=29-01-2026, 17:00:00, timeout=29-01-2026, 17:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 7be03050-b41e-49d7-90d8-00d2407c537f [America/Mexico_City]: planned=29-01-2026, 18:15:00, timeout=29-01-2026, 18:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 9bcc6923-64c1-416d-b023-88a7ceb9eb1c [America/Mexico_City]: planned=29-01-2026, 18:15:00, timeout=29-01-2026, 18:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match ea497cf4-cf78-46de-83a1-f6517f677d72 [America/Mexico_City]: planned=29-01-2026, 18:15:00, timeout=29-01-2026, 18:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match d610d239-ea2d-493c-b325-cb2ab88936a6 [America/Mexico_City]: planned=29-01-2026, 18:15:00, timeout=29-01-2026, 18:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 46ee6f21-90cf-494d-8dc3-1678f6a47391 [America/Mexico_City]: planned=29-01-2026, 18:15:00, timeout=29-01-2026, 18:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 401c74e3-2798-4100-bade-12985160ae85 [America/Mexico_City]: planned=29-01-2026, 19:30:00, timeout=29-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 53e6f7cc-f917-480f-87e9-2e03357d150d [America/Mexico_City]: planned=29-01-2026, 19:30:00, timeout=29-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 706283ab-4aa3-4e44-935e-1d4c6d7d9117 [America/Mexico_City]: planned=29-01-2026, 19:30:00, timeout=29-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 0a64fb31-f8ad-4558-b40a-bd564b17d25f [America/Mexico_City]: planned=29-01-2026, 19:30:00, timeout=29-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 0b6df0f2-9116-4b43-b45a-da4acdd1f8a5 [America/Mexico_City]: planned=29-01-2026, 19:30:00, timeout=29-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 61a44562-6753-4874-9d5a-a78efd45ec3c [America/Mexico_City]: planned=29-01-2026, 21:00:00, timeout=29-01-2026, 21:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match cc724112-84ab-4ea5-91f8-5d749ab1689c [America/Mexico_City]: planned=29-01-2026, 21:00:00, timeout=29-01-2026, 21:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match f880c313-b74f-4c31-9f0c-9ddd2a9608d0 [America/Mexico_City]: planned=29-01-2026, 21:00:00, timeout=29-01-2026, 21:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match fd8c182f-87d9-4295-acd9-07e624c08cc1 [America/Mexico_City]: planned=29-01-2026, 21:00:00, timeout=29-01-2026, 21:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 64289df1-c7e6-4db5-af66-9a9cbdcca896 [America/Mexico_City]: planned=29-01-2026, 21:00:00, timeout=29-01-2026, 21:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match f1519f75-0f58-4d2f-ab02-0516da456b64 [America/Mexico_City]: planned=29-01-2026, 22:15:00, timeout=29-01-2026, 22:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 03d55145-4bb9-4664-9d79-e7abee3e6a49 [America/Mexico_City]: planned=29-01-2026, 22:15:00, timeout=29-01-2026, 22:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match a3282554-2e59-4cb7-abf6-f32234d03ae3 [America/Mexico_City]: planned=29-01-2026, 22:15:00, timeout=29-01-2026, 22:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match ee3f05a7-9103-4be9-9522-fdd10d4edee6 [America/Mexico_City]: planned=29-01-2026, 22:15:00, timeout=29-01-2026, 22:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 65b723fe-b245-4f07-aa48-b2f4b94469eb [America/Mexico_City]: planned=29-01-2026, 22:15:00, timeout=29-01-2026, 22:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 70b4288d-d57c-4e15-bdcb-d0e011076927 [America/Mexico_City]: planned=29-01-2026, 09:00:00, timeout=29-01-2026, 09:15:00, now=29-01-2026, 12:05:25, overdue=true
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 70b4288d-d57c-4e15-bdcb-d0e011076927 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 70b4288d-d57c-4e15-bdcb-d0e011076927: CASE 4 - No pairs fully present, no action taken
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 19cae3f2-aa43-414a-91ba-460590597b11 [America/Mexico_City]: planned=29-01-2026, 15:45:00, timeout=29-01-2026, 16:00:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match e0130284-0eb7-4122-86d4-2c92491647f9 [America/Mexico_City]: planned=29-01-2026, 17:00:00, timeout=29-01-2026, 17:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match eedb2d4d-5b5b-430c-acfb-1a2874494002 [America/Mexico_City]: planned=29-01-2026, 17:00:00, timeout=29-01-2026, 17:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 8865a3b7-3444-428a-aa5a-b46e0161c4ba [America/Mexico_City]: planned=29-01-2026, 18:15:00, timeout=29-01-2026, 18:30:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match e1b02a96-134b-4fd7-8118-5925ff73f831 [America/Mexico_City]: planned=29-01-2026, 19:30:00, timeout=29-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 2c3e411b-9b0d-467e-8d02-b0de00beb5c5 [America/Mexico_City]: planned=29-01-2026, 19:30:00, timeout=29-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 772d5fcd-7a89-4390-b162-33753fdaf29b [America/Mexico_City]: planned=29-01-2026, 18:00:00, timeout=29-01-2026, 18:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 720a908e-458f-48e5-901c-331cf773df22 [America/Mexico_City]: planned=29-01-2026, 19:00:00, timeout=29-01-2026, 19:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 85e8f9be-2b25-410b-9d26-eb8b5e438fe1 [America/Mexico_City]: planned=29-01-2026, 19:00:00, timeout=29-01-2026, 19:15:00, now=29-01-2026, 12:05:25, overdue=false
+15|courtfl | 12:05:26 PM [express] [Timeout Processor] Match 95c82e4d-9aed-43c7-818c-458580c180ad [America/Mexico_City]: planned=29-01-2026, 19:30:00, timeout=29-01-2026, 19:45:00, now=29-01-2026, 12:05:25, overdue=false
+
