@@ -109,9 +109,14 @@ export default function Dashboard() {
               <div className="flex items-center space-x-3">
                 <img src={courtflowLogo} alt="CourtFlow" className="h-[75px] w-auto" />
                 <div>
-                  <p className="text-sm text-muted-foreground">
+                  <button 
+                    onClick={() => setLocation("/tournament-select")}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                    data-testid="button-change-tournament"
+                  >
                     {tournament?.name || "Cargando..."}
-                  </p>
+                    <Repeat className="h-3 w-3" />
+                  </button>
                 </div>
               </div>
             </div>

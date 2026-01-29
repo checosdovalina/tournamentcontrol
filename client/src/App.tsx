@@ -14,6 +14,7 @@ import Login from "@/pages/login";
 import Setup from "@/pages/setup";
 import GuestScore from "@/pages/guest-score";
 import ScoreSelect from "@/pages/score-select";
+import TournamentSelect from "@/pages/tournament-select";
 import { useWebSocket } from "@/hooks/use-websocket";
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
@@ -63,6 +64,11 @@ function Router() {
       <Route path="/score/:token" component={GuestScore} />
       <Route path="/login" component={Login} />
       <Route path="/setup" component={Setup} />
+      <Route path="/tournament-select" component={() => (
+        <AuthWrapper>
+          <TournamentSelect />
+        </AuthWrapper>
+      )} />
       <Route component={NotFound} />
     </Switch>
   );
