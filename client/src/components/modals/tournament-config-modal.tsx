@@ -117,6 +117,12 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
   const [editAnnouncementMessage, setEditAnnouncementMessage] = useState("");
   const [editAnnouncementPriority, setEditAnnouncementPriority] = useState("1");
 
+  // Display colors state
+  const [displayPrimaryColor, setDisplayPrimaryColor] = useState("#2563eb");
+  const [displaySecondaryColor, setDisplaySecondaryColor] = useState("#0d9488");
+  const [displayAccentColor, setDisplayAccentColor] = useState("#f97316");
+  const [displayTextColor, setDisplayTextColor] = useState("#ffffff");
+
   const { data: clubs = [] } = useQuery<any[]>({
     queryKey: ["/api/clubs"],
     enabled: open,
@@ -465,6 +471,14 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
       setLogoUrl(tournament.tournamentLogoUrl || "");
       setClubLogoUrl(tournament.clubLogoUrl || "");
       setSystemLogoUrl(tournament.systemLogoUrl || "");
+      // Initialize display colors from config
+      const colors = tournament.config?.displayColors;
+      if (colors) {
+        setDisplayPrimaryColor(colors.primaryColor || "#2563eb");
+        setDisplaySecondaryColor(colors.secondaryColor || "#0d9488");
+        setDisplayAccentColor(colors.accentColor || "#f97316");
+        setDisplayTextColor(colors.textColor || "#ffffff");
+      }
     }
   }, [tournament, open]);
 
@@ -798,10 +812,11 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
         </DialogHeader>
         
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="general" data-testid="tab-general">General</TabsTrigger>
             <TabsTrigger value="categories" data-testid="tab-categories">Categorías</TabsTrigger>
             <TabsTrigger value="logos" data-testid="tab-logos">Logos</TabsTrigger>
+            <TabsTrigger value="display" data-testid="tab-display">Display</TabsTrigger>
             <TabsTrigger value="sponsors" data-testid="tab-sponsors">Patrocinadores</TabsTrigger>
             <TabsTrigger value="ads" data-testid="tab-ads">Publicidad</TabsTrigger>
             <TabsTrigger value="announcements" data-testid="tab-announcements">Avisos</TabsTrigger>
@@ -1201,6 +1216,141 @@ export default function TournamentConfigModal({ open, onOpenChange, tournament }
                 </Button>
               </div>
             </form>
+          </TabsContent>
+
+          {/* Display Colors Tab */}
+          <TabsContent value="display" className="space-y-4 mt-4">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Colores del Display</h3>
+              <p className="text-sm text-muted-foreground">
+                Personaliza los colores del display público para que coincidan con la identidad visual de tu torneo
+              </p>
+              
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="primaryColor">Color Primario</Label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      id="primaryColor"
+                      value={displayPrimaryColor}
+                      onChange={(e) => setDisplayPrimaryColor(e.target.value)}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                      data-testid="input-primary-color"
+                    />
+                    <Input
+                      value={displayPrimaryColor}
+                      onChange={(e) => setDisplayPrimaryColor(e.target.value)}
+                      placeholder="#2563eb"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Color principal del gradiente de fondo</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="secondaryColor">Color Secundario</Label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      id="secondaryColor"
+                      value={displaySecondaryColor}
+                      onChange={(e) => setDisplaySecondaryColor(e.target.value)}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                      data-testid="input-secondary-color"
+                    />
+                    <Input
+                      value={displaySecondaryColor}
+                      onChange={(e) => setDisplaySecondaryColor(e.target.value)}
+                      placeholder="#0d9488"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Color secundario del gradiente de fondo</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="accentColor">Color de Acento</Label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      id="accentColor"
+                      value={displayAccentColor}
+                      onChange={(e) => setDisplayAccentColor(e.target.value)}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                      data-testid="input-accent-color"
+                    />
+                    <Input
+                      value={displayAccentColor}
+                      onChange={(e) => setDisplayAccentColor(e.target.value)}
+                      placeholder="#f97316"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Color para elementos destacados</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="textColor">Color de Texto</Label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      id="textColor"
+                      value={displayTextColor}
+                      onChange={(e) => setDisplayTextColor(e.target.value)}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                      data-testid="input-text-color"
+                    />
+                    <Input
+                      value={displayTextColor}
+                      onChange={(e) => setDisplayTextColor(e.target.value)}
+                      placeholder="#ffffff"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Color del texto principal</p>
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className="mt-6">
+                <Label>Vista Previa</Label>
+                <div 
+                  className="mt-2 h-32 rounded-lg flex items-center justify-center text-lg font-bold"
+                  style={{
+                    background: `linear-gradient(135deg, ${displayPrimaryColor} 0%, ${displaySecondaryColor} 100%)`,
+                    color: displayTextColor
+                  }}
+                >
+                  Vista Previa del Display
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const config = tournament?.config || {};
+                    updateTournamentMutation.mutate({
+                      config: {
+                        ...config,
+                        displayColors: {
+                          primaryColor: displayPrimaryColor,
+                          secondaryColor: displaySecondaryColor,
+                          accentColor: displayAccentColor,
+                          textColor: displayTextColor,
+                        }
+                      }
+                    });
+                  }}
+                  disabled={updateTournamentMutation.isPending}
+                  data-testid="button-save-display-colors"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {updateTournamentMutation.isPending ? "Guardando..." : "Guardar Colores"}
+                </Button>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Sponsors Tab */}

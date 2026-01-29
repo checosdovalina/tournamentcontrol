@@ -28,9 +28,22 @@ export default function Display() {
     timezone?: string;
     sponsorRotationSpeed?: number;
     sponsorRotationEnabled?: boolean;
+    config?: {
+      displayColors?: {
+        primaryColor?: string;
+        secondaryColor?: string;
+        accentColor?: string;
+        textColor?: string;
+      };
+    };
   }>({
     queryKey: ["/api/tournament"],
   });
+
+  const displayColors = tournament?.config?.displayColors;
+  const customStyles = displayColors ? {
+    background: `linear-gradient(135deg, ${displayColors.primaryColor || 'hsl(215, 75%, 45%)'} 0%, ${displayColors.secondaryColor || 'hsl(180, 65%, 45%)'} 100%)`
+  } : undefined;
 
   const { data: currentMatches = [] } = useQuery<any[]>({
     queryKey: ["/api/matches/current", tournament?.id],
@@ -375,7 +388,7 @@ export default function Display() {
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="h-screen flex flex-col tv-display">
+      <div className="h-screen flex flex-col tv-display" style={customStyles}>
         {/* Header */}
         <div className="px-8 py-4 flex items-center justify-between border-b border-white/20">
           <div className="flex items-center space-x-4">
