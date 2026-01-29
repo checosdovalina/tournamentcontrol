@@ -381,7 +381,28 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         }
       }
       
-      // Fallback to first active tournament if no selection
+      // If no selection, get user's accessible tournaments
+      if (!tournament && req.session.userId) {
+        // Superadmin can access any tournament
+        if (req.session.userRole === 'superadmin') {
+          tournament = await storage.getActiveTournament();
+        } else {
+          // Regular users: get tournaments they have access to
+          const tournamentUsers = await storage.getTournamentUsersByUser(req.session.userId);
+          const activeTournamentUsers = tournamentUsers.filter(tu => tu.status === 'active');
+          
+          for (const tu of activeTournamentUsers) {
+            const t = await storage.getTournament(tu.tournamentId);
+            if (t && t.isActive) {
+              tournament = t;
+              req.session.selectedTournamentId = tournament.id;
+              break;
+            }
+          }
+        }
+      }
+      
+      // Final fallback for unauthenticated users (display screens)
       if (!tournament) {
         tournament = await storage.getActiveTournament();
       }
