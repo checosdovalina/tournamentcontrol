@@ -533,8 +533,23 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
   // Courts routes
   app.get("/api/courts", async (req, res) => {
     try {
-      const courts = await storage.getCourts();
-      res.json(courts);
+      // Get tournament from session or fallback
+      let tournament;
+      if (req.session.selectedTournamentId) {
+        tournament = await storage.getTournament(req.session.selectedTournamentId);
+      }
+      if (!tournament) {
+        tournament = await storage.getActiveTournament();
+      }
+      
+      // Filter courts by tournament's club
+      if (tournament?.clubId) {
+        const courts = await storage.getCourtsByClub(tournament.clubId);
+        res.json(courts);
+      } else {
+        const courts = await storage.getCourts();
+        res.json(courts);
+      }
     } catch (error: any) {
       res.status(500).json({ message: "Failed to get courts", error: error.message });
     }
