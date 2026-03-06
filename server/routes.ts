@@ -3774,5 +3774,121 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
+  // ─── RECORD Integration API v1 ───────────────────────────────────────────
+  // External API for the RECORD overlay system.
+  // Protect with the RECORD_API_KEY env variable (Bearer token or x-api-key header).
+  // If the variable is not set, endpoints are open (development only).
+
+  const requireRecordApiKey = (req: any, res: any, next: any) => {
+    const apiKey = process.env.RECORD_API_KEY;
+    if (!apiKey) {
+      res.set("X-Auth-Warning", "RECORD_API_KEY not configured – endpoint is open");
+      return next();
+    }
+    const provided =
+      req.headers["x-api-key"] ||
+      (req.headers["authorization"] || "").replace(/^Bearer\s+/i, "");
+    if (provided !== apiKey) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    next();
+  };
+
+  // 2.1 GET /api/v1/canchas
+  // Returns all courts grouped by club.
+  // Optional query param: ?tournamentId=<id>  → filters courts belonging to that tournament's club.
+  app.get("/api/v1/canchas", requireRecordApiKey, async (req, res) => {
+    try {
+      const { tournamentId } = req.query as { tournamentId?: string };
+      const clubs = await storage.getClubs();
+      const allCourts = await storage.getCourts();
+
+      let filteredClubs = clubs;
+      if (tournamentId) {
+        const tournament = await storage.getTournament(tournamentId as string);
+        if (!tournament) return res.status(404).json({ error: "Tournament not found" });
+        filteredClubs = clubs.filter(c => c.id === tournament.clubId);
+      }
+
+      const result = filteredClubs.map(club => ({
+        club_name: club.name,
+        club_id: club.id,
+        canchas: allCourts
+          .filter(court => court.clubId === club.id)
+          .map(court => ({
+            cancha_id: court.id,
+            nombre: court.name,
+          })),
+      }));
+
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: "Internal server error", detail: error.message });
+    }
+  });
+
+  // 2.2 GET /api/v1/canchas/:cancha_id/partido-actual
+  // Returns the match currently in progress on the given court.
+  // 204 when no active match; 404 when court does not exist.
+  app.get("/api/v1/canchas/:cancha_id/partido-actual", requireRecordApiKey, async (req, res) => {
+    try {
+      const { cancha_id } = req.params;
+
+      const court = await storage.getCourt(cancha_id);
+      if (!court) return res.status(404).json({ error: "Court not found" });
+
+      // Find a match that is actively playing on this court
+      const allMatches = await storage.getMatches();
+      const activeMatch = allMatches.find(
+        m => m.courtId === cancha_id && m.status === "playing"
+      );
+
+      if (!activeMatch) return res.status(204).send();
+
+      // Load related entities
+      const tournament = activeMatch.tournamentId
+        ? await storage.getTournament(activeMatch.tournamentId)
+        : null;
+      const category = activeMatch.categoryId
+        ? await storage.getCategory(activeMatch.categoryId)
+        : null;
+      const pair1 = await storage.getPair(activeMatch.pair1Id);
+      const pair2 = await storage.getPair(activeMatch.pair2Id);
+
+      if (!pair1 || !pair2) return res.status(204).send();
+
+      const p1p1 = await storage.getPlayer(pair1.player1Id);
+      const p1p2 = await storage.getPlayer(pair1.player2Id);
+      const p2p1 = await storage.getPlayer(pair2.player1Id);
+      const p2p2 = await storage.getPlayer(pair2.player2Id);
+
+      // Parse score – stored as { sets: [[n,n], [n,n], ...] }
+      const scoreData = activeMatch.score as any;
+      const sets: [number, number][] = scoreData?.sets ?? [];
+      const setActual = sets.length;
+
+      res.json({
+        id: activeMatch.id,
+        hora_inicio: activeMatch.startTime ?? null,
+        hora_fin: activeMatch.endTime ?? null,
+        estado: "en_progreso",
+        nombre_torneo: tournament?.name ?? null,
+        nombre_cancha: court.name,
+        nombre_categoria: category?.name ?? null,
+        pareja1_jugador1_nombre: p1p1?.name ?? null,
+        pareja1_jugador2_nombre: p1p2?.name ?? null,
+        pareja2_jugador1_nombre: p2p1?.name ?? null,
+        pareja2_jugador2_nombre: p2p2?.name ?? null,
+        marcador: {
+          set_actual: setActual,
+          sets,
+        },
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: "Internal server error", detail: error.message });
+    }
+  });
+  // ─── End RECORD Integration API ──────────────────────────────────────────
+
   return { server: httpServer, broadcastUpdate, storage };
 }

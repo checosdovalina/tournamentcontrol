@@ -1,0 +1,70 @@
+Documento de Requisitos Técnicos: Integración
+API CourtFlow <> RECORD
+Objetivo: Definir los endpoints necesarios en el sistema CourtFlow para permitir que el sistema
+RECORD identifique las canchas y obtenga información en tiempo real de los encuentros deportivos
+para overlay sobre transmisión.
+1. Consideraciones Generales
+• Protocolo: REST / JSON.
+• Autenticación: (Pendiente por definir, se recomienda Bearer Token o API Key en el Header).
+• Nota: Compartir de forma segura la clave API o Token generado con equipo RECORD.
+• Base URL: https://app.courtflow.com/v1 (Ejemplo).
+2. Definición de Endpoints
+2.1. Obtener Listado de Canchas
+Endpoint: GET /canchas
+Descripción: Retorna el catálogo completo de canchas vinculadas a los clubes registrados. Este
+endpoint es crítico para que RECORD pueda mapear sus identificadores internos con los de CourtFlow.
+Parámetros de consulta (Query Params): * N/A
+Cuerpo de la respuesta (Success 200 OK):
+JSON
+{
+ "club_name": "Nombre del Club",
+ "club_id": "uuid-12345",
+ "canchas": [
+ {
+ "cancha_id": "id-interno-001",
+ "nombre": "Cancha 1",
+ },
+ {
+ "cancha_id": "id-interno-002",
+ "nombre": "Cancha 2",
+ }
+ ]
+},...
+2.2. Obtener Estado del Partido en Tiempo Real
+Endpoint: GET /canchas/{cancha_id}/partido-actual
+Descripción: Devuelve la información detallada del juego en torneo que se encuentra en progreso en
+una cancha específica en el momento de la consulta.
+Parámetros de ruta (Path Params): * cancha_id (String/Required): El identificador único
+obtenido en el Endpoint No. 1.
+Cuerpo de la respuesta (Success 200 OK): Si existe un juego activo, la estructura debe representar
+fielmente el marcador y los participantes:
+JSON
+{ "id": "match-550e8400",
+ "hora_inicio": "2023-10-27T10:00:00Z",
+ "hora_fin": null,
+ "estado": "en_progreso",
+ "nombre_torneo": "OPEN CIUDAD DE MÉXICO",
+ "nombre_cancha": "Cancha Central",
+ "nombre_categoria": "Primera Fuerza",
+ "pareja1_jugador1_nombre": "Checo Perez",
+ "pareja1_jugador2_nombre": "Valtteri Bottas",
+ "pareja2_jugador1_nombre": "Lando Norris",
+ "pareja2_jugador2_nombre": "Oscar Piastri",
+ "marcador": {
+ "set_actual": 2,
+ "sets": [
+ [6, 4],
+ [3, 2]
+ ]
+ }
+}
+Respuestas alternativas:
+• 204 No Content / 200 OK {}: Si no hay un juego activo en la cancha consultada.
+• 404 Not Found: Si el cancha_id no existe.
+3. Notas para el Equipo CourtFlow
+• Estructura de Datos: Aunque el ejemplo anterior muestra una estructura sugerida, CourtFlow
+puede enviar el JSON según su arquitectura interna, siempre que se incluyan de forma clara los
+nombres de los jugadores, la identificación de parejas/equipos y el puntaje actual (puntos
+y sets).
+• Frecuencia de Request: RECORD realizará peticiones periódicas (polling) a estos endpoints,
+por lo que se recomienda que la respuesta sea ligera y esté optimizada en caché si es necesario.
