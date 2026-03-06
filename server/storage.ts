@@ -109,6 +109,7 @@ export interface IStorage {
   getPlayer(id: string): Promise<Player | undefined>;
   getPlayers(): Promise<Player[]>;
   createPlayer(player: InsertPlayer): Promise<Player>;
+  updatePlayer(id: string, updates: Partial<Player>): Promise<Player | undefined>;
   
   // Pairs
   getPair(id: string): Promise<Pair | undefined>;
@@ -413,11 +414,20 @@ export class MemStorage implements IStorage {
     const player: Player = {
       ...insertPlayer,
       clubId: insertPlayer.clubId ?? null,
+      photoUrl: insertPlayer.photoUrl ?? null,
       id,
       createdAt: new Date()
     };
     this.players.set(id, player);
     return player;
+  }
+
+  async updatePlayer(id: string, updates: Partial<Player>): Promise<Player | undefined> {
+    const player = this.players.get(id);
+    if (!player) return undefined;
+    const updated = { ...player, ...updates };
+    this.players.set(id, updated);
+    return updated;
   }
 
   // Pairs

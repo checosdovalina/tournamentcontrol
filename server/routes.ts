@@ -367,6 +367,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
   });
 
   // Tournament routes - now uses selected tournament from session
+  // Public endpoint: get tournament info by ID (for display-featured and other public pages)
+  app.get("/api/tournaments/:id/public", async (req, res) => {
+    try {
+      const tournament = await storage.getTournament(req.params.id);
+      if (!tournament) return res.status(404).json({ message: "Tournament not found" });
+      res.json(tournament);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to get tournament", error: error.message });
+    }
+  });
+
   app.get("/api/tournament", async (req, res) => {
     try {
       let tournament;
@@ -659,6 +670,47 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       res.status(201).json(newPlayer);
     } catch (error: any) {
       res.status(400).json({ message: "Failed to create player", error: error.message });
+    }
+  });
+
+  // Player photo upload
+  const playerPhotoStorage = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, 'public/uploads/players'),
+    filename: (_req, file, cb) => {
+      const ext = file.originalname.split('.').pop();
+      cb(null, `player-${Date.now()}-${Math.round(Math.random() * 1e9)}.${ext}`);
+    },
+  });
+  const uploadPlayerPhoto = multer({
+    storage: playerPhotoStorage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+      if (['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Solo se permiten imágenes (jpg, png, webp, gif)'));
+      }
+    },
+  });
+
+  app.post("/api/players/:id/photo", requireAuth, (req, res) => {
+    uploadPlayerPhoto.single('photo')(req, res, async (err) => {
+      if (err) return res.status(400).json({ message: err.message });
+      if (!req.file) return res.status(400).json({ message: "No se subió ningún archivo" });
+      const photoUrl = `/uploads/players/${req.file.filename}`;
+      const updated = await storage.updatePlayer(req.params.id, { photoUrl });
+      if (!updated) return res.status(404).json({ message: "Player not found" });
+      res.json({ photoUrl });
+    });
+  });
+
+  app.patch("/api/players/:id", requireAuth, async (req, res) => {
+    try {
+      const updated = await storage.updatePlayer(req.params.id, req.body);
+      if (!updated) return res.status(404).json({ message: "Player not found" });
+      res.json(updated);
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update player", error: error.message });
     }
   });
 

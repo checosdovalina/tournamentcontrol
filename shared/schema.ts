@@ -58,6 +58,7 @@ export const players = pgTable("players", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   clubId: varchar("club_id"),
+  photoUrl: text("photo_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

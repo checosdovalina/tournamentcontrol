@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a real-time, multi-tenant tournament management system specifically designed for padel competitions. It allows superadmins to create and manage multiple tournaments, assigning administrators and scorekeepers to each. Tournament administrators can configure tournament details, manage categories, and integrate sponsor banners and advertisements. The system supports player registration, automatic court assignment, real-time match tracking, and live score displays for participants and spectators. Key features include a Superadmin Panel, Admin Dashboard, Scorekeeper Dashboard, Live Score Capture, a Public Display, a Streaming Display for live video broadcasting, an Advertisement Module for commercial content, and a QR-based Guest Score Capture system for unauthenticated score updates.
+This project is a real-time, multi-tenant tournament management system for padel competitions. It enables superadmins to create and oversee tournaments, assign roles (admins, scorekeepers), and integrate sponsor content. Key capabilities include player registration, automated court assignment, live match tracking, and real-time score displays for participants and spectators. The system features dedicated panels for superadmins, admins, and scorekeepers, supports live score capture, public and streaming displays, an advertisement module, and QR-based guest score entry.
 
 ## User Preferences
 
@@ -11,67 +11,55 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
-The frontend is built with **React** and **TypeScript** using **Vite**. It utilizes **Shadcn/ui** (based on Radix UI and Tailwind CSS) for UI components. **TanStack Query** manages server state with aggressive caching and real-time updates via WebSockets. **Wouter** handles client-side routing. A custom `useWebSocket` hook provides real-time updates by invalidating relevant query caches based on server events.
+The frontend is built with **React** and **TypeScript** using **Vite**, leveraging **Shadcn/ui** (Radix UI and Tailwind CSS) for components. **TanStack Query** manages server state with aggressive caching and real-time updates via WebSockets. **Wouter** handles client-side routing.
 
 ### Backend Architecture
-The backend uses **Node.js** with **Express.js**. **Express-session** with **connect-pg-simple** handles session management and authentication. A standalone **WebSocket server** (using 'ws') provides real-time communication. An **Automated Timeout Processor** runs every 60 seconds to manage scheduled matches. When both pairs are absent after the 15-minute timeout, the match is automatically cancelled. When only one pair completes check-in, the system marks the match as `pendingDqf: true` and awaits manual admin approval via a DQF (Disqualification) button instead of automatically awarding the default win. **RESTful APIs** are organized by resource, with **Zod** and **drizzle-zod** used for data validation.
+The backend uses **Node.js** with **Express.js**. Session management and authentication are handled by **Express-session** with **connect-pg-simple**. A standalone **WebSocket server** provides real-time communication. An **Automated Timeout Processor** manages scheduled matches, automatically canceling matches if both pairs are absent, or marking them `pendingDqf: true` for admin approval if only one pair is absent. **RESTful APIs** are organized by resource, with **Zod** and **drizzle-zod** for data validation.
 
 ### Data Storage
-**PostgreSQL** (via standard `pg` driver) is the primary database, managed by **Drizzle ORM**. The schema is TypeScript-first, supporting users, tournaments, categories, sponsor banners, advertisements, clubs, courts, players, pairs, matches, scheduled matches (with outcome tracking: 'normal'|'default'|'cancelled', outcomeReason, and defaultWinnerPairId), and results (with optional scheduledMatch outcome data). Multi-tenancy is achieved through tournament-specific configurations and relationships. An advanced **Advertisement System** supports various content types, text overlays, animations, and time-based scheduling with smart rotation. A `server/storage.ts` interface provides a clean data access layer. **File uploads** are handled via local filesystem storage in `public/uploads/` directory.
+**PostgreSQL** is the primary database, managed by **Drizzle ORM**. The schema supports users, tournaments, categories, sponsor banners, advertisements, clubs, courts, players, pairs, matches, scheduled matches, and results. Multi-tenancy is achieved through tournament-specific configurations. An advanced **Advertisement System** supports various content types and time-based scheduling. File uploads are stored locally in `public/uploads/`.
 
 ### Authentication & Authorization
-**Session-based authentication** using username/password is implemented. **Role-Based Access Control** supports `superadmin`, `admin`, `scorekeeper`, and `display` roles with varying access levels. Sessions use HTTP-only cookies and have a 24-hour expiration.
+**Session-based authentication** with username/password is implemented. **Role-Based Access Control** supports `superadmin`, `admin`, `scorekeeper`, and `display` roles.
 
 ### Key Architectural Decisions
 -   **Monorepo Structure**: `client/`, `server/`, and `shared/` directories for type safety and simplified deployment.
--   **Development Server Setup**: Vite middleware integrated with Express for a single development server with HMR.
 -   **Real-time Architecture**: WebSockets for bidirectional communication alongside a REST API.
--   **Path Aliases**: TypeScript path mapping for cleaner imports.
--   **Query Strategy**: Aggressive `staleTime` with manual cache invalidation via WebSocket events for optimal performance.
--   **Scheduled Matches Calendar Optimization**: Client-side filtering of all tournament matches to optimize performance and prevent timezone issues.
--   **Auto-Assignment Logic**: Server-side FIFO algorithm for fair court allocation.
--   **Tournament Timezone Support**: Each tournament has a configurable timezone field (IANA format: "America/Mexico_City", "America/Santiago", etc.) set during tournament creation/editing. All time calculations respect this timezone to prevent premature timeouts when server and user are in different timezones.
--   **Timeout Processor Timezone Handling**: Uses `combineDateTimeInTimezone()` utility to create match datetimes in the tournament's timezone, combining `match.day` (date) with `match.plannedTime` (HH:MM string). The utility extracts only the date portion from `match.day` (ignoring any time component) to prevent inconsistencies from Excel imports or database operations. The 15-minute timeout threshold is calculated from this timezone-aware datetime. This prevents matches from being cancelled at incorrect times when server timezone differs from tournament location.
--   **Timeout Processor Retroactive Protection**: Completely skips ALL matches created after their timeout period (createdAt >= timeoutThreshold). This prevents any timeout processing (DQF marking, cancellation) for retroactively scheduled past matches, regardless of how long ago they were created. Only matches that existed BEFORE the 15-minute timeout expires are eligible for timeout processing.
--   **Admin-Controlled DQF System**: When the timeout processor (15 minutes after planned time) detects that only one pair has completed check-in (both players present), instead of automatically awarding a default win, it marks the scheduled match with `pendingDqf: true` and stores the present pair in `defaultWinnerPairId`. Admin users see a DQF button in the programming calendar view, allowing them to manually decide whether to disqualify the absent pair. This provides human oversight for potentially contentious disqualification decisions. When both pairs are absent, the match is still automatically cancelled without admin intervention.
--   **Court Pre-Assignment System**: When a court has been occupied for 40+ minutes, the next match can be pre-assigned to that court. The pre-assigned match cannot start until the current match completes, preventing conflicts while optimizing court utilization. The display shows "Pre-asignada" status, and the programming view disables the "Iniciar Partido" button until the court is freed. Upon match completion, the pre-assigned match is automatically enabled and ready to start.
--   **Fully Automatic Match Starting**: All match starts are completely automatic. When a scheduled match meets all conditions (all 4 players confirmed + court assigned + categoryId exists + not pre-assigned), the match auto-starts immediately. This happens in two scenarios: (1) when court is assigned to a ready match (waiting list assignment), (2) when the last player confirms check-in on a match with assigned court. No manual "Iniciar Partido" buttons exist anywhere in the system.
--   **Court Conflict Detection**: Court assignment conflict detection only blocks assignments when a court is actively in use by a non-completed match (`matchId` set AND status !== 'completed') or pre-assigned to another match (`preAssignedAt` is not null). Completed matches are excluded from the blocking logic, preventing old finished matches from blocking court assignments.
--   **Display Rotative Responsive Design**: Cards are fully responsive with scroll support (`overflow-y-auto`) and dynamic sizing (`h-fit`). Uses flexbox layouts to prevent content clipping on any screen size. Shows court assignment status (assigned/pre-assigned/waiting) for upcoming matches. Match data structure: scores accessed via `match.score.sets` (array format `[pair1Score, pair2Score]`), results accessed via `result.match.pair1/pair2` (nested structure), player names via `pair.player1.name / pair.player2.name`.
--   **Waiting List Time Filter**: The waiting list displays only matches with check-in times from the last 8 hours (480 minutes). Matches older than this are automatically hidden to maintain relevance and prevent clutter from stale entries.
--   **Display Timezone-Aware Date Calculation**: Display screens (normal and rotative) calculate "today" using the tournament's configured timezone via `getTodayInTimezone()` utility instead of the browser's timezone. This ensures upcoming matches are filtered based on the tournament location's current date, preventing display issues when viewers are in different timezones than the tournament. Uses `Intl.DateTimeFormat` to convert server time to tournament timezone reliably.
--   **Upcoming Matches Scroll Animation Speed**: Set to 180 seconds per cycle (3 minutes) for comfortable readability without rushing content, allowing viewers to properly read all upcoming match details.
--   **Display Wake Lock System**: Implements Wake Lock API to prevent screens from going to sleep during tournament display. Includes fallback mechanism using invisible video for browsers without Wake Lock support. Auto-recovers when tab regains visibility.
--   **Intelligent Ready Queue System**: Manages matches where all 4 players have confirmed attendance. When the 4th player checks in, the match status changes to "ready" and a `readySince` timestamp is set **only on the first transition to ready state**. If a player later checks out and then checks back in, the original `readySince` timestamp is preserved, ensuring fair queue positioning based on the first time all players were ready. The ready queue displays matches ordered first by `plannedTime` (scheduled time), then by `readySince` (FIFO within same time slot). This ensures fair allocation: matches at earlier scheduled times get priority, and among matches with the same planned time, those that became ready first are assigned courts first. The system provides real-time queue position, wait time tracking, and automatic updates via WebSocket invalidation for instant UI refresh without polling dependency.
--   **Streaming Display System**: Each court can be configured with a stream URL (stored in `streamUrl` field) for live video broadcasting. The `/display-stream/:courtId` public page embeds the video stream via iframe, displays sponsor banners with rotation, and overlays real-time match information (players, scores, category) fetched from `/api/matches/current/:tournamentId` endpoint filtered by courtId. **Smart Advertisement Display**: Advertisements only appear during odd-numbered points (1-0, 2-1, 2-3, etc.) when players change sides, preventing interruption during active play. Each advertisement has an individual configurable `displayDuration` field, and the system automatically rotates to a different ad on each court change. The detection logic monitors the current set score, calculates total points (pair1Score + pair2Score), and triggers ad display only when the total is odd AND the score has changed. Timer management uses refs to survive frequent score refetches (every 2s) and minute-based ad list recomputations. The display integrates tournament branding (logos), implements Wake Lock API to prevent screen sleep, and provides a dedicated "Ver Stream" button in the court management modal for quick access (visible only to user "sflores"). **Stream Sharing**: The court management modal includes a "Compartir Stream" button (visible only to user "sflores") that opens a share dialog with a QR code and copyable URL for easy stream access distribution. The QR code is generated client-side using the `qrcode` library, and the share dialog state is properly cleaned up when the parent modal closes to prevent stale overlays. All close paths (overlay click, ESC key, footer button) correctly reset the share dialog state. Real-time updates are achieved through TanStack Query with 2-second polling interval and WebSocket-driven cache invalidation.
--   **Multi-Tournament Session System**: Users can work with multiple active tournaments simultaneously. Session stores `selectedTournamentId` to track which tournament the user is currently viewing. The `/api/tournament` endpoint respects user access: superadmins can access any tournament, regular users only see tournaments assigned to them via `tournament_users` table. Courts are filtered by the selected tournament's `clubId`. Users can switch between accessible tournaments via the tournament name button in the navbar which redirects to `/tournament-select`. The selection page shows all tournaments the user has access to with visual indicators for their role in each.
+-   **Query Strategy**: Aggressive `staleTime` with manual cache invalidation via WebSocket events.
+-   **Tournament Timezone Support**: Each tournament has a configurable IANA timezone, ensuring all time calculations (e.g., match timeouts) respect the tournament's local time.
+-   **Admin-Controlled DQF System**: Provides human oversight for disqualification decisions when one pair is absent after timeout.
+-   **Court Pre-Assignment System**: Optimizes court utilization by pre-assigning upcoming matches to courts that will soon become free.
+-   **Fully Automatic Match Starting**: Matches auto-start when all conditions (players checked in, court assigned, etc.) are met, removing manual intervention.
+-   **Intelligent Ready Queue System**: Manages matches where all players are ready, prioritizing by planned time and then by `readySince` timestamp for fair court allocation.
+-   **Player Photo Upload System**: Allows admins/scorekeepers to upload player photos for display.
+-   **Display Estelar**: A full-screen, cinematic display for featured matches with player photos, scores, and branding.
+-   **Streaming Display System**: Allows courts to embed live video streams with overlaid real-time match info and smart advertisement rotation during score changes.
+-   **Multi-Tournament Session System**: Users can manage multiple tournaments, with access based on assigned roles.
 
 ## External Dependencies
 
 ### Core Framework Dependencies
--   React 18+
+-   React
 -   Express.js
 -   Vite
 -   TypeScript
 
 ### Database & ORM
 -   pg (node-postgres)
--   Drizzle ORM, drizzle-kit, drizzle-zod
+-   Drizzle ORM
 
 ### UI Component Libraries
 -   Radix UI
 -   Shadcn/ui
 -   Tailwind CSS
--   Lucide React
 
 ### State & Data Fetching
 -   TanStack Query
--   WebSocket (ws)
+-   WebSocket (`ws`)
 
 ### Form & Validation
 -   React Hook Form
 -   Zod
--   @hookform/resolvers
 
 ### Session Management
 -   express-session
@@ -80,21 +68,8 @@ The backend uses **Node.js** with **Express.js**. **Express-session** with **con
 ### Utilities
 -   date-fns
 -   nanoid
--   class-variance-authority, clsx, tailwind-merge
--   cmdk
--   embla-carousel-react
 -   wouter
 
 ### File Upload & Storage
--   multer (native multipart/form-data handling)
--   Local filesystem storage in `public/uploads/`
-
-### Environment Variables (Required for Deployment)
--   `DATABASE_URL` - PostgreSQL connection string
--   `SESSION_SECRET` - Session encryption key
--   `NODE_ENV` - Environment mode (development/production)
-
-### Build & Deployment
--   **Build Process**: TypeScript compilation without bundling (`tsc`) for server code, Vite bundling for client code
--   **Production Server**: Compiled JavaScript from `dist/server/index.js` with `pg` as runtime dependency
--   **VPS Deployment**: Nginx reverse proxy → Node.js (PM2) → PostgreSQL (local instance)
+-   multer
+-   Local filesystem storage (`public/uploads/`)

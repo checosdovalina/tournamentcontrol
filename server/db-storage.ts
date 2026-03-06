@@ -346,6 +346,11 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async updatePlayer(id: string, updates: Partial<Player>): Promise<Player | undefined> {
+    const result = await db.update(players).set(updates).where(eq(players.id, id)).returning();
+    return result[0];
+  }
+
   // Pairs
   async getPair(id: string): Promise<Pair | undefined> {
     const result = await db.select().from(pairs).where(eq(pairs.id, id)).limit(1);

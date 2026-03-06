@@ -93,9 +93,14 @@ app.use((req, res, next) => {
 
 // Ensure upload directories exist
 async function ensureUploadDirectories() {
-  const uploadsDir = join(process.cwd(), 'public', 'uploads', 'advertisements');
+  const dirs = [
+    join(process.cwd(), 'public', 'uploads', 'advertisements'),
+    join(process.cwd(), 'public', 'uploads', 'players'),
+  ];
   try {
-    await mkdir(uploadsDir, { recursive: true });
+    for (const dir of dirs) {
+      await mkdir(dir, { recursive: true });
+    }
     log('Upload directories ready');
   } catch (error) {
     log(`Warning: Could not create upload directories: ${error}`);

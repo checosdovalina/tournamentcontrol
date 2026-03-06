@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -25,15 +25,44 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, Users } from "lucide-react";
+import { Pencil, Trash2, Users, Camera, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+function PlayerPhoto({ name, photoUrl, size = 32 }: { name: string; photoUrl?: string | null; size?: number }) {
+  const initials = name
+    ? name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase()
+    : "?";
+  if (photoUrl) {
+    return (
+      <img
+        src={photoUrl}
+        alt={name}
+        className="rounded-full object-cover border border-border"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return (
+    <div
+      className="rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold border border-border"
+      style={{ width: size, height: size, fontSize: size * 0.35 }}
+    >
+      {initials}
+    </div>
+  );
+}
 
 export default function PairsManagement() {
   const { toast } = useToast();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPair, setSelectedPair] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [photoTarget, setPhotoTarget] = useState<{ id: string; name: string } | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: tournament } = useQuery<{ id: string }>({
     queryKey: ["/api/tournament"],
@@ -84,6 +113,28 @@ export default function PairsManagement() {
     },
   });
 
+  const uploadPhotoMutation = useMutation({
+    mutationFn: async ({ playerId, file }: { playerId: string; file: File }) => {
+      const formData = new FormData();
+      formData.append("photo", file);
+      const res = await fetch(`/api/players/${playerId}/photo`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Error al subir foto");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/pairs"] });
+      toast({ title: "Foto actualizada correctamente" });
+      closePhotoModal();
+    },
+    onError: () => {
+      toast({ title: "Error al subir la foto", variant: "destructive" });
+    },
+  });
+
   const handleEdit = (pair: any) => {
     setSelectedPair(pair);
     setSelectedCategory(pair.categoryId || "");
@@ -93,6 +144,32 @@ export default function PairsManagement() {
   const handleDelete = (pair: any) => {
     setSelectedPair(pair);
     setDeleteModalOpen(true);
+  };
+
+  const openPhotoModal = (player: { id: string; name: string }) => {
+    setPhotoTarget(player);
+    setPreviewUrl(null);
+    setSelectedFile(null);
+    setPhotoModalOpen(true);
+  };
+
+  const closePhotoModal = () => {
+    setPhotoModalOpen(false);
+    setPhotoTarget(null);
+    setPreviewUrl(null);
+    setSelectedFile(null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleUploadPhoto = () => {
+    if (!photoTarget || !selectedFile) return;
+    uploadPhotoMutation.mutate({ playerId: photoTarget.id, file: selectedFile });
   };
 
   const handleUpdatePair = () => {
@@ -150,7 +227,26 @@ export default function PairsManagement() {
               pairs.map((pair) => (
                 <TableRow key={pair.id} data-testid={`row-pair-${pair.id}`}>
                   <TableCell className="font-medium">
-                    {pair.player1?.name || "?"} / {pair.player2?.name || "?"}
+                    <div className="space-y-2">
+                      {[pair.player1, pair.player2].map((player, idx) => (
+                        player ? (
+                          <div key={idx} className="flex items-center gap-2">
+                            <PlayerPhoto name={player.name} photoUrl={player.photoUrl} />
+                            <span className="text-sm">{player.name}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                              onClick={() => openPhotoModal(player)}
+                              title="Subir foto del jugador"
+                              data-testid={`button-photo-player-${player.id}`}
+                            >
+                              <Camera className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : null
+                      ))}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{getCategoryName(pair.categoryId)}</Badge>
@@ -190,6 +286,63 @@ export default function PairsManagement() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Photo Upload Modal */}
+      <Dialog open={photoModalOpen} onOpenChange={(open) => { if (!open) closePhotoModal(); }}>
+        <DialogContent data-testid="dialog-photo-player">
+          <DialogHeader>
+            <DialogTitle>Foto de {photoTarget?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {previewUrl ? (
+              <div className="flex justify-center">
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-32 h-32 rounded-full object-cover border-2 border-border"
+                />
+              </div>
+            ) : (
+              <div
+                className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg py-8 cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">Haz clic para seleccionar una foto</p>
+                <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WEBP — máx. 5MB</p>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+              data-testid="input-player-photo"
+            />
+            {previewUrl && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Cambiar foto
+              </Button>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closePhotoModal}>Cancelar</Button>
+            <Button
+              onClick={handleUploadPhoto}
+              disabled={!selectedFile || uploadPhotoMutation.isPending}
+              data-testid="button-upload-photo"
+            >
+              {uploadPhotoMutation.isPending ? "Subiendo..." : "Guardar foto"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
