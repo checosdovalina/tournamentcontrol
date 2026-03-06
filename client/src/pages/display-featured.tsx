@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { useKeepAwake } from "@/hooks/use-keep-awake";
 import { useWebSocket } from "@/hooks/use-websocket";
+import { ChevronDown, RotateCcw } from "lucide-react";
 import courtflowLogo from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
 
 function PlayerAvatar({ name, photoUrl, size = 120 }: { name: string; photoUrl?: string | null; size?: number }) {
@@ -44,15 +45,11 @@ function ScoreBoard({ sets }: { sets: [number, number][] }) {
     <div className="flex flex-col items-center gap-1">
       {sets.map(([s1, s2], i) => (
         <div key={i} className="flex items-center gap-4">
-          <span
-            className={`text-4xl font-black w-16 text-right ${s1 > s2 ? "text-white" : "text-white/50"}`}
-          >
+          <span className={`text-4xl font-black w-16 text-right ${s1 > s2 ? "text-white" : "text-white/50"}`}>
             {s1}
           </span>
           <span className="text-white/40 text-2xl font-bold">–</span>
-          <span
-            className={`text-4xl font-black w-16 text-left ${s2 > s1 ? "text-white" : "text-white/50"}`}
-          >
+          <span className={`text-4xl font-black w-16 text-left ${s2 > s1 ? "text-white" : "text-white/50"}`}>
             {s2}
           </span>
         </div>
@@ -69,29 +66,33 @@ export default function DisplayFeatured() {
   const tournamentId = params?.tournamentId;
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
-  const [matchIndex, setMatchIndex] = useState(0);
+  const [autoMatchIndex, setAutoMatchIndex] = useState(0);
+  const [pinnedMatchId, setPinnedMatchId] = useState<string | null>(null);
+  const [selectorOpen, setSelectorOpen] = useState(false);
   const adTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const selectorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const t = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
+  // Close selector when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (selectorRef.current && !selectorRef.current.contains(e.target as Node)) {
+        setSelectorOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const { data: tournament } = useQuery<{
     id: string;
     name: string;
     tournamentLogoUrl?: string;
-    clubLogoUrl?: string;
-    systemLogoUrl?: string;
-    timezone?: string;
-    config?: {
-      displayColors?: {
-        primaryColor?: string;
-        secondaryColor?: string;
-        accentColor?: string;
-        textColor?: string;
-      };
-    };
+    config?: { displayColors?: { primaryColor?: string; secondaryColor?: string; accentColor?: string; textColor?: string } };
   }>({
     queryKey: [`/api/tournaments/${tournamentId}/public`],
     enabled: !!tournamentId,
@@ -119,40 +120,46 @@ export default function DisplayFeatured() {
 
   const activeSponsors = (sponsors as any[]).filter((s: any) => s.isActive !== false);
 
+  // Auto-rotate when no match is pinned
   useEffect(() => {
-    if (currentMatches.length > 1) {
-      const t = setInterval(() => {
-        setMatchIndex((prev) => (prev + 1) % currentMatches.length);
-      }, 30000);
-      return () => clearInterval(t);
+    if (pinnedMatchId || currentMatches.length <= 1) return;
+    const t = setInterval(() => {
+      setAutoMatchIndex((prev) => (prev + 1) % currentMatches.length);
+    }, 30000);
+    return () => clearInterval(t);
+  }, [pinnedMatchId, currentMatches.length]);
+
+  // Clear pin if the pinned match is no longer active
+  useEffect(() => {
+    if (pinnedMatchId && currentMatches.length > 0) {
+      const stillActive = currentMatches.some((m) => m.id === pinnedMatchId);
+      if (!stillActive) setPinnedMatchId(null);
     }
-  }, [currentMatches.length]);
+  }, [currentMatches, pinnedMatchId]);
 
   useEffect(() => {
     if (activeSponsors.length <= 1) return;
     adTimerRef.current = setTimeout(() => {
       setCurrentAdIndex((prev) => (prev + 1) % activeSponsors.length);
     }, 6000);
-    return () => {
-      if (adTimerRef.current) clearTimeout(adTimerRef.current);
-    };
+    return () => { if (adTimerRef.current) clearTimeout(adTimerRef.current); };
   }, [currentAdIndex, activeSponsors.length]);
 
   const displayColors = tournament?.config?.displayColors;
   const bgStyle = displayColors
-    ? {
-        background: `linear-gradient(135deg, ${displayColors.primaryColor || "#1e3a8a"} 0%, ${displayColors.secondaryColor || "#0f766e"} 100%)`,
-      }
+    ? { background: `linear-gradient(135deg, ${displayColors.primaryColor || "#1e3a8a"} 0%, ${displayColors.secondaryColor || "#0f766e"} 100%)` }
     : { background: "linear-gradient(135deg, #1e3a8a 0%, #0f766e 100%)" };
-
   const accentColor = displayColors?.accentColor || "#f97316";
 
-  const match = currentMatches[matchIndex % Math.max(currentMatches.length, 1)];
+  // Resolve which match to show
+  const match = pinnedMatchId
+    ? currentMatches.find((m) => m.id === pinnedMatchId) ?? currentMatches[0]
+    : currentMatches[autoMatchIndex % Math.max(currentMatches.length, 1)];
 
-  const timeStr = currentTime.toLocaleTimeString("es-MX", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const timeStr = currentTime.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+
+  const matchLabel = (m: any) =>
+    `${m.pair1?.player1?.name?.split(" ")[0] ?? "?"} / ${m.pair1?.player2?.name?.split(" ")[0] ?? "?"} vs ${m.pair2?.player1?.name?.split(" ")[0] ?? "?"} / ${m.pair2?.player2?.name?.split(" ")[0] ?? "?"} — ${m.court?.name ?? ""}`;
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden select-none" style={bgStyle}>
@@ -165,27 +172,77 @@ export default function DisplayFeatured() {
             <img src={courtflowLogo} alt="CourtFlow" className="h-10 w-auto object-contain opacity-80" />
           )}
           <div>
-            <h1 className="text-white font-bold text-xl leading-tight">
-              {tournament?.name || "Torneo"}
-            </h1>
-            {match && (
-              <p className="text-white/60 text-sm">{match.court?.name || "Cancha"}</p>
-            )}
+            <h1 className="text-white font-bold text-xl leading-tight">{tournament?.name || "Torneo"}</h1>
+            {match && <p className="text-white/60 text-sm">{match.court?.name || "Cancha"}</p>}
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          {currentMatches.length > 1 && (
-            <div className="flex gap-1">
-              {currentMatches.map((_, i) => (
-                <div
-                  key={i}
-                  className="w-2 h-2 rounded-full transition-all"
-                  style={{ background: i === matchIndex ? accentColor : "rgba(255,255,255,0.3)" }}
-                />
-              ))}
+        <div className="flex items-center gap-4">
+          {/* Match selector */}
+          {currentMatches.length > 0 && (
+            <div className="relative" ref={selectorRef}>
+              <button
+                onClick={() => setSelectorOpen((v) => !v)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-white text-sm font-medium transition-colors"
+                data-testid="button-match-selector"
+              >
+                {pinnedMatchId ? "Partido fijado" : "Auto"}
+                <ChevronDown className="w-4 h-4" />
+              </button>
+
+              {selectorOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-gray-900/95 backdrop-blur-sm rounded-xl shadow-2xl border border-white/10 overflow-hidden z-50">
+                  <div className="p-3 border-b border-white/10">
+                    <p className="text-white/60 text-xs font-semibold uppercase tracking-wider">Seleccionar partido</p>
+                  </div>
+
+                  {/* Auto option */}
+                  <button
+                    onClick={() => { setPinnedMatchId(null); setSelectorOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/10 transition-colors ${!pinnedMatchId ? "bg-white/10" : ""}`}
+                  >
+                    <RotateCcw className="w-4 h-4 text-white/50 flex-shrink-0" />
+                    <div>
+                      <p className="text-white text-sm font-medium">Automático</p>
+                      <p className="text-white/50 text-xs">Rota entre todos los partidos en curso</p>
+                    </div>
+                    {!pinnedMatchId && (
+                      <div className="ml-auto w-2 h-2 rounded-full flex-shrink-0" style={{ background: accentColor }} />
+                    )}
+                  </button>
+
+                  {/* Match options */}
+                  {currentMatches.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => { setPinnedMatchId(m.id); setSelectorOpen(false); }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/10 transition-colors border-t border-white/5 ${pinnedMatchId === m.id ? "bg-white/10" : ""}`}
+                      data-testid={`option-match-${m.id}`}
+                    >
+                      <div className="w-4 h-4 rounded-full border-2 border-white/30 flex-shrink-0 flex items-center justify-center">
+                        {pinnedMatchId === m.id && (
+                          <div className="w-2 h-2 rounded-full" style={{ background: accentColor }} />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white text-sm font-medium truncate">
+                          {m.pair1?.player1?.name?.split(" ")[0]} / {m.pair1?.player2?.name?.split(" ")[0]}
+                        </p>
+                        <p className="text-white text-sm font-medium truncate">
+                          vs {m.pair2?.player1?.name?.split(" ")[0]} / {m.pair2?.player2?.name?.split(" ")[0]}
+                        </p>
+                        <p className="text-white/50 text-xs mt-0.5">{m.court?.name} — {m.category?.name || "Sin categoría"}</p>
+                      </div>
+                      {pinnedMatchId === m.id && (
+                        <div className="ml-auto w-2 h-2 rounded-full flex-shrink-0" style={{ background: accentColor }} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
+
           <span className="text-white/80 text-2xl font-mono font-semibold">{timeStr}</span>
         </div>
       </div>
@@ -200,7 +257,6 @@ export default function DisplayFeatured() {
           </div>
         ) : (
           <div className="w-full max-w-6xl">
-            {/* Category */}
             {match.category?.name && (
               <div className="text-center mb-6">
                 <span
@@ -212,67 +268,40 @@ export default function DisplayFeatured() {
               </div>
             )}
 
-            {/* Players + Score layout */}
             <div className="grid grid-cols-3 gap-6 items-center">
               {/* Pair 1 */}
               <div className="flex flex-col items-center gap-5">
-                <div className="flex flex-col items-center gap-3">
-                  <PlayerAvatar
-                    name={match.pair1?.player1?.name || ""}
-                    photoUrl={match.pair1?.player1?.photoUrl}
-                    size={130}
-                  />
-                  <p className="text-white font-bold text-lg text-center leading-tight max-w-xs">
-                    {match.pair1?.player1?.name || "Jugador 1"}
-                  </p>
-                </div>
-                <div className="w-px h-6 bg-white/20" />
-                <div className="flex flex-col items-center gap-3">
-                  <PlayerAvatar
-                    name={match.pair1?.player2?.name || ""}
-                    photoUrl={match.pair1?.player2?.photoUrl}
-                    size={130}
-                  />
-                  <p className="text-white font-bold text-lg text-center leading-tight max-w-xs">
-                    {match.pair1?.player2?.name || "Jugador 2"}
-                  </p>
-                </div>
+                {[match.pair1?.player1, match.pair1?.player2].map((player, idx) => (
+                  <div key={idx} className="flex flex-col items-center gap-3">
+                    <PlayerAvatar name={player?.name || ""} photoUrl={player?.photoUrl} size={130} />
+                    <p className="text-white font-bold text-lg text-center leading-tight max-w-xs">
+                      {player?.name || `Jugador ${idx + 1}`}
+                    </p>
+                    {idx === 0 && <div className="w-px h-4 bg-white/20" />}
+                  </div>
+                ))}
               </div>
 
-              {/* Score center */}
+              {/* Score */}
               <div className="flex flex-col items-center gap-6">
                 <div className="text-white/40 text-xl font-bold tracking-widest">VS</div>
                 <div className="bg-black/30 backdrop-blur-sm rounded-2xl px-8 py-6 min-w-[200px]">
                   <ScoreBoard sets={match.score?.sets || []} />
                 </div>
-                <div className="text-white/50 text-sm font-medium tracking-wide">
-                  {match.court?.name || ""}
-                </div>
+                <div className="text-white/50 text-sm font-medium tracking-wide">{match.court?.name || ""}</div>
               </div>
 
               {/* Pair 2 */}
               <div className="flex flex-col items-center gap-5">
-                <div className="flex flex-col items-center gap-3">
-                  <PlayerAvatar
-                    name={match.pair2?.player1?.name || ""}
-                    photoUrl={match.pair2?.player1?.photoUrl}
-                    size={130}
-                  />
-                  <p className="text-white font-bold text-lg text-center leading-tight max-w-xs">
-                    {match.pair2?.player1?.name || "Jugador 3"}
-                  </p>
-                </div>
-                <div className="w-px h-6 bg-white/20" />
-                <div className="flex flex-col items-center gap-3">
-                  <PlayerAvatar
-                    name={match.pair2?.player2?.name || ""}
-                    photoUrl={match.pair2?.player2?.photoUrl}
-                    size={130}
-                  />
-                  <p className="text-white font-bold text-lg text-center leading-tight max-w-xs">
-                    {match.pair2?.player2?.name || "Jugador 4"}
-                  </p>
-                </div>
+                {[match.pair2?.player1, match.pair2?.player2].map((player, idx) => (
+                  <div key={idx} className="flex flex-col items-center gap-3">
+                    <PlayerAvatar name={player?.name || ""} photoUrl={player?.photoUrl} size={130} />
+                    <p className="text-white font-bold text-lg text-center leading-tight max-w-xs">
+                      {player?.name || `Jugador ${idx + 3}`}
+                    </p>
+                    {idx === 0 && <div className="w-px h-4 bg-white/20" />}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -290,11 +319,7 @@ export default function DisplayFeatured() {
                 style={{ opacity: activeSponsors.length === 1 || i === currentAdIndex ? 1 : 0.3 }}
               >
                 {sponsor.logoUrl ? (
-                  <img
-                    src={sponsor.logoUrl}
-                    alt={sponsor.name}
-                    className="h-10 w-auto object-contain"
-                  />
+                  <img src={sponsor.logoUrl} alt={sponsor.name} className="h-10 w-auto object-contain" />
                 ) : (
                   <span className="text-white/70 font-semibold text-sm">{sponsor.name}</span>
                 )}
