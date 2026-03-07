@@ -33,26 +33,26 @@ function PlayerCutout({
 
   return (
     <div className={`flex flex-col items-center gap-2 h-full justify-end`}>
-      <div className="relative flex-1 w-full flex items-end justify-center overflow-hidden">
+      <div className="relative flex-1 w-full flex items-start justify-center overflow-hidden pt-2">
         {photoUrl ? (
           <img
             src={photoUrl}
             alt={name}
-            className="h-full w-auto max-w-full object-contain object-bottom drop-shadow-2xl"
+            className="h-full w-auto max-w-full object-contain object-top drop-shadow-2xl"
             style={{ filter: "drop-shadow(0 8px 32px rgba(0,0,0,0.7))" }}
           />
         ) : (
           <div
-            className="flex items-center justify-center rounded-full bg-white/10 border-4 border-white/20 mb-4"
-            style={{ width: 160, height: 160 }}
+            className="flex items-center justify-center rounded-full bg-white/10 border-4 border-white/20 mt-8"
+            style={{ width: 180, height: 180 }}
           >
-            <span className="text-white/60 text-5xl font-black">{initials}</span>
+            <span className="text-white/60 text-6xl font-black">{initials}</span>
           </div>
         )}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
       </div>
       <p
-        className={`text-white font-bold tracking-widest text-sm uppercase pb-2 text-center leading-tight`}
+        className={`text-white font-bold tracking-widest text-xl uppercase pb-3 text-center leading-tight`}
         style={{ textShadow: "0 2px 12px rgba(0,0,0,0.9)" }}
       >
         {displayName || `Jugador`}
@@ -63,15 +63,15 @@ function PlayerCutout({
 
 function ScoreBoard({ sets }: { sets: [number, number][] }) {
   if (!sets || sets.length === 0) {
-    return <p className="text-white/40 text-base">Sin sets</p>;
+    return <p className="text-white/40 text-lg">Sin sets</p>;
   }
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-col items-center gap-2">
       {sets.map(([s1, s2], i) => (
-        <div key={i} className="flex items-center gap-3">
-          <span className={`text-4xl font-black w-12 text-right tabular-nums ${s1 > s2 ? "text-white" : "text-white/40"}`}>{s1}</span>
-          <span className="text-white/30 text-xl">–</span>
-          <span className={`text-4xl font-black w-12 text-left tabular-nums ${s2 > s1 ? "text-white" : "text-white/40"}`}>{s2}</span>
+        <div key={i} className="flex items-center gap-4">
+          <span className={`text-6xl font-black w-16 text-right tabular-nums ${s1 > s2 ? "text-white" : "text-white/40"}`}>{s1}</span>
+          <span className="text-white/30 text-2xl">–</span>
+          <span className={`text-6xl font-black w-16 text-left tabular-nums ${s2 > s1 ? "text-white" : "text-white/40"}`}>{s2}</span>
         </div>
       ))}
     </div>
