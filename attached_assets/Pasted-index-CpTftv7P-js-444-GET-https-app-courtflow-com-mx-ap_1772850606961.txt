@@ -1,0 +1,1289 @@
+index-CpTftv7P.js:444  GET https://app.courtflow.com.mx/api/scheduled-matches/ready/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
+queryFn @ index-CpTftv7P.js:444
+i @ index-CpTftv7P.js:48
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48Understand this error
+index-CpTftv7P.js:444  GET https://app.courtflow.com.mx/api/scheduled-matches/ready-queue/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
+queryFn @ index-CpTftv7P.js:444
+i @ index-CpTftv7P.js:48
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48Understand this error
+index-CpTftv7P.js:444  GET https://app.courtflow.com.mx/api/scheduled-matches/ready/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
+queryFn @ index-CpTftv7P.js:444
+i @ index-CpTftv7P.js:48
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48Understand this error
+index-CpTftv7P.js:444  GET https://app.courtflow.com.mx/api/scheduled-matches/ready-queue/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
+queryFn @ index-CpTftv7P.js:444
+i @ index-CpTftv7P.js:48
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48Understand this error
+index-CpTftv7P.js:444  GET https://app.courtflow.com.mx/api/scheduled-matches/ready/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
+queryFn @ index-CpTftv7P.js:444
+i @ index-CpTftv7P.js:48
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48Understand this error
+index-CpTftv7P.js:444  GET https://app.courtflow.com.mx/api/scheduled-matches/ready-queue/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
+queryFn @ index-CpTftv7P.js:444
+i @ index-CpTftv7P.js:48
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48Understand this error
+index-CpTftv7P.js:444  GET https://app.courtflow.com.mx/api/scheduled-matches/ready/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
+queryFn @ index-CpTftv7P.js:444
+i @ index-CpTftv7P.js:48
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48Understand this error
+index-CpTftv7P.js:444  GET https://app.courtflow.com.mx/api/scheduled-matches/ready-queue/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
+queryFn @ index-CpTftv7P.js:444
+i @ index-CpTftv7P.js:48
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+setInterval
+hg @ index-CpTftv7P.js:48
+pg @ index-CpTftv7P.js:48
+onQueryUpdate @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48
+batch @ index-CpTftv7P.js:48
+ys @ index-CpTftv7P.js:48
+setData @ index-CpTftv7P.js:48
+onSuccess @ index-CpTftv7P.js:48
+m @ index-CpTftv7P.js:48
+Promise.then
+y @ index-CpTftv7P.js:48
+start @ index-CpTftv7P.js:48
+fetch @ index-CpTftv7P.js:48
+$l @ index-CpTftv7P.js:48
+(anonymous) @ index-CpTftv7P.js:48Understand this error
+index-CpTftv7P.js:444  GET https://app.courtflow.com.mx/api/scheduled-matches/ready/d5017921-d966-48e6-a0ac-b7c9cb95050d 500 (Internal Server Error)
