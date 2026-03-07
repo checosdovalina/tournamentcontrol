@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock, FileSpreadsheet, ChevronDown, LayoutGrid, Repeat, QrCode } from "lucide-react";
+import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock, FileSpreadsheet, ChevronDown, LayoutGrid, Repeat, QrCode, Star } from "lucide-react";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
@@ -63,6 +63,10 @@ export default function Dashboard() {
 
   const openControlDisplay = () => {
     setLocation("/display-control");
+  };
+
+  const openFeaturedDisplay = () => {
+    if (tournament?.id) setLocation(`/display-featured/${tournament.id}`);
   };
 
   if (tournamentLoading) {
@@ -276,6 +280,10 @@ export default function Dashboard() {
                   <DropdownMenuItem onClick={openControlDisplay} className="cursor-pointer">
                     <Users className="w-4 h-4 mr-2" />
                     Mesa de Control
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={openFeaturedDisplay} className="cursor-pointer">
+                    <Star className="w-4 h-4 mr-2" />
+                    Display Estelar
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
