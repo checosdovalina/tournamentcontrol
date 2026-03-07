@@ -3834,7 +3834,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
   const requireRecordApiKey = (req: any, res: any, next: any) => {
     const apiKey = process.env.RECORD_API_KEY;
     if (!apiKey) {
-      res.set("X-Auth-Warning", "RECORD_API_KEY not configured – endpoint is open");
+      res.set("X-Auth-Warning", "RECORD_API_KEY not configured - endpoint is open");
       return next();
     }
     const provided =
