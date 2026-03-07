@@ -478,9 +478,12 @@ export class DatabaseStorage implements IStorage {
 
       if (!player1_1 || !player1_2 || !player2_1 || !player2_2) continue;
 
+      const category = match.categoryId ? await this.getCategory(match.categoryId) : undefined;
+
       result.push({
         ...match,
         court,
+        category,
         pair1: { ...pair1, player1: player1_1, player2: player1_2 },
         pair2: { ...pair2, player1: player2_1, player2: player2_2 },
       });

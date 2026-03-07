@@ -102,7 +102,7 @@ export default function DisplayFeatured() {
   const { data: currentMatches = [] } = useQuery<any[]>({
     queryKey: ["/api/matches/current", tournamentId],
     enabled: !!tournamentId,
-    refetchInterval: 2000,
+    refetchInterval: 1000,
     staleTime: 0,
   });
 
@@ -243,7 +243,13 @@ export default function DisplayFeatured() {
             </div>
           )}
 
-          <span className="text-white/80 text-2xl font-mono font-semibold">{timeStr}</span>
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">EN VIVO</span>
+            </div>
+            <span className="text-white/80 text-2xl font-mono font-semibold">{timeStr}</span>
+          </div>
         </div>
       </div>
 
