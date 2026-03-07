@@ -174,7 +174,7 @@ export default function DisplayFeatured() {
     <div className="h-screen flex flex-col overflow-hidden select-none" style={bgStyle}>
 
       {/* Header */}
-      <div className="px-8 py-3 flex items-center justify-between border-b border-white/10 flex-shrink-0 bg-black/20 backdrop-blur-sm">
+      <div className="px-8 py-3 flex items-center justify-between border-b border-white/10 flex-shrink-0 bg-black/20 backdrop-blur-sm relative z-10">
         <div className="flex items-center space-x-4">
           {tournament?.tournamentLogoUrl ? (
             <img src={tournament.tournamentLogoUrl} alt="Logo Torneo" className="h-14 w-auto object-contain" />
