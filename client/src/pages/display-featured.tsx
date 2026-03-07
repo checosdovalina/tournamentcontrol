@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { useKeepAwake } from "@/hooks/use-keep-awake";
 import { useWebSocket } from "@/hooks/use-websocket";
-import { ChevronDown, RotateCcw } from "lucide-react";
-import courtflowLogo from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
+import { ChevronDown, RotateCcw, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import courtflowLogo from "@assets/_Logos JC (Court Flow)_1759964500350.png";
+import courtflowLogoNew from "@assets/_LogosCOURTFLOW  sin fondo_1760480356184.png";
 
 function PlayerAvatar({ name, photoUrl, size = 120 }: { name: string; photoUrl?: string | null; size?: number }) {
   const initials = name
@@ -62,6 +64,7 @@ export default function DisplayFeatured() {
   useKeepAwake();
   useWebSocket();
 
+  const [, setLocation] = useLocation();
   const [, params] = useRoute("/display-featured/:tournamentId");
   const tournamentId = params?.tournamentId;
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -92,6 +95,10 @@ export default function DisplayFeatured() {
     id: string;
     name: string;
     tournamentLogoUrl?: string;
+    clubLogoUrl?: string;
+    systemLogoUrl?: string;
+    sponsorRotationEnabled?: boolean;
+    sponsorRotationSpeed?: number;
     config?: { displayColors?: { primaryColor?: string; secondaryColor?: string; accentColor?: string; textColor?: string } };
   }>({
     queryKey: [`/api/tournaments/${tournamentId}/public`],
@@ -106,19 +113,15 @@ export default function DisplayFeatured() {
     staleTime: 0,
   });
 
-  const { data: sponsors = [] } = useQuery<any[]>({
+  const { data: banners = [] } = useQuery<any[]>({
     queryKey: ["/api/banners", tournamentId],
-    queryFn: async () => {
-      if (!tournamentId) return [];
-      const res = await fetch(`/api/banners/${tournamentId}`);
-      if (!res.ok) return [];
-      return res.json();
-    },
     enabled: !!tournamentId,
-    refetchInterval: 30000,
+    refetchInterval: 60000,
   });
 
-  const activeSponsors = (sponsors as any[]).filter((s: any) => s.isActive !== false);
+  const activeBanners = (banners as any[])
+    .filter((b: any) => b.isActive)
+    .sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0));
 
   // Auto-rotate when no match is pinned
   useEffect(() => {
@@ -138,12 +141,12 @@ export default function DisplayFeatured() {
   }, [currentMatches, pinnedMatchId]);
 
   useEffect(() => {
-    if (activeSponsors.length <= 1) return;
+    if (activeBanners.length <= 1) return;
     adTimerRef.current = setTimeout(() => {
-      setCurrentAdIndex((prev) => (prev + 1) % activeSponsors.length);
+      setCurrentAdIndex((prev) => (prev + 1) % activeBanners.length);
     }, 6000);
     return () => { if (adTimerRef.current) clearTimeout(adTimerRef.current); };
-  }, [currentAdIndex, activeSponsors.length]);
+  }, [currentAdIndex, activeBanners.length]);
 
   const displayColors = tournament?.config?.displayColors;
   const bgStyle = displayColors
@@ -163,24 +166,35 @@ export default function DisplayFeatured() {
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden select-none" style={bgStyle}>
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-8 py-4 bg-black/20 backdrop-blur-sm flex-shrink-0">
-        <div className="flex items-center gap-4">
+      {/* Header */}
+      <div className="px-8 py-4 flex items-center justify-between border-b border-white/20 flex-shrink-0">
+        <div className="flex items-center space-x-4">
           {tournament?.tournamentLogoUrl ? (
-            <img src={tournament.tournamentLogoUrl} alt="Logo torneo" className="h-12 w-auto object-contain" />
+            <img src={tournament.tournamentLogoUrl} alt="Logo Torneo" className="h-16 w-auto object-contain" />
           ) : (
-            <img src={courtflowLogo} alt="CourtFlow" className="h-10 w-auto object-contain opacity-80" />
+            <img src={courtflowLogo} alt="CourtFlow" className="h-16 w-auto" />
           )}
-          <div>
-            <h1 className="text-white font-bold text-xl leading-tight">{tournament?.name || "Torneo"}</h1>
-            {match && <p className="text-white/60 text-sm">{match.court?.name || "Cancha"}</p>}
+          <div className="text-white">
+            <h1 className="text-2xl font-bold">CourtFlow</h1>
+            <p className="text-lg">{tournament?.name || "Torneo Pádel"}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        {(tournament?.clubLogoUrl || tournament?.systemLogoUrl) && (
+          <div className="flex items-center space-x-4">
+            {tournament?.clubLogoUrl && (
+              <img src={tournament.clubLogoUrl} alt="Logo Club" className="h-32 w-auto object-contain" />
+            )}
+            {tournament?.systemLogoUrl && (
+              <img src={tournament.systemLogoUrl} alt="Logo Sistema" className="h-16 w-auto object-contain" />
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center space-x-2">
           {/* Match selector */}
           {currentMatches.length > 0 && (
-            <div className="relative" ref={selectorRef}>
+            <div className="relative mr-2" ref={selectorRef}>
               <button
                 onClick={() => setSelectorOpen((v) => !v)}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-white text-sm font-medium transition-colors"
@@ -195,8 +209,6 @@ export default function DisplayFeatured() {
                   <div className="p-3 border-b border-white/10">
                     <p className="text-white/60 text-xs font-semibold uppercase tracking-wider">Seleccionar partido</p>
                   </div>
-
-                  {/* Auto option */}
                   <button
                     onClick={() => { setPinnedMatchId(null); setSelectorOpen(false); }}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/10 transition-colors ${!pinnedMatchId ? "bg-white/10" : ""}`}
@@ -210,8 +222,6 @@ export default function DisplayFeatured() {
                       <div className="ml-auto w-2 h-2 rounded-full flex-shrink-0" style={{ background: accentColor }} />
                     )}
                   </button>
-
-                  {/* Match options */}
                   {currentMatches.map((m) => (
                     <button
                       key={m.id}
@@ -243,13 +253,28 @@ export default function DisplayFeatured() {
             </div>
           )}
 
-          <div className="flex flex-col items-end gap-1">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">EN VIVO</span>
+          <div className="text-right text-white">
+            <div className="flex items-center justify-end space-x-2 mb-1">
+              <div className="flex items-center space-x-1.5">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">EN VIVO</span>
+              </div>
             </div>
-            <span className="text-white/80 text-2xl font-mono font-semibold">{timeStr}</span>
+            <p className="text-4xl font-bold font-mono">{timeStr}</p>
+            <p className="text-sm text-white/80">
+              {currentTime.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+            </p>
           </div>
+          <img src={courtflowLogoNew} alt="CourtFlow" className="h-20 w-auto object-contain ml-2" />
+          <Button
+            onClick={() => setLocation("/")}
+            variant="ghost"
+            size="sm"
+            className="text-white/60 hover:text-white text-xl ml-2"
+            data-testid="button-close-display-featured"
+          >
+            <X />
+          </Button>
         </div>
       </div>
 
@@ -314,26 +339,42 @@ export default function DisplayFeatured() {
         )}
       </div>
 
-      {/* Sponsors bar */}
-      {activeSponsors.length > 0 && (
-        <div className="flex-shrink-0 bg-white/10 backdrop-blur-sm py-3 px-8">
-          <div className="flex items-center justify-center gap-8 h-12">
-            {activeSponsors.map((sponsor: any, i: number) => (
-              <div
-                key={sponsor.id}
-                className="transition-opacity duration-500"
-                style={{ opacity: activeSponsors.length === 1 || i === currentAdIndex ? 1 : 0.3 }}
-              >
-                {sponsor.logoUrl ? (
-                  <img src={sponsor.logoUrl} alt={sponsor.name} className="h-10 w-auto object-contain" />
-                ) : (
-                  <span className="text-white/70 font-semibold text-sm">{sponsor.name}</span>
-                )}
+      {/* Footer with Sponsors - Auto Scrolling Marquee */}
+      <div className="px-8 py-3 border-t border-white/20 bg-white/5 overflow-hidden flex-shrink-0">
+        <div className="flex items-center justify-center">
+          <div className="flex-1 overflow-hidden">
+            {activeBanners.length > 0 ? (
+              <div className="relative w-full overflow-hidden">
+                <div
+                  className="inline-flex w-max gap-8"
+                  style={{
+                    animation: tournament?.sponsorRotationEnabled !== false
+                      ? `marquee ${tournament?.sponsorRotationSpeed ?? 20}s linear infinite`
+                      : "none",
+                  }}
+                >
+                  {[...activeBanners, ...activeBanners, ...activeBanners].map((banner: any, idx: number) => (
+                    <div key={`sponsor-${banner.id}-${idx}`} className="h-10 flex items-center flex-shrink-0">
+                      <img
+                        src={banner.imageUrl}
+                        alt={banner.sponsorName}
+                        className="h-full w-auto object-contain"
+                        title={banner.sponsorName}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            ) : (
+              <div className="flex items-center justify-center space-x-8">
+                <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 1</div>
+                <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 2</div>
+                <div className="text-white/40 text-xs px-4 py-2 bg-white/5 rounded">SPONSOR 3</div>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
