@@ -33,17 +33,17 @@ function PlayerCutout({
 
   return (
     <div className={`flex flex-col items-center gap-2 h-full justify-end`}>
-      <div className="relative flex-1 w-full flex items-start justify-center overflow-hidden pt-2">
+      <div className="relative flex-1 w-full flex items-end justify-center overflow-hidden">
         {photoUrl ? (
           <img
             src={photoUrl}
             alt={name}
-            className="h-full w-auto max-w-full object-contain object-top drop-shadow-2xl"
+            className="h-full w-auto max-w-full object-contain object-bottom drop-shadow-2xl"
             style={{ filter: "drop-shadow(0 8px 32px rgba(0,0,0,0.7))" }}
           />
         ) : (
           <div
-            className="flex items-center justify-center rounded-full bg-white/10 border-4 border-white/20 mt-8"
+            className="flex items-center justify-center rounded-full bg-white/10 border-4 border-white/20 mb-4"
             style={{ width: 180, height: 180 }}
           >
             <span className="text-white/60 text-6xl font-black">{initials}</span>
@@ -52,7 +52,7 @@ function PlayerCutout({
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
       </div>
       <p
-        className={`text-white font-bold tracking-widest text-xl uppercase pb-3 text-center leading-tight`}
+        className={`text-white font-bold tracking-widest text-2xl uppercase pb-3 text-center leading-tight`}
         style={{ textShadow: "0 2px 12px rgba(0,0,0,0.9)" }}
       >
         {displayName || `Jugador`}
