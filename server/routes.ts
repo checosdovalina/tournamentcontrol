@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 import { mkdirSync } from "fs";
+import { join } from "path";
 import { storage } from "./storage";
 import { LocalObjectStorageService, ObjectNotFoundError } from "./localObjectStorage";
 import { 
