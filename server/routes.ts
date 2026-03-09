@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
+import { mkdirSync } from "fs";
 import { storage } from "./storage";
 import { LocalObjectStorageService, ObjectNotFoundError } from "./localObjectStorage";
 import { 
@@ -24,6 +25,11 @@ import { z } from "zod";
 import multer from "multer";
 import * as XLSX from "xlsx";
 import { convertPDFToExcel } from "./pdf-converter";
+
+// Ensure required upload directories exist
+["public/uploads/advertisements", "public/uploads/players"].forEach(dir => {
+  mkdirSync(dir, { recursive: true });
+});
 
 interface ExtendedWebSocket extends WebSocket {
   isAlive?: boolean;
