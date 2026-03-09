@@ -3925,6 +3925,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         hora_fin: activeMatch.endTime ?? null,
         estado: "en_progreso",
         nombre_torneo: tournament?.name ?? null,
+        imagen_torneo_url: tournament?.tournamentLogoUrl ?? null,
         nombre_cancha: court.name,
         nombre_categoria: category?.name ?? null,
         pareja1_jugador1_nombre: p1p1?.name ?? null,
