@@ -3617,6 +3617,25 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     clearInterval(interval);
   });
 
+  // PDF to Excel Converter endpoint (Admin and Superadmin)
+  app.post("/api/admin/convert-pdf-to-excel", requireAuth, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se subió ningún archivo PDF" });
+      }
+      if (req.file.mimetype !== 'application/pdf') {
+        return res.status(400).json({ message: "El archivo debe ser un PDF" });
+      }
+      const excelBuffer = await convertPDFToExcel(req.file.buffer);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=cronograma.xlsx');
+      res.send(excelBuffer);
+    } catch (error: any) {
+      console.error('Error converting PDF to Excel:', error);
+      res.status(500).json({ message: "Error al convertir PDF a Excel", error: error.message || "Error desconocido" });
+    }
+  });
+
   // PDF to Excel Converter endpoint (Superadmin only)
   app.post("/api/superadmin/convert-pdf-to-excel", requireSuperadmin, upload.single('file'), async (req, res) => {
     try {

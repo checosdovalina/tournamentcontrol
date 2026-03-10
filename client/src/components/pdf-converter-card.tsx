@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, Download, Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-export default function PDFConverterCard() {
+export default function PDFConverterCard({ endpoint = '/api/superadmin/convert-pdf-to-excel' }: { endpoint?: string }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isConverting, setIsConverting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -41,7 +41,7 @@ export default function PDFConverterCard() {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      const response = await fetch('/api/superadmin/convert-pdf-to-excel', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,
         credentials: 'include',

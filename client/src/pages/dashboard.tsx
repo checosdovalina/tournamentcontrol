@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock, FileSpreadsheet, ChevronDown, LayoutGrid, Repeat, QrCode, Star } from "lucide-react";
+import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock, FileSpreadsheet, ChevronDown, LayoutGrid, Repeat, QrCode, Star, FileText } from "lucide-react";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
@@ -16,6 +16,7 @@ import SuperAdminPanel from "@/components/super-admin-panel";
 import PairsManagement from "@/components/pairs-management";
 import LiveScoreCapture from "@/components/live-score-capture";
 import TournamentQR from "@/components/tournament-qr";
+import PDFConverterCard from "@/components/pdf-converter-card";
 import ImportExcelModal from "@/components/modals/import-excel-modal";
 import RegisterPlayerModal from "@/components/modals/register-player-modal";
 import RecordResultModal from "@/components/modals/record-result-modal";
@@ -206,6 +207,12 @@ export default function Dashboard() {
                 QR Captura
               </TabsTrigger>
             )}
+            {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && (
+              <TabsTrigger value="pdf-converter" data-testid="tab-pdf-converter">
+                <FileText className="w-4 h-4 mr-2" />
+                Convertir PDF
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {user?.user?.role === 'superadmin' && (
@@ -362,6 +369,14 @@ export default function Dashboard() {
                   tournamentName={tournament.name} 
                 />
               )}
+            </TabsContent>
+          )}
+
+          {(user?.user?.role === 'admin' || user?.user?.role === 'superadmin') && (
+            <TabsContent value="pdf-converter">
+              <div className="max-w-2xl mx-auto">
+                <PDFConverterCard endpoint="/api/admin/convert-pdf-to-excel" />
+              </div>
             </TabsContent>
           )}
         </Tabs>
