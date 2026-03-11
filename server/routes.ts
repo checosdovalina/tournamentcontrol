@@ -3320,10 +3320,18 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         broadcastUpdate({ type: "court_manually_assigned", data: match });
         
         // Auto-start match if all players are confirmed
-        // Use pair.isPresent as the authoritative source (set by checkInPlayer when both players of a pair confirm)
+        // Use match_players records as ground truth (same as check-in endpoint)
+        // Also fall back to pair.isPresent to handle edge cases
         const pair1ForAutoStart = await storage.getPair(match.pair1Id);
         const pair2ForAutoStart = await storage.getPair(match.pair2Id);
-        const allPlayersConfirmed = pair1ForAutoStart?.isPresent === true && pair2ForAutoStart?.isPresent === true;
+        const checkInRecordsForAssign = await storage.getScheduledMatchPlayers(id);
+        const pair1CheckIns = checkInRecordsForAssign.filter(p => p.pairId === match.pair1Id && p.isPresent).length;
+        const pair2CheckIns = checkInRecordsForAssign.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
+        const allPlayersConfirmedByRecords = pair1CheckIns === 2 && pair2CheckIns === 2;
+        const allPlayersConfirmedByPair = pair1ForAutoStart?.isPresent === true && pair2ForAutoStart?.isPresent === true;
+        // If the match was explicitly in 'ready' status before assignment, treat as confirmed
+        const wasReadyStatus = currentMatch.status === 'ready';
+        const allPlayersConfirmed = allPlayersConfirmedByRecords || allPlayersConfirmedByPair || wasReadyStatus;
         
         if (match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt) {
           // Create playing match
