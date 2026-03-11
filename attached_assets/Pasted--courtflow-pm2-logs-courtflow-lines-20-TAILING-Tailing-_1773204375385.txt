@@ -1,0 +1,28 @@
+/courtflow# pm2 logs courtflow --lines 20
+[TAILING] Tailing last 20 lines for [courtflow] process (change the value with --lines option)
+/var/log/courtflow-error-15.log last 20 lines:
+/var/log/courtflow-out-15.log last 20 lines:
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 48f507ed-421a-41ae-93e5-c931b799939c check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 48f507ed-421a-41ae-93e5-c931b799939c: CASE 4 - No pairs fully present, no action taken
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match bf395d3b-ca7d-42a0-a687-85c4a79c803f [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 22:45:44, overdue=true
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match bf395d3b-ca7d-42a0-a687-85c4a79c803f check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match bf395d3b-ca7d-42a0-a687-85c4a79c803f: CASE 4 - No pairs fully present, no action taken
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match b17bc8f4-a321-4898-be19-3223f5c0990e [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 22:45:44, overdue=true
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match b17bc8f4-a321-4898-be19-3223f5c0990e check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match b17bc8f4-a321-4898-be19-3223f5c0990e: CASE 4 - No pairs fully present, no action taken
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match b896cc6a-631a-421f-aaa8-cbeed8c95606 [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 22:45:44, overdue=true
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match b896cc6a-631a-421f-aaa8-cbeed8c95606 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match b896cc6a-631a-421f-aaa8-cbeed8c95606: CASE 4 - No pairs fully present, no action taken
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 414b3245-23e1-48c8-8c37-8dc05bf6b705 [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 22:45:44, overdue=true
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 414b3245-23e1-48c8-8c37-8dc05bf6b705 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 414b3245-23e1-48c8-8c37-8dc05bf6b705: CASE 4 - No pairs fully present, no action taken
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 0fdae161-5031-4996-a1ab-2437a3639b8d [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 22:45:44, overdue=true
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 0fdae161-5031-4996-a1ab-2437a3639b8d check-ins: pair1=2/2 (confirmed=true), pair2=2/2 (confirmed=true)
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 0fdae161-5031-4996-a1ab-2437a3639b8d: CASE 3 - Both pairs present, no action needed
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 428fc30d-ab89-4d2d-bed6-c43d98189edf [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 22:45:44, overdue=true
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 428fc30d-ab89-4d2d-bed6-c43d98189edf check-ins: pair1=2/2 (confirmed=true), pair2=2/2 (confirmed=true)
+4|courtflo | 10:45:44 PM [express] [Timeout Processor] Match 428fc30d-ab89-4d2d-bed6-c43d98189edf: CASE 3 - Both pairs present, no action needed
+
+4|courtflow  | 10:45:54 PM [express] GET /api/courts 200 in 9ms :: [{"id":"002d3dfe-be5b-4cb1-9aed-ac22cb961cda","na…
+4|courtflow  | 10:45:54 PM [express] GET /api/matches/current/ae42a015-5dba-4e9f-acb7-03048231b4a1 200 in 22ms :: [{…
+4|courtflow  | 10:45:54 PM [express] GET /api/results/recent/ae42a015-5dba-4e9f-acb7-03048231b4a1 200 in 6ms :: []
