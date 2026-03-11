@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil, Repeat, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil, Repeat } from "lucide-react";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
 import EditScheduledMatchModal from "@/components/modals/edit-scheduled-match-modal";
 import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/schema";
@@ -398,23 +398,6 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
     },
     onError: (error: any) => {
       const msg = error.message?.split(": ").slice(1).join(": ") || "No se pudo revertir el partido";
-      toast({ title: "Error", description: msg, variant: "destructive" });
-    },
-  });
-
-  const startMatchMutation = useMutation({
-    mutationFn: async (matchId: string) => {
-      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/start`, {});
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
-      toast({ title: "Partido iniciado", description: "El partido pasó a En Curso." });
-    },
-    onError: (error: any) => {
-      const msg = error.message?.split(": ").slice(1).join(": ") || "No se pudo iniciar el partido";
       toast({ title: "Error", description: msg, variant: "destructive" });
     },
   });
@@ -1122,23 +1105,6 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
                       }
                       return null;
                     })()}
-                  </div>
-                )}
-
-                {/* Start Match — admin/scorekeeper, for assigned matches with court but not started */}
-                {match.status === 'assigned' && !match.preAssignedAt && (userRole === 'admin' || userRole === 'scorekeeper') && (
-                  <div className="border-t pt-4">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
-                      disabled={startMatchMutation.isPending}
-                      onClick={() => startMatchMutation.mutate(match.id)}
-                      data-testid={`button-start-match-${match.id}`}
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      {startMatchMutation.isPending ? "Iniciando..." : "Iniciar Partido"}
-                    </Button>
                   </div>
                 )}
 
