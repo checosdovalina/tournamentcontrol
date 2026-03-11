@@ -1,0 +1,61 @@
+oot@srv735734:/var/www/courtflow# pm2 logs courtflow --lines 20
+[TAILING] Tailing last 20 lines for [courtflow] process (change the value with --lines option)
+/var/log/courtflow-error-15.log last 20 lines:
+4|courtflo |     at ServerResponse.header (/var/www/courtflow/node_modules/express/lib/response.js:794:10)
+4|courtflo |     at requireRecordApiKey (file:///var/www/courtflow/dist/index.js:4472:11)
+4|courtflo |     at Layer.handle [as handle_request] (/var/www/courtflow/node_modules/express/lib/router/layer.js:95:5)
+4|courtflo |     at next (/var/www/courtflow/node_modules/express/lib/router/route.js:149:13)
+4|courtflo |     at Route.dispatch (/var/www/courtflow/node_modules/express/lib/router/route.js:119:3)
+4|courtflo |     at Layer.handle [as handle_request] (/var/www/courtflow/node_modules/express/lib/router/layer.js:95:5)
+4|courtflo |     at /var/www/courtflow/node_modules/express/lib/router/index.js:284:15
+4|courtflo |     at Function.process_params (/var/www/courtflow/node_modules/express/lib/router/index.js:346:12)
+4|courtflo |     at next (/var/www/courtflow/node_modules/express/lib/router/index.js:280:10)
+4|courtflo | TypeError [ERR_INVALID_CHAR]: Invalid character in header content ["X-Auth-Warning"]
+4|courtflo |     at ServerResponse.setHeader (node:_http_outgoing:703:3)
+4|courtflo |     at ServerResponse.header (/var/www/courtflow/node_modules/express/lib/response.js:794:10)
+4|courtflo |     at requireRecordApiKey (file:///var/www/courtflow/dist/index.js:4472:11)
+4|courtflo |     at Layer.handle [as handle_request] (/var/www/courtflow/node_modules/express/lib/router/layer.js:95:5)
+4|courtflo |     at next (/var/www/courtflow/node_modules/express/lib/router/route.js:149:13)
+4|courtflo |     at Route.dispatch (/var/www/courtflow/node_modules/express/lib/router/route.js:119:3)
+4|courtflo |     at Layer.handle [as handle_request] (/var/www/courtflow/node_modules/express/lib/router/layer.js:95:5)
+4|courtflo |     at /var/www/courtflow/node_modules/express/lib/router/index.js:284:15
+4|courtflo |     at Function.process_params (/var/www/courtflow/node_modules/express/lib/router/index.js:346:12)
+4|courtflo |     at next (/var/www/courtflow/node_modules/express/lib/router/index.js:280:10)
+
+/var/log/courtflow-out-15.log last 20 lines:
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 37c6b8af-95d4-4e4c-9eae-ff28cf5d9b46: CASE 3 - Both pairs present, no action needed
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 9a58eaca-a031-4257-aa6b-22608d75bb09 [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 21:15:41, overdue=true
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 9a58eaca-a031-4257-aa6b-22608d75bb09 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 9a58eaca-a031-4257-aa6b-22608d75bb09: CASE 4 - No pairs fully present, no action taken
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 7f929406-691e-4ea3-9941-c28426707f96 [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 21:15:41, overdue=true
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 7f929406-691e-4ea3-9941-c28426707f96 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 7f929406-691e-4ea3-9941-c28426707f96: CASE 4 - No pairs fully present, no action taken
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match d582c843-2f16-42bb-9144-524881abe02a [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 21:15:41, overdue=true
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match d582c843-2f16-42bb-9144-524881abe02a check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match d582c843-2f16-42bb-9144-524881abe02a: CASE 4 - No pairs fully present, no action taken
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match a053079d-6d73-4d65-b892-18e5253d8594 [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 21:15:41, overdue=true
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match a053079d-6d73-4d65-b892-18e5253d8594 check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match a053079d-6d73-4d65-b892-18e5253d8594: CASE 4 - No pairs fully present, no action taken
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 10a2da1c-465c-41ff-a464-d3613d6874ee [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 21:15:41, overdue=true
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 10a2da1c-465c-41ff-a464-d3613d6874ee check-ins: pair1=0/2 (confirmed=false), pair2=0/2 (confirmed=false)
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 10a2da1c-465c-41ff-a464-d3613d6874ee: CASE 4 - No pairs fully present, no action taken
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 16568f11-fcb5-4f7c-8720-cc4abb819472 [America/Mexico_City]: planned=10-03-2026, 20:30:00, timeout=10-03-2026, 20:45:00, now=10-03-2026, 21:15:41, overdue=true
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 16568f11-fcb5-4f7c-8720-cc4abb819472 check-ins: pair1=2/2 (confirmed=true), pair2=2/2 (confirmed=true)
+4|courtflo | 9:15:42 PM [express] [Timeout Processor] Match 16568f11-fcb5-4f7c-8720-cc4abb819472: CASE 3 - Both pairs present, no action needed
+4|courtflo | 9:15:44 PM [express] GET /api/matches/current/ae42a015-5dba-4e9f-acb7-03048231b4a1 200 in 24ms :: [{…
+
+4|courtflow  | 9:15:44 PM [express] GET /api/scheduled-matches/ready/ae42a015-5dba-4e9f-acb7-03048231b4a1 200 in 22…
+4|courtflow  | 9:15:46 PM [express] GET /api/results/recent/ae42a015-5dba-4e9f-acb7-03048231b4a1 200 in 7ms :: []
+4|courtflow  | 9:15:47 PM [express] GET /api/matches/current/ae42a015-5dba-4e9f-acb7-03048231b4a1 200 in 16ms :: [{…
+4|courtflow  | 9:15:47 PM [express] GET /api/courts 200 in 4ms :: [{"id":"7bf778fd-7e4f-40dd-81d0-095520aeafc9","na…
+4|courtflow  | 9:15:47 PM [express] GET /api/matches/current/ae42a015-5dba-4e9f-acb7-03048231b4a1 304 in 17ms :: [{…
+4|courtflow  | 9:15:48 PM [express] GET /api/scheduled-matches/ready-queue/ae42a015-5dba-4e9f-acb7-03048231b4a1 200…
+4|courtflow  | 9:15:48 PM [express] GET /api/matches/current/ae42a015-5dba-4e9f-acb7-03048231b4a1 304 in 21ms :: [{…
+4|courtflow  | 9:15:48 PM [express] GET /api/scheduled-matches/ready-queue/ae42a015-5dba-4e9f-acb7-03048231b4a1 200…
+4|courtflow  | 9:15:48 PM [express] GET /api/results/recent/ae42a015-5dba-4e9f-acb7-03048231b4a1 304 in 4ms :: []
+4|courtflow  | 9:15:49 PM [express] GET /api/matches/current/ae42a015-5dba-4e9f-acb7-03048231b4a1 304 in 20ms :: [{…
+4|courtflow  | 9:15:50 PM [express] GET /api/matches/current/ae42a015-5dba-4e9f-acb7-03048231b4a1 304 in 15ms :: [{…
+4|courtflow  | 9:15:50 PM [express] GET /api/courts 200 in 7ms :: [{"id":"7bf778fd-7e4f-40dd-81d0-095520aeafc9","na…
+4|courtflow  | 9:15:50 PM [express] GET /api/courts 304 in 8ms :: [{"id":"7bf778fd-7e4f-40dd-81d0-095520aeafc9","na…
+4|courtflow  | 9:15:51 PM [express] GET /api/scheduled-matches/ready/ae42a015-5dba-4e9f-acb7-03048231b4a1 200 in 19…
+4
