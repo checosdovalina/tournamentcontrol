@@ -3119,7 +3119,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       const pair2CheckIns = checkInRecords.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
       const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
       
-      if ((match.status === "ready" || match.status === "assigned") && match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt) {
+      if ((match.status === "ready" || match.status === "assigned") && match.courtId && allPlayersConfirmed && !match.preAssignedAt) {
         // Create playing match
         const playingMatch = await storage.createMatch({
           tournamentId: match.tournamentId,
@@ -3333,7 +3333,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         const wasReadyStatus = currentMatch.status === 'ready';
         const allPlayersConfirmed = allPlayersConfirmedByRecords || allPlayersConfirmedByPair || wasReadyStatus;
         
-        if (match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt) {
+        if (match.courtId && allPlayersConfirmed && !match.preAssignedAt) {
           // Create playing match
           const playingMatch = await storage.createMatch({
             tournamentId: match.tournamentId,

@@ -13,7 +13,7 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
   const autoStartAssignedMatches = async () => {
     try {
       const allMatches = await storage.getAllScheduledMatches();
-      const assignedMatches = allMatches.filter(m => m.status === 'assigned' && !m.preAssignedAt && m.courtId && m.categoryId);
+      const assignedMatches = allMatches.filter(m => m.status === 'assigned' && !m.preAssignedAt && m.courtId);
       
       for (const match of assignedMatches) {
         // Check via pair.isPresent
