@@ -433,11 +433,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       // Include user's role in this tournament if authenticated
       let userRole = null;
       if (req.session.userId) {
-        const tournamentUser = await storage.getTournamentUserByUserAndTournament(
-          req.session.userId,
-          tournament.id
-        );
-        userRole = tournamentUser?.role || null;
+        if (req.session.userRole === 'superadmin') {
+          userRole = 'superadmin';
+        } else {
+          const tournamentUser = await storage.getTournamentUserByUserAndTournament(
+            req.session.userId,
+            tournament.id
+          );
+          userRole = tournamentUser?.role || null;
+        }
       }
       
       res.json({ ...tournament, userRole });

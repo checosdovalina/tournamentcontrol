@@ -532,7 +532,7 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
           </Button>
         </div>
 
-        {userRole === 'admin' && (
+        {(userRole === 'admin' || userRole === 'superadmin') && (
           <div className="flex gap-2 w-full sm:w-auto">
             <Button 
               onClick={() => setScheduleModalOpen(true)} 
