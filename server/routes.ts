@@ -3364,6 +3364,53 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
+  // Revert a scheduled match back to "ready" (from "assigned" or "playing")
+  app.post("/api/scheduled-matches/:id/revert-to-ready", requireTournamentRole('admin'), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const scheduledMatch = await storage.getScheduledMatch(id);
+
+      if (!scheduledMatch) {
+        return res.status(404).json({ message: "Scheduled match not found" });
+      }
+
+      if (scheduledMatch.status !== "assigned" && scheduledMatch.status !== "playing") {
+        return res.status(400).json({ message: "Only matches in 'assigned' or 'playing' status can be reverted" });
+      }
+
+      const courtId = scheduledMatch.courtId;
+      const matchId = scheduledMatch.matchId;
+
+      // If playing, delete the active match record
+      if (scheduledMatch.status === "playing" && matchId) {
+        await storage.deleteMatch(matchId);
+      }
+
+      // Release the court
+      let releasedCourt;
+      if (courtId) {
+        releasedCourt = await storage.updateCourt(courtId, { isAvailable: true });
+      }
+
+      // Revert scheduled match to ready
+      const reverted = await storage.updateScheduledMatch(id, {
+        status: "ready",
+        courtId: null,
+        matchId: null,
+        preAssignedAt: null,
+      });
+
+      if (releasedCourt) {
+        broadcastUpdate({ type: "court_updated", data: releasedCourt });
+      }
+      broadcastUpdate({ type: "match_reverted_to_ready", data: reverted });
+
+      res.json(reverted);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to revert match to ready", error: error.message });
+    }
+  });
+
   // Get players for a scheduled match (for check-in UI)
   app.get("/api/scheduled-matches/:id/players", requireAuth, async (req, res) => {
     try {

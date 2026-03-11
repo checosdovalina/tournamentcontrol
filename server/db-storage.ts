@@ -532,6 +532,11 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async deleteMatch(id: string): Promise<boolean> {
+    const result = await db.delete(matches).where(eq(matches.id, id)).returning();
+    return result.length > 0;
+  }
+
   // Results
   async getResult(id: string): Promise<Result | undefined> {
     const result = await db.select().from(results).where(eq(results.id, id)).limit(1);

@@ -385,6 +385,23 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
   });
 
 
+  const revertToReadyMutation = useMutation({
+    mutationFn: async (matchId: string) => {
+      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/revert-to-ready`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/scheduled-matches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/courts"] });
+      toast({ title: "Partido regresado a Listo", description: "La cancha fue liberada y el partido volvió a la cola de listos." });
+    },
+    onError: (error: any) => {
+      const msg = error.message?.split(": ").slice(1).join(": ") || "No se pudo revertir el partido";
+      toast({ title: "Error", description: msg, variant: "destructive" });
+    },
+  });
+
   const deleteMatchMutation = useMutation({
     mutationFn: async (matchId: string) => {
       const response = await apiRequest("DELETE", `/api/scheduled-matches/${matchId}`, {});
@@ -1088,6 +1105,46 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
                       }
                       return null;
                     })()}
+                  </div>
+                )}
+
+                {/* Revert to Ready — admin only, for assigned or playing matches */}
+                {(match.status === 'assigned' || match.status === 'playing') && userRole === 'admin' && (
+                  <div className="border-t pt-4">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full border-orange-400 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950"
+                          disabled={revertToReadyMutation.isPending}
+                          data-testid={`button-revert-ready-${match.id}`}
+                        >
+                          <Repeat className="w-4 h-4 mr-2" />
+                          {revertToReadyMutation.isPending ? "Revirtiendo..." : "Regresar a Listos"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Regresar partido a la cola de listos?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {match.status === 'playing'
+                              ? "Esto cancelará el partido en curso, liberará la cancha y regresará el partido al estado \"Listo\" para poder asignarle otra cancha."
+                              : "Esto liberará la cancha asignada y regresará el partido al estado \"Listo\"."}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel data-testid={`button-cancel-revert-${match.id}`}>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => revertToReadyMutation.mutate(match.id)}
+                            className="bg-orange-500 hover:bg-orange-600 text-white"
+                            data-testid={`button-confirm-revert-${match.id}`}
+                          >
+                            Confirmar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 )}
               </CardContent>

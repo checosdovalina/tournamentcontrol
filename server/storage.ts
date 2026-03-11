@@ -127,6 +127,7 @@ export interface IStorage {
   getCurrentMatches(tournamentId: string): Promise<MatchWithDetails[]>;
   createMatch(match: InsertMatch): Promise<Match>;
   updateMatch(id: string, updates: Partial<Match>): Promise<Match | undefined>;
+  deleteMatch(id: string): Promise<boolean>;
   
   // Results
   getResult(id: string): Promise<Result | undefined>;
