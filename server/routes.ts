@@ -2920,6 +2920,10 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         return res.status(400).json({ message: "Player ID is required" });
       }
       
+      // Save court info before checkout in case we need to release it
+      const matchBeforeCheckout = await storage.getScheduledMatch(id);
+      const courtIdToMaybeRelease = matchBeforeCheckout?.status === 'assigned' ? matchBeforeCheckout.courtId : null;
+
       const player = await storage.checkOutPlayer(id, playerId);
       
       if (!player) {
@@ -2927,18 +2931,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       }
       
       let match = await storage.getScheduledMatch(id);
-      
-      // Check if we need to revert status from 'ready' to 'scheduled' if no complete pair
-      if (match && match.status === 'ready') {
-        const checkInRecords = await storage.getScheduledMatchPlayers(id);
-        const pair1CheckIns = checkInRecords.filter(p => p.pairId === match!.pair1Id && p.isPresent).length;
-        const pair2CheckIns = checkInRecords.filter(p => p.pairId === match!.pair2Id && p.isPresent).length;
-        
-        const pair1Complete = pair1CheckIns === 2;
-        const pair2Complete = pair2CheckIns === 2;
-        
-        if (!pair1Complete && !pair2Complete) {
-          match = await storage.updateScheduledMatch(id, { status: 'scheduled' });
+
+      // If match was 'assigned' (court reserved), check if we should release the court
+      if (match && match.status !== 'playing' && courtIdToMaybeRelease && match.courtId) {
+        const pair1 = await storage.getPair(match.pair1Id);
+        const pair2 = await storage.getPair(match.pair2Id);
+        if (!pair1?.isPresent && !pair2?.isPresent) {
+          const releasedCourt = await storage.updateCourt(courtIdToMaybeRelease, { isAvailable: true });
+          match = await storage.updateScheduledMatch(id, { status: 'scheduled', courtId: null });
+          if (releasedCourt) broadcastUpdate({ type: "court_updated", data: releasedCourt });
         }
       }
       
@@ -2961,13 +2962,29 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         return res.status(400).json({ message: "Player ID is required" });
       }
       
+      // Save court info before reset in case we need to release it
+      const matchBeforeReset = await storage.getScheduledMatch(id);
+      const courtIdToRelease = matchBeforeReset?.status === 'assigned' ? matchBeforeReset.courtId : null;
+
       const player = await storage.resetPlayerStatus(id, playerId);
       
       if (!player) {
         return res.status(404).json({ message: "Scheduled match or player not found" });
       }
       
-      const match = await storage.getScheduledMatch(id);
+      let match = await storage.getScheduledMatch(id);
+
+      // If match was 'assigned' (court reserved), check if we should release the court
+      if (match && match.status !== 'playing' && courtIdToRelease && match.courtId) {
+        const pair1 = await storage.getPair(match.pair1Id);
+        const pair2 = await storage.getPair(match.pair2Id);
+        if (!pair1?.isPresent && !pair2?.isPresent) {
+          const releasedCourt = await storage.updateCourt(courtIdToRelease, { isAvailable: true });
+          match = await storage.updateScheduledMatch(id, { status: 'scheduled', courtId: null });
+          if (releasedCourt) broadcastUpdate({ type: "court_updated", data: releasedCourt });
+        }
+      }
+
       res.json({ player, match });
       broadcastUpdate({ type: "player_status_reset", data: { scheduledMatchId: id, playerId, match } });
       // Trigger waiting list update
@@ -3302,14 +3319,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         
         broadcastUpdate({ type: "court_manually_assigned", data: match });
         
-        // Auto-start match if all players are confirmed (check again)
-        // Need to verify all 4 players are present since we might have assigned before all confirmed
-        const checkInRecords = await storage.getScheduledMatchPlayers(id);
-        const pair1CheckIns = checkInRecords.filter(p => p.pairId === match.pair1Id && p.isPresent).length;
-        const pair2CheckIns = checkInRecords.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
-        const allPlayersConfirmed = pair1CheckIns === 2 && pair2CheckIns === 2;
+        // Auto-start match if all players are confirmed
+        // Use pair.isPresent as the authoritative source (set by checkInPlayer when both players of a pair confirm)
+        const pair1ForAutoStart = await storage.getPair(match.pair1Id);
+        const pair2ForAutoStart = await storage.getPair(match.pair2Id);
+        const allPlayersConfirmed = pair1ForAutoStart?.isPresent === true && pair2ForAutoStart?.isPresent === true;
         
-        if ((match.status === "ready" || match.status === "assigned") && match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt) {
+        if (match.courtId && match.categoryId && allPlayersConfirmed && !match.preAssignedAt) {
           // Create playing match
           const playingMatch = await storage.createMatch({
             tournamentId: match.tournamentId,

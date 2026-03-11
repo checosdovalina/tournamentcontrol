@@ -139,23 +139,17 @@ export default function EditScheduledMatchModal({
     return `${pair.player1?.name || "?"} / ${pair.player2?.name || "?"}`;
   };
 
-  // Filter pairs by selected category
-  const selectedCategoryId = form.watch("categoryId");
-  const filteredPairs = pairs?.filter(pair => {
-    if (!selectedCategoryId) return true;
-    return pair.categoryId === selectedCategoryId;
-  }) || [];
+  // Show all pairs for the tournament — no category filtering to avoid empty select issues
+  const allPairs = pairs || [];
 
-  // Reset pair selections when category changes manually
+  // Reset pair selections when category changes
   const handleCategoryChange = (value: string) => {
     const currentCategoryId = form.getValues("categoryId");
-    form.setValue("categoryId", value);
-    
-    // Only reset pairs if the category is actually changing (not initial load)
     if (currentCategoryId && currentCategoryId !== value) {
       form.setValue("pair1Id", "");
       form.setValue("pair2Id", "");
     }
+    form.setValue("categoryId", value, { shouldValidate: true });
   };
 
   return (
@@ -267,12 +261,10 @@ export default function EditScheduledMatchModal({
                     <SelectContent>
                       {pairsLoading ? (
                         <div className="p-2 text-sm text-muted-foreground">Cargando...</div>
-                      ) : filteredPairs.length === 0 ? (
-                        <div className="p-2 text-sm text-muted-foreground">
-                          {selectedCategoryId ? "No hay parejas en esta categoría" : "No hay parejas disponibles"}
-                        </div>
+                      ) : allPairs.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground">No hay parejas disponibles</div>
                       ) : (
-                        filteredPairs.map((pair) => (
+                        allPairs.map((pair) => (
                           <SelectItem 
                             key={pair.id} 
                             value={pair.id}
@@ -310,12 +302,10 @@ export default function EditScheduledMatchModal({
                     <SelectContent>
                       {pairsLoading ? (
                         <div className="p-2 text-sm text-muted-foreground">Cargando...</div>
-                      ) : filteredPairs.length === 0 ? (
-                        <div className="p-2 text-sm text-muted-foreground">
-                          {selectedCategoryId ? "No hay parejas en esta categoría" : "No hay parejas disponibles"}
-                        </div>
+                      ) : allPairs.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground">No hay parejas disponibles</div>
                       ) : (
-                        filteredPairs.map((pair) => (
+                        allPairs.map((pair) => (
                           <SelectItem 
                             key={pair.id} 
                             value={pair.id}
