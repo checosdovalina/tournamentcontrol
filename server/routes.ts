@@ -3745,7 +3745,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
 
           // Extract category: "SECCIONAL-NORESTE-2026 1VAR GRUPO UNICO #3" → "1VAR GRUPO UNICO"
           const catMatch = torCatNum.match(/^.*?-\d{4}\s+(.+?)\s+#\d+$/);
-          const categoryName = catMatch ? catMatch[1] : "";
+          const categoryName = catMatch ? catMatch[1].trim() : "";
+          if (!categoryName) { errors.push(`Fila ${i + 1}: Categoría no encontrada en "${torCatNum}"`); skippedCount++; continue; }
 
           // Parse date: "vie 13/03/26 21:45"
           const dtMatch = fechaStr.match(/\S+\s+(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}:\d{2})/);
@@ -3755,10 +3756,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
           const matchDate = new Date(`20${year2d}-${month}-${day}`);
           if (isNaN(matchDate.getTime())) { errors.push(`Fila ${i + 1}: Fecha inválida`); skippedCount++; continue; }
 
-          // Split players
+          // Split players — both pairs must have exactly 2 players separated by " y "
           const pair1Players = equipo1.split(" y ");
           const pair2Players = equipo2.split(" y ");
-          if (pair1Players.length < 2 || pair2Players.length < 2) { errors.push(`Fila ${i + 1}: Formato de equipos inválido`); skippedCount++; continue; }
+          if (pair1Players.length < 2 || !pair1Players[0].trim() || !pair1Players[1].trim()) { errors.push(`Fila ${i + 1}: Pareja 1 incompleta "${equipo1}"`); skippedCount++; continue; }
+          if (pair2Players.length < 2 || !pair2Players[0].trim() || !pair2Players[1].trim()) { errors.push(`Fila ${i + 1}: Pareja 2 incompleta "${equipo2}"`); skippedCount++; continue; }
 
           // Find or create category
           let categoryId: string | null = null;
