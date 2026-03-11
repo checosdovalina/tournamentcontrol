@@ -5,12 +5,64 @@ import { combineDateTimeInTimezone, formatInTimezone } from "./timezone-utils";
 
 export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data: any) => void) {
   // Run check every minute
-  const INTERVAL_MS = 60 * 1000; // 60 seconds
+  const INTERVAL_MS = 60 * 1000; // 60 seconds (timeout checks)
+  const AUTO_START_INTERVAL_MS = 10 * 1000; // 10 seconds (auto-start assigned matches)
   const TOLERANCE_MINUTES = 15;
+
+  // Auto-start any "assigned" matches (court assigned, not pre-assigned) where all players confirmed
+  const autoStartAssignedMatches = async () => {
+    try {
+      const allMatches = await storage.getAllScheduledMatches();
+      const assignedMatches = allMatches.filter(m => m.status === 'assigned' && !m.preAssignedAt && m.courtId && m.categoryId);
+      
+      for (const match of assignedMatches) {
+        // Check via pair.isPresent
+        const pair1 = await storage.getPair(match.pair1Id);
+        const pair2 = await storage.getPair(match.pair2Id);
+        const confirmedByPair = pair1?.isPresent === true && pair2?.isPresent === true;
+        
+        // Check via match_players records
+        const checkInRecords = await storage.getScheduledMatchPlayers(match.id);
+        const pair1CheckIns = checkInRecords.filter(p => p.pairId === match.pair1Id && p.isPresent).length;
+        const pair2CheckIns = checkInRecords.filter(p => p.pairId === match.pair2Id && p.isPresent).length;
+        const confirmedByRecords = pair1CheckIns === 2 && pair2CheckIns === 2;
+        
+        if (!confirmedByPair && !confirmedByRecords) continue;
+        
+        log(`[Timeout Processor] Auto-starting assigned match ${match.id} - all players confirmed`);
+        
+        const playingMatch = await storage.createMatch({
+          tournamentId: match.tournamentId,
+          courtId: match.courtId!,
+          pair1Id: match.pair1Id,
+          pair2Id: match.pair2Id,
+          categoryId: match.categoryId,
+          format: match.format,
+          accessToken: randomUUID(),
+          status: 'playing',
+        });
+        
+        await storage.updateScheduledMatch(match.id, { status: 'playing', matchId: playingMatch.id });
+        const updatedCourt = await storage.updateCourt(match.courtId!, { isAvailable: false });
+        await storage.updatePair(match.pair1Id, { isWaiting: false });
+        await storage.updatePair(match.pair2Id, { isWaiting: false });
+        
+        broadcastUpdate({ type: 'match_started', data: playingMatch });
+        if (updatedCourt) broadcastUpdate({ type: 'court_updated', data: updatedCourt });
+        
+        log(`[Timeout Processor] Match ${match.id} auto-started successfully`);
+      }
+    } catch (error: any) {
+      log(`[Timeout Processor] Error in autoStartAssignedMatches: ${error.message}`);
+    }
+  };
 
   const processTimeouts = async () => {
     log('[Timeout Processor] Running timeout check...');
     try {
+      // First: auto-start any stuck "assigned" matches with all players confirmed
+      await autoStartAssignedMatches();
+
       const now = new Date();
       
       // Get all scheduled matches that might be overdue
@@ -243,12 +295,21 @@ export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data:
     log(`[Timeout Processor] Match ${match.id} completed by default successfully`);
   };
 
-  // Start the interval
+  // Start timeout check interval (every 60s)
   log('[Timeout Processor] Starting timeout processor (runs every 60s)');
   const intervalId = setInterval(processTimeouts, INTERVAL_MS);
   
-  // Run immediately on startup
-  processTimeouts();
+  // Start auto-start interval separately (every 10s) — lightweight, only checks assigned matches
+  log('[Timeout Processor] Starting auto-start processor (runs every 10s)');
+  const autoStartIntervalId = setInterval(autoStartAssignedMatches, AUTO_START_INTERVAL_MS);
   
-  return intervalId;
+  // Run both immediately on startup
+  processTimeouts();
+  autoStartAssignedMatches();
+  
+  // Return cleanup function
+  return () => {
+    clearInterval(intervalId);
+    clearInterval(autoStartIntervalId);
+  };
 }
