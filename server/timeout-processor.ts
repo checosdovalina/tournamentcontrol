@@ -6,7 +6,7 @@ import { combineDateTimeInTimezone, formatInTimezone } from "./timezone-utils";
 export function startTimeoutProcessor(storage: IStorage, broadcastUpdate: (data: any) => void) {
   // Run check every minute
   const INTERVAL_MS = 60 * 1000; // 60 seconds (timeout checks)
-  const AUTO_START_INTERVAL_MS = 10 * 1000; // 10 seconds (auto-start assigned matches)
+  const AUTO_START_INTERVAL_MS = 3 * 1000; // 3 seconds (auto-start assigned matches)
   const TOLERANCE_MINUTES = 15;
 
   // Auto-start any "assigned" matches (court assigned, not pre-assigned) where all players confirmed
