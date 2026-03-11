@@ -4075,14 +4075,14 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
   // If the variable is not set, endpoints are open (development only).
 
   const requireRecordApiKey = (req: any, res: any, next: any) => {
-    const apiKey = process.env.RECORD_API_KEY;
+    const apiKey = process.env.RECORD_API_KEY?.trim();
     if (!apiKey) {
-      res.set("X-Auth-Warning", "RECORD_API_KEY not configured - endpoint is open");
       return next();
     }
-    const provided =
-      req.headers["x-api-key"] ||
-      (req.headers["authorization"] || "").replace(/^Bearer\s+/i, "");
+    const provided = (
+      (req.headers["x-api-key"] as string) ||
+      (req.headers["authorization"] || "").replace(/^Bearer\s+/i, "")
+    ).trim();
     if (provided !== apiKey) {
       return res.status(401).json({ error: "Unauthorized" });
     }
