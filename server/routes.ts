@@ -3681,6 +3681,126 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
     }
   });
 
+  // FEMEPA Direct Import - converts and imports FEMEPA Excel in one step
+  app.post("/api/admin/tournaments/:tournamentId/import-femepa", requireAdmin, upload.single('file'), async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      if (!req.file) return res.status(400).json({ message: "No se subió ningún archivo" });
+
+      const tournament = await storage.getTournament(tournamentId);
+      if (!tournament) return res.status(404).json({ message: "Torneo no encontrado" });
+
+      // Parse the FEMEPA Excel
+      const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+
+      const allPlayers = await storage.getPlayers();
+      const playersByName = new Map(allPlayers.map(p => [p.name.toLowerCase().trim(), p]));
+      const allPairs = await storage.getPairsByTournament(tournamentId);
+      const categories = await storage.getCategoriesByTournament(tournamentId);
+      const categoryMap = new Map(categories.map(c => [c.name.toLowerCase().trim(), c.id]));
+
+      let createdCount = 0, skippedCount = 0;
+      const errors: string[] = [];
+
+      const getOrCreatePlayer = async (name: string) => {
+        const key = name.toLowerCase().trim();
+        let player = playersByName.get(key);
+        if (!player) {
+          player = await storage.createPlayer({ name: name.trim(), clubId: tournament.clubId });
+          playersByName.set(key, player);
+        }
+        return player;
+      };
+
+      const getOrCreatePair = async (p1Id: string, p2Id: string, catId: string | null) => {
+        let pair = allPairs.find(p =>
+          (p.player1Id === p1Id && p.player2Id === p2Id) ||
+          (p.player1Id === p2Id && p.player2Id === p1Id)
+        );
+        if (!pair) {
+          pair = await storage.createPair({ player1Id: p1Id, player2Id: p2Id, tournamentId, categoryId: catId || undefined }) as any;
+          allPairs.push(pair as any);
+        }
+        return pair;
+      };
+
+      // Row 0 = title, Row 1 = headers, data starts at Row 2
+      for (let i = 2; i < data.length; i++) {
+        const row = data[i];
+        if (!row || row.length < 6) { skippedCount++; continue; }
+
+        try {
+          const torCatNum = (row[0] || "").toString().trim();
+          const fechaStr = (row[2] || "").toString().trim();
+          const equipo1 = (row[4] || "").toString().trim();
+          const equipo2 = (row[5] || "").toString().trim();
+
+          if (!torCatNum || !fechaStr || !equipo1 || !equipo2) { skippedCount++; continue; }
+
+          // Extract category: "SECCIONAL-NORESTE-2026 1VAR GRUPO UNICO #3" → "1VAR GRUPO UNICO"
+          const catMatch = torCatNum.match(/^.*?-\d{4}\s+(.+?)\s+#\d+$/);
+          const categoryName = catMatch ? catMatch[1] : "";
+
+          // Parse date: "vie 13/03/26 21:45"
+          const dtMatch = fechaStr.match(/\S+\s+(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}:\d{2})/);
+          if (!dtMatch) { errors.push(`Fila ${i + 1}: Fecha inválida "${fechaStr}"`); skippedCount++; continue; }
+
+          const [, day, month, year2d, time] = dtMatch;
+          const matchDate = new Date(`20${year2d}-${month}-${day}`);
+          if (isNaN(matchDate.getTime())) { errors.push(`Fila ${i + 1}: Fecha inválida`); skippedCount++; continue; }
+
+          // Split players
+          const pair1Players = equipo1.split(" y ");
+          const pair2Players = equipo2.split(" y ");
+          if (pair1Players.length < 2 || pair2Players.length < 2) { errors.push(`Fila ${i + 1}: Formato de equipos inválido`); skippedCount++; continue; }
+
+          // Find or create category
+          let categoryId: string | null = null;
+          if (categoryName) {
+            categoryId = categoryMap.get(categoryName.toLowerCase().trim()) || null;
+            if (!categoryId) {
+              const newCat = await storage.createCategory({ tournamentId, name: categoryName });
+              categoryId = newCat.id;
+              categoryMap.set(categoryName.toLowerCase().trim(), categoryId);
+            }
+          }
+
+          const p1_1 = await getOrCreatePlayer(pair1Players[0]);
+          const p1_2 = await getOrCreatePlayer(pair1Players[1]);
+          const p2_1 = await getOrCreatePlayer(pair2Players[0]);
+          const p2_2 = await getOrCreatePlayer(pair2Players[1]);
+
+          const pair1 = await getOrCreatePair(p1_1.id, p1_2.id, categoryId);
+          const pair2 = await getOrCreatePair(p2_1.id, p2_2.id, categoryId);
+
+          await storage.createScheduledMatch({
+            tournamentId, day: matchDate, plannedTime: time || null,
+            pair1Id: pair1!.id, pair2Id: pair2!.id, categoryId: categoryId || undefined,
+            format: null, status: "scheduled", courtId: null, matchId: null,
+            outcome: "normal", outcomeReason: null, defaultWinnerPairId: null,
+            pendingDqf: false, preAssignedAt: null, notes: null,
+          });
+          createdCount++;
+        } catch (err: any) {
+          errors.push(`Fila ${i + 1}: ${err.message}`);
+          skippedCount++;
+        }
+      }
+
+      broadcastUpdate({ type: "scheduled_matches_imported", data: { tournamentId } });
+      res.json({
+        success: true,
+        message: `FEMEPA importado: ${createdCount} partidos creados, ${skippedCount} filas omitidas`,
+        stats: { created: createdCount, skipped: skippedCount, errors: errors.length > 0 ? errors : undefined }
+      });
+    } catch (error: any) {
+      console.error('Error importing FEMEPA:', error);
+      res.status(500).json({ message: "Error al importar archivo FEMEPA", error: error.message || "Error desconocido" });
+    }
+  });
+
   // Excel Import for Scheduled Matches (Admin only)
   app.post("/api/admin/tournaments/:tournamentId/import-excel-schedule", requireAdmin, upload.single('file'), async (req, res) => {
     try {

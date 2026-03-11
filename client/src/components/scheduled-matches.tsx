@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
@@ -33,7 +33,31 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
   const [timeFilter, setTimeFilter] = useState<string>("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [importingFemepa, setImportingFemepa] = useState(false);
+  const femepInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const handleFemepImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !tournamentId) return;
+    setImportingFemepa(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch(`/api/admin/tournaments/${tournamentId}/import-femepa`, {
+        method: 'POST', body: formData, credentials: 'include',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al importar');
+      toast({ title: "FEMEPA importado", description: data.message });
+      queryClient.invalidateQueries({ queryKey: ['/api/scheduled-matches', tournamentId] });
+    } catch (err: any) {
+      toast({ title: "Error al importar FEMEPA", description: err.message, variant: "destructive" });
+    } finally {
+      setImportingFemepa(false);
+      if (femepInputRef.current) femepInputRef.current.value = '';
+    }
+  };
 
   // Query for all scheduled matches in the tournament
   const { data: allTournamentMatches = [], isLoading } = useQuery<ScheduledMatchWithDetails[]>({
@@ -533,6 +557,25 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
                 <span className="sm:hidden">Importar</span>
               </Button>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={importingFemepa || !tournamentId}
+              onClick={() => femepInputRef.current?.click()}
+              data-testid="button-import-femepa"
+              className="flex-1 sm:flex-none"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {importingFemepa ? "Importando..." : "FEMEPA"}
+            </Button>
+            <input
+              ref={femepInputRef}
+              type="file"
+              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              onChange={handleFemepImport}
+              className="hidden"
+              data-testid="input-femepa-file"
+            />
           </div>
         )}
       </div>
