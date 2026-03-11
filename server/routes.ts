@@ -26,6 +26,7 @@ import { z } from "zod";
 import multer from "multer";
 import * as XLSX from "xlsx";
 import { convertPDFToExcel } from "./pdf-converter";
+import { convertFemepaxToCourtFlow } from "./femepa-converter";
 
 // Ensure required upload directories exist
 ["public/uploads/advertisements", "public/uploads/players"].forEach(dir => {
@@ -3615,6 +3616,22 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
 
   wss.on('close', () => {
     clearInterval(interval);
+  });
+
+  // FEMEPA Excel to CourtFlow converter (Admin and Superadmin)
+  app.post("/api/admin/convert-femepa-excel", requireAuth, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se subió ningún archivo" });
+      }
+      const excelBuffer = convertFemepaxToCourtFlow(req.file.buffer);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=partidos_courtflow.xlsx');
+      res.send(excelBuffer);
+    } catch (error: any) {
+      console.error('Error converting FEMEPA Excel:', error);
+      res.status(500).json({ message: "Error al convertir archivo FEMEPA", error: error.message || "Error desconocido" });
+    }
   });
 
   // PDF to Excel Converter endpoint (Admin and Superadmin)
