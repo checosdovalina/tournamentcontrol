@@ -3381,7 +3381,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
       const courtId = scheduledMatch.courtId;
       const matchId = scheduledMatch.matchId;
 
-      // If playing, delete the active match record
+      // First: clear matchId and courtId on scheduledMatch to avoid FK issues
+      await storage.updateScheduledMatch(id, {
+        status: "ready",
+        courtId: null,
+        matchId: null,
+        preAssignedAt: null,
+      });
+
+      // Then: delete the active match record (no FK reference remaining)
       if (scheduledMatch.status === "playing" && matchId) {
         await storage.deleteMatch(matchId);
       }
@@ -3392,13 +3400,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server, br
         releasedCourt = await storage.updateCourt(courtId, { isAvailable: true });
       }
 
-      // Revert scheduled match to ready
-      const reverted = await storage.updateScheduledMatch(id, {
-        status: "ready",
-        courtId: null,
-        matchId: null,
-        preAssignedAt: null,
-      });
+      // Re-fetch updated scheduled match for the response
+      const reverted = await storage.getScheduledMatch(id);
 
       if (releasedCourt) {
         broadcastUpdate({ type: "court_updated", data: releasedCourt });

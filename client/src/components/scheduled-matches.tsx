@@ -387,7 +387,7 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
 
   const revertToReadyMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/revert-to-ready`, {});
+      const response = await apiRequest("POST", `/api/scheduled-matches/${matchId}/revert-to-ready`, { tournamentId });
       return response.json();
     },
     onSuccess: () => {
