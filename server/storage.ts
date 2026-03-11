@@ -582,6 +582,10 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
+  async deleteMatch(id: string): Promise<boolean> {
+    return this.matches.delete(id);
+  }
+
   // Results
   async getResult(id: string): Promise<Result | undefined> {
     return this.results.get(id);
