@@ -174,7 +174,11 @@ export default function DisplayRotative() {
         const [endHour, endMin] = (ad.endTime || '23:59').split(':').map(Number);
         const startMinutes = startHour * 60 + startMin;
         const endMinutes = endHour * 60 + endMin;
-        if (currentMinutes < startMinutes || currentMinutes > endMinutes) return false;
+        if (endMinutes < startMinutes) {
+          if (currentMinutes < startMinutes && currentMinutes > endMinutes) return false;
+        } else {
+          if (currentMinutes < startMinutes || currentMinutes > endMinutes) return false;
+        }
       }
       return true;
     }).sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());

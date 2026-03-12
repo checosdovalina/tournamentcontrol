@@ -120,8 +120,10 @@ export default function DisplayStream() {
         const startMinutes = startHour * 60 + startMin;
         const endMinutes = endHour * 60 + endMin;
 
-        if (currentMinutes < startMinutes || currentMinutes > endMinutes) {
-          return false;
+        if (endMinutes < startMinutes) {
+          if (currentMinutes < startMinutes && currentMinutes > endMinutes) return false;
+        } else {
+          if (currentMinutes < startMinutes || currentMinutes > endMinutes) return false;
         }
       }
 

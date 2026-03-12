@@ -222,15 +222,22 @@ export default function Display() {
         return false;
       }
 
-      // Check time filter
+      // Check time filter (supports midnight-spanning ranges, e.g. 22:00 - 02:00)
       if (ad.startTime || ad.endTime) {
         const [startHour, startMin] = (ad.startTime || '00:00').split(':').map(Number);
         const [endHour, endMin] = (ad.endTime || '23:59').split(':').map(Number);
         const startMinutes = startHour * 60 + startMin;
         const endMinutes = endHour * 60 + endMin;
 
-        if (currentMinutes < startMinutes || currentMinutes > endMinutes) {
-          return false;
+        if (endMinutes < startMinutes) {
+          // Range spans midnight (e.g. 22:00 - 02:00)
+          if (currentMinutes < startMinutes && currentMinutes > endMinutes) {
+            return false;
+          }
+        } else {
+          if (currentMinutes < startMinutes || currentMinutes > endMinutes) {
+            return false;
+          }
         }
       }
 
