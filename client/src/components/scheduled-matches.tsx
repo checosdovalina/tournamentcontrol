@@ -142,15 +142,6 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
     return grouped;
   }, [allMatches]);
 
-  // Helper function to get time range from match
-  const getMatchTimeRange = (match: ScheduledMatchWithDetails) => {
-    if (!match.plannedTime) return "all";
-    const hour = parseInt(match.plannedTime.split(":")[0]);
-    if (hour < 12) return "morning"; // 00:00 - 11:59
-    if (hour < 18) return "afternoon"; // 12:00 - 17:59
-    return "evening"; // 18:00 - 23:59
-  };
-
   // Helper function to get match status
   const getMatchStatus = (match: ScheduledMatchWithDetails) => {
     // Map backend status values directly
@@ -180,7 +171,7 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
       const matchStatus = getMatchStatus(match);
       const statusMatch = statusFilter === "all" || matchStatus === statusFilter;
       
-      const timeMatch = timeFilter === "all" || getMatchTimeRange(match) === timeFilter;
+      const timeMatch = timeFilter === "all" || match.plannedTime === timeFilter;
       return categoryMatch && statusMatch && timeMatch;
     }) || [];
 
@@ -209,13 +200,14 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
   // Get available categories for the selected day (only categories with matches)
   const availableCategories = useMemo(() => {
     const categoryIds = new Set(dayMatches.map(m => m.categoryId).filter(Boolean));
-    return categories?.filter(cat => categoryIds.has(cat.id)) || [];
+    const filtered = categories?.filter(cat => categoryIds.has(cat.id)) || [];
+    return filtered.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
   }, [dayMatches, categories]);
 
-  // Get available time ranges for the selected day (only ranges with matches)
-  const availableTimeRanges = useMemo(() => {
-    const ranges = new Set(dayMatches.map(m => getMatchTimeRange(m)));
-    return Array.from(ranges).filter(r => r !== 'all');
+  // Get available specific time slots for the selected day (only times with matches)
+  const availableTimeSlots = useMemo(() => {
+    const times = new Set(dayMatches.map(m => m.plannedTime).filter(Boolean) as string[]);
+    return Array.from(times).sort();
   }, [dayMatches]);
 
   // Generate calendar days
@@ -737,21 +729,11 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
                     <SelectItem value="all" data-testid="option-time-all">
                       Todos
                     </SelectItem>
-                    {availableTimeRanges.includes('morning') && (
-                      <SelectItem value="morning" data-testid="option-time-morning">
-                        Mañana (00:00 - 11:59)
+                    {availableTimeSlots.map((time) => (
+                      <SelectItem key={time} value={time} data-testid={`option-time-${time}`}>
+                        {time}
                       </SelectItem>
-                    )}
-                    {availableTimeRanges.includes('afternoon') && (
-                      <SelectItem value="afternoon" data-testid="option-time-afternoon">
-                        Tarde (12:00 - 17:59)
-                      </SelectItem>
-                    )}
-                    {availableTimeRanges.includes('evening') && (
-                      <SelectItem value="evening" data-testid="option-time-evening">
-                        Noche (18:00 - 23:59)
-                      </SelectItem>
-                    )}
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -1001,7 +983,7 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
                               <SelectValue placeholder="Seleccionar cancha..." />
                             </SelectTrigger>
                             <SelectContent>
-                              {courts?.map((court) => {
+                              {[...(courts || [])].sort((a, b) => a.name.localeCompare(b.name, 'es', { numeric: true, sensitivity: 'base' })).map((court) => {
                                 const isAvailable = court.isAvailable;
                                 let canPreAssign = false;
                                 let matchDuration = 0;

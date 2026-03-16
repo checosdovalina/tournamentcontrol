@@ -246,7 +246,7 @@ export default function ManageCourtsModal({ open, onOpenChange }: ManageCourtsMo
               </div>
             ) : (
               <div className="space-y-3" data-testid="courts-management-list">
-                {courts.map((court: any) => {
+                {[...courts].sort((a: any, b: any) => a.name.localeCompare(b.name, 'es', { numeric: true, sensitivity: 'base' })).map((court: any) => {
                   const currentMatch = getCurrentMatch(court.id);
                   const isEditing = editingCourtId === court.id;
                   
