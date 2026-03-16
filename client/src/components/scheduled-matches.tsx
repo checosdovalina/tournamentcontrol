@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil, Repeat, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil, Repeat, Search, Filter, Tag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
 import EditScheduledMatchModal from "@/components/modals/edit-scheduled-match-modal";
@@ -712,57 +712,88 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
               </Tabs>
             </div>
 
-            {/* Player Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar jugador por nombre..."
-                value={playerSearch}
-                onChange={e => setPlayerSearch(e.target.value)}
-                className="pl-9"
-                data-testid="input-player-search"
-              />
-            </div>
-
-            {/* Category and Time Filters */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Categoría</label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-full" data-testid="select-category-filter">
-                    <SelectValue placeholder="Todas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all" data-testid="option-category-all">
-                      Todas
-                    </SelectItem>
-                    {availableCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id} data-testid={`option-category-${cat.id}`}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {/* Search & Filters Panel */}
+            <div className="bg-muted/40 border border-border rounded-xl p-3 space-y-3">
+              {/* Player Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar jugador por nombre..."
+                  value={playerSearch}
+                  onChange={e => setPlayerSearch(e.target.value)}
+                  className="pl-9 pr-9 bg-background border-border h-9 text-sm"
+                  data-testid="input-player-search"
+                />
+                {playerSearch && (
+                  <button
+                    onClick={() => setPlayerSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid="button-clear-search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
 
-              <div>
-                <label className="text-sm font-medium mb-2 block">Horario</label>
-                <Select value={timeFilter} onValueChange={setTimeFilter}>
-                  <SelectTrigger className="w-full" data-testid="select-time-filter">
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all" data-testid="option-time-all">
-                      Todos
-                    </SelectItem>
-                    {availableTimeSlots.map((time) => (
-                      <SelectItem key={time} value={time} data-testid={`option-time-${time}`}>
-                        {time}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Category and Time Filters */}
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full h-9 text-sm bg-background border-border" data-testid="select-category-filter">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Tag className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <SelectValue placeholder="Categoría" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" data-testid="option-category-all">Todas las categorías</SelectItem>
+                      {availableCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id} data-testid={`option-category-${cat.id}`}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex-1">
+                  <Select value={timeFilter} onValueChange={setTimeFilter}>
+                    <SelectTrigger className="w-full h-9 text-sm bg-background border-border" data-testid="select-time-filter">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <SelectValue placeholder="Horario" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" data-testid="option-time-all">Todos los horarios</SelectItem>
+                      {availableTimeSlots.map((time) => (
+                        <SelectItem key={time} value={time} data-testid={`option-time-${time}`}>
+                          {time}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+
+              {/* Active filters indicator */}
+              {(playerSearch || selectedCategory !== "all" || timeFilter !== "all") && (
+                <div className="flex items-center justify-between pt-0.5">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Filter className="w-3 h-3" />
+                    <span>
+                      {filteredDayMatches.length} de {dayMatches.length} partidos
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => { setPlayerSearch(""); setSelectedCategory("all"); setTimeFilter("all"); }}
+                    className="text-xs text-primary hover:underline"
+                    data-testid="button-clear-all-filters"
+                  >
+                    Limpiar filtros
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
