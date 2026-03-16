@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UserPlus, ClipboardCheck, Settings, Tv, Bell, Calendar, Shield, Users, Clock, FileSpreadsheet, ChevronDown, LayoutGrid, Repeat, QrCode, Star, FileText } from "lucide-react";
+import { ThemeSelector } from "@/components/theme-selector";
 import CurrentMatches from "@/components/current-matches";
 import CourtStatus from "@/components/court-status";
 import WaitingList from "@/components/waiting-list";
@@ -135,6 +136,8 @@ export default function Dashboard() {
               
               {/* User Menu */}
               <div className="flex items-center space-x-3">
+                <ThemeSelector />
+
                 <Button variant="ghost" size="sm" data-testid="button-notifications">
                   <Bell className="h-4 w-4" />
                 </Button>
