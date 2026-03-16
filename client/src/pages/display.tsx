@@ -747,9 +747,6 @@ function MatchCard({ match, formatMatchDuration, formatScore }: any) {
             {match.court.name}
           </span>
         </div>
-        <span className="text-white/60 text-base">
-          {formatMatchDuration(match.startTime)}
-        </span>
       </div>
       <div className="space-y-2 text-white">
         <div className="text-lg font-medium">
