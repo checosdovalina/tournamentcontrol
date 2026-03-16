@@ -11,7 +11,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil, Repeat } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Zap, MapPin, Clock, Users, Check, X, Minus, Trash2, CalendarDays, Upload, Pencil, Repeat, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import ScheduleMatchModal from "@/components/modals/schedule-match-modal";
 import EditScheduledMatchModal from "@/components/modals/edit-scheduled-match-modal";
 import type { ScheduledMatchWithDetails, ScheduledMatchPlayer } from "@shared/schema";
@@ -31,6 +32,7 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [timeFilter, setTimeFilter] = useState<string>("all");
+  const [playerSearch, setPlayerSearch] = useState<string>("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [importingFemepa, setImportingFemepa] = useState(false);
@@ -172,7 +174,19 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
       const statusMatch = statusFilter === "all" || matchStatus === statusFilter;
       
       const timeMatch = timeFilter === "all" || match.plannedTime === timeFilter;
-      return categoryMatch && statusMatch && timeMatch;
+
+      const playerMatch = playerSearch.trim() === "" || (() => {
+        const q = playerSearch.trim().toLowerCase();
+        const names = [
+          match.pair1?.player1?.name,
+          match.pair1?.player2?.name,
+          match.pair2?.player1?.name,
+          match.pair2?.player2?.name,
+        ].filter(Boolean).map(n => n!.toLowerCase());
+        return names.some(n => n.includes(q));
+      })();
+
+      return categoryMatch && statusMatch && timeMatch && playerMatch;
     }) || [];
 
     // Sort by time (hour)
@@ -181,7 +195,7 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
       const timeB = b.plannedTime || "99:99";
       return timeA.localeCompare(timeB);
     });
-  }, [dayMatches, selectedCategory, statusFilter, timeFilter]);
+  }, [dayMatches, selectedCategory, statusFilter, timeFilter, playerSearch]);
 
   // Count matches by status for badges (separate pending and ready)
   const statusCounts = useMemo(() => {
@@ -696,6 +710,18 @@ export default function ScheduledMatches({ tournamentId, userRole, onImportClick
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
+            </div>
+
+            {/* Player Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar jugador por nombre..."
+                value={playerSearch}
+                onChange={e => setPlayerSearch(e.target.value)}
+                className="pl-9"
+                data-testid="input-player-search"
+              />
             </div>
 
             {/* Category and Time Filters */}
