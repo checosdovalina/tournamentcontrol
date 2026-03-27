@@ -39,6 +39,30 @@ app.use(express.urlencoded({ extended: false }));
 // Serve uploaded files statically
 app.use('/uploads', express.static('public/uploads'));
 
+// --- MIDDLEWARE DE SEGURIDAD (PROXY INVERSO VPS B) ---
+app.use((req, res, next) => {
+  // Ignoramos la seguridad si estás programando en tu Mac (modo desarrollo)
+  if (app.get("env") === "development") {
+    return next();
+  }
+
+  const expectedKey = process.env.API_SECRET_KEY;
+  
+  // Si no has configurado la variable aún, permitimos el paso para no tumbar tu app
+  if (!expectedKey) {
+    return next();
+  }
+
+  // Verificar si la petición trae la "llave" secreta que Nginx inyectará
+  const apiKey = req.headers['x-api-key'];
+  if (apiKey !== expectedKey) {
+    return res.status(401).send("Acceso denegado: Se requiere conexión a través del Proxy Inverso principal.");
+  }
+
+  next();
+});
+// ---------------------------------------------------
+
 // Session store configuration
 const PgSession = connectPgSimple(session);
 const sessionStore = new PgSession({
@@ -141,8 +165,8 @@ async function ensureUploadDirectories() {
   server.listen({
     port,
     host: "0.0.0.0",
-    reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
   });
 })();
+
